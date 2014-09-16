@@ -1,5 +1,7 @@
 package de.uniHamburg.informatik.continuousvoice.views.fragments;
 
+import org.w3c.dom.Text;
+
 import android.app.Fragment;
 import android.content.res.Resources;
 import android.os.Bundle;
@@ -11,13 +13,13 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 import de.uniHamburg.informatik.continousvoice.R;
+import de.uniHamburg.informatik.continuousvoice.services.IVoiceRecognitionListener;
 import de.uniHamburg.informatik.continuousvoice.services.IVoiceRecognitionService;
 
 public class VoiceRecognizerFragment extends Fragment {
 
 	private String name;
 	private IVoiceRecognitionService recognitionService;
-	private Resources res;
 	private String minutesStringSchema;
 	private String wordsStringSchema;
 	
@@ -29,6 +31,7 @@ public class VoiceRecognizerFragment extends Fragment {
 	private TextView titleText;
 	private TextView timeText;
 	private TextView wordCountText;
+	private TextView contentText;
 	
 	private short currentState = STATE_1_READY; 
 	public static final short STATE_1_READY = 1;
@@ -54,6 +57,7 @@ public class VoiceRecognizerFragment extends Fragment {
         titleText = (TextView) view.findViewById(R.id.voiceRecognizerTitle);
         timeText = (TextView) view.findViewById(R.id.voiceRecognizerTime);
         wordCountText = (TextView) view.findViewById(R.id.voiceRecognizerWordCount);
+        contentText = (TextView) view.findViewById(R.id.voiceRecognizerContent);
         
         Resources res = getResources();
         minutesStringSchema = res.getString(R.string.minutes);
@@ -91,6 +95,15 @@ public class VoiceRecognizerFragment extends Fragment {
 				share(v);
 			}
 		});
+    	
+    	IVoiceRecognitionListener listener = new IVoiceRecognitionListener() {
+			@Override
+			public void voiceRecognized() {
+				String recognizedWords = "test";
+				Toast.makeText(getActivity(), "WORDS: " + recognizedWords, Toast.LENGTH_LONG).show();
+			}
+		};
+		recognitionService.addRecognitionListener(listener);
 	}
     
     private void resetTexts() {
@@ -129,16 +142,22 @@ public class VoiceRecognizerFragment extends Fragment {
     
     public void play(View view) {
     	switchState(STATE_2_WORKING);
+    	recognitionService.start();
+    	contentText.setText("Jean shorts craft beer sustainable Shoreditch, retro butcher artisan authentic. Street art blog ugh literally Thundercats fingerstache. Crucifix fixie sustainable, Pitchfork locavore banh mi gentrify gastropub Bushwick ethnic sartorial roof party chillwave typewriter fingerstache. Hashtag banjo squid, quinoa skateboard direct trade organic forage street art 90's PBR&B chambray paleo. Drinking vinegar ethnic irony, leggings banjo Pinterest polaroid Brooklyn small batch American Apparel +1 freegan pour-over meggings occupy. Wes Anderson cray Odd Future quinoa Thundercats Tumblr. Viral whatever kogi Bushwick. Church-key lo-fi single-origin coffee forage. Shabby chic bespoke four loko Intelligentsia vinyl bitters. Mumblecore before they sold out disrupt, whatever scenester freegan asymmetrical Etsy direct trade street art fingerstache pickled tattooed. Shoreditch church-key squid, flannel viral food truck Thundercats. Brooklyn meh Odd Future pork belly semiotics, Shoreditch pug. Pickled single-origin coffee drinking vinegar pour-over, ethical selvage squid Etsy Austin. Kale chips wayfarers pop-up Neutra, vegan fanny pack authentic irony ethical.");
     	Toast.makeText(getActivity(), "PLAY " + getId(), Toast.LENGTH_SHORT).show();
     }
     
     public void stop(View view) {
     	switchState(STATE_3_DONE);
+    	recognitionService.stop();
+    	recognitionService.reset();
     	Toast.makeText(getActivity(), "STOP " + getId(), Toast.LENGTH_SHORT).show();
     }
     
     public void clear(View view) {
     	switchState(STATE_1_READY);
+    	recognitionService.reset();
+    	contentText.setText("");
     	Toast.makeText(getActivity(), "CLEAR " + getId(), Toast.LENGTH_SHORT).show();
     }
     

@@ -1,11 +1,9 @@
 package de.uniHamburg.informatik.continuousvoice.services;
 
-import android.app.Service;
 import android.content.Intent;
-import android.os.IBinder;
 import android.util.Log;
 
-public class AndroidVoiceRecognitionService extends Service implements IVoiceRecognitionService{
+public class AndroidVoiceRecognitionService extends AbstractVoiceRecognitionService {
 
 	private static final String TAG = "AndroidVoiceRecognitionService";
 
@@ -15,6 +13,16 @@ public class AndroidVoiceRecognitionService extends Service implements IVoiceRec
 	 */
 	public AndroidVoiceRecognitionService() {
 		Log.i(TAG, "AndroidVoiceRecognitionService Constructor");
+	}
+	
+	@Override
+	public void start() {
+		
+	}
+
+	@Override
+	public void stop() {
+		
 	}
 
 	@Override
@@ -40,9 +48,6 @@ public class AndroidVoiceRecognitionService extends Service implements IVoiceRec
 		return super.onStartCommand(intent, flags, startId);
 	}
 
-	@Override
-	public IBinder onBind(Intent intent) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	
+
 }
