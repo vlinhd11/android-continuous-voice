@@ -6,5 +6,7 @@
     
     <string name="minutes">%1$s min</string>
     <string name="words">%1$s words</string>
+    
+    <string name="fragment_hint">Press ▶ to activate\n%1$s Voice Recogniton</string>
 
 </resources>

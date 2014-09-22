@@ -4,6 +4,8 @@
     android:versionCode="1"
     android:versionName="1.0" >
 
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
     <uses-sdk
         android:minSdkVersion="16"
         android:targetSdkVersion="16" />
@@ -13,7 +15,6 @@
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
-        
         <activity
             android:name="de.uniHamburg.informatik.continuousvoice.MainActivity"
             android:label="@string/app_name"
@@ -24,13 +25,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name="de.uniHamburg.informatik.continuousvoice.services.DummyRecognitionService"
+            android:label="Dummy Voice Recognition"
+            android:process="de.uniHamburg.informatik.continuousvoice.processes.DummyRecognitionProcess" >
+        </service>
         
         <service
-            android:name="de.uniHamburg.informatik.continuousvoice.services.AndroidVoiceRecognitionService"
+            android:name="de.uniHamburg.informatik.continuousvoice.services.AndroidRecognitionService"
             android:label="Android Voice Recognition"
-            android:process="de.uniHamburg.informatik.continuousvoice.processes.AndroidVoiceRecognitionProcess" >
+            android:process="de.uniHamburg.informatik.continuousvoice.processes.AndroidRecognitionService" >
         </service>
- 
     </application>
 
 </manifest>
