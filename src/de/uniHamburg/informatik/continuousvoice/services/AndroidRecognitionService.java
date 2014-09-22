@@ -1,6 +1,8 @@
 package de.uniHamburg.informatik.continuousvoice.services;
 
+import android.content.Context;
 import android.content.Intent;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
@@ -11,37 +13,8 @@ public class AndroidRecognitionService extends AbstractRecognitionService {
 
     private static final String TAG = "AndroidRecognitionService";
     private SpeechRecognizer speech = null; // Speech recognizer instance
-
-    // Service control ->
-    @Override
-    protected void start() {
-        super.start();
-
-        startVoiceRecognitionCycle();
-    }
-
-    @Override
-    public void stop() {
-        super.stop();
-        if (speech != null) {
-            speech.destroy();
-            speech = null;
-        }
-    }
-
-    /**
-     * Destroy the recognizer.
-     */
-    @Override
-    public void reset() {
-        super.reset();
-
-        if (speech != null) {
-            speech.destroy();
-            speech = null;
-        }
-    }
-    // <- Service control
+    private AudioManager audioManager;
+    private boolean beepOff = false;
 
     private RecognitionListener recognitionListener = new AbstractAndroidRecognitionListener() {
 
@@ -82,8 +55,48 @@ public class AndroidRecognitionService extends AbstractRecognitionService {
         }
     };
 
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+    }
+
+    // Service control ->
+    @Override
+    protected void start() {
+        super.start();
+        turnBeepOff();
+        startVoiceRecognitionCycle();
+    }
+
+    @Override
+    public void stop() {
+        super.stop();
+        if (speech != null) {
+            speech.destroy();
+            speech = null;
+        }
+        turnBeepOn();
+    }
+
+    /**
+     * Destroy the recognizer.
+     */
+    @Override
+    public void reset() {
+        super.reset();
+
+        if (speech != null) {
+            speech.destroy();
+            speech = null;
+        }
+    }
+
+    // <- Service control
+
     /**
      * Lazy instantiation method for getting the speech recognizer
+     * 
      * @return the android speech recognizer
      */
     private SpeechRecognizer getSpeechRecognizer() {
@@ -102,6 +115,27 @@ public class AndroidRecognitionService extends AbstractRecognitionService {
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         getSpeechRecognizer().startListening(intent);
+    }
+    
+    @Override
+    public void onDestroy()
+    {
+        stop();
+        super.onDestroy();
+    }
+
+    private void turnBeepOff() {
+        if (!beepOff) {
+            audioManager.setStreamSolo(AudioManager.STREAM_VOICE_CALL, true);
+            beepOff = true;
+        }
+    }
+
+    private void turnBeepOn() {
+        if (beepOff) {
+            audioManager.setStreamSolo(AudioManager.STREAM_VOICE_CALL, false);
+            beepOff = false;
+        }
     }
 
 }
