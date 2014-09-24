@@ -228,7 +228,11 @@ public class RecognizerFragment extends Fragment {
     }
 
     public void share(View view) {
-        Toast.makeText(getActivity(), "SHARE " + getId(), Toast.LENGTH_SHORT).show();
+        Intent sendIntent = new Intent();
+        sendIntent.setAction(Intent.ACTION_SEND);
+        sendIntent.putExtra(Intent.EXTRA_TEXT, contentText.getText());
+        sendIntent.setType("text/plain");
+        startActivity(sendIntent);
     }
 
     private void send(int code) {
