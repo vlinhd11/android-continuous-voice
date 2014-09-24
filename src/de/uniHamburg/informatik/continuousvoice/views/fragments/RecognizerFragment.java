@@ -163,6 +163,7 @@ public class RecognizerFragment extends Fragment {
         contentText.setHint(contentHintString);
         timeText.setText(String.format(minutesStringSchema, "0:00"));
         wordCountText.setText(String.format(wordsStringSchema, "0"));
+        
     }
 
     private void switchState(short currentState) {

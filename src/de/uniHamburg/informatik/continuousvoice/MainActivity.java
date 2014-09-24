@@ -5,8 +5,9 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import de.uniHamburg.informatik.continousvoice.R;
-import de.uniHamburg.informatik.continuousvoice.services.AndroidRecognitionService;
-import de.uniHamburg.informatik.continuousvoice.services.DummyRecognitionService;
+import de.uniHamburg.informatik.continuousvoice.services.builtIn.AndroidRecognitionService;
+import de.uniHamburg.informatik.continuousvoice.services.dummy.DummyRecognitionService;
+import de.uniHamburg.informatik.continuousvoice.services.pocketSphinx.PocketSphinxRecognitionService;
 import de.uniHamburg.informatik.continuousvoice.views.fragments.RecognizerFragment;
 
 public class MainActivity extends Activity {
@@ -16,7 +17,7 @@ public class MainActivity extends Activity {
 
     public void createServices() {
         androidVoiceRecognitionFragment = new RecognizerFragment("Android Built-in", AndroidRecognitionService.class);
-        sphinxVoiceRecognitionFragment = new RecognizerFragment("PocketSphinx", DummyRecognitionService.class);
+        sphinxVoiceRecognitionFragment = new RecognizerFragment("PocketSphinx", PocketSphinxRecognitionService.class);
     }
 
     @Override

@@ -4,8 +4,10 @@
     android:versionCode="1"
     android:versionName="1.0" >
 
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
-
+    <uses-permission android:name="android.permission.VIBRATE" />
+    
     <uses-sdk
         android:minSdkVersion="16"
         android:targetSdkVersion="16" />
@@ -27,13 +29,13 @@
         </activity>
 
         <service
-            android:name="de.uniHamburg.informatik.continuousvoice.services.DummyRecognitionService"
-            android:label="Dummy Voice Recognition"
-            android:process="de.uniHamburg.informatik.continuousvoice.processes.DummyRecognitionProcess" >
+            android:name="de.uniHamburg.informatik.continuousvoice.services.pocketSphinx.PocketSphinxRecognitionService"
+            android:label="PocketSphinx Voice Recognition"
+            android:process="de.uniHamburg.informatik.continuousvoice.processes.PocketSphinxRecognitionProcess" >
         </service>
         
         <service
-            android:name="de.uniHamburg.informatik.continuousvoice.services.AndroidRecognitionService"
+            android:name="de.uniHamburg.informatik.continuousvoice.services.builtIn.AndroidRecognitionService"
             android:label="Android Voice Recognition"
             android:process="de.uniHamburg.informatik.continuousvoice.processes.AndroidRecognitionService" >
         </service>
