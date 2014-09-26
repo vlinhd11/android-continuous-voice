@@ -1,5 +1,9 @@
 package de.uniHamburg.informatik.continuousvoice.views.fragments;
 
+import java.util.Arrays;
+import java.util.Timer;
+import java.util.TimerTask;
+
 import android.app.Fragment;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -14,6 +18,7 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -21,7 +26,6 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.Toast;
 import de.uniHamburg.informatik.continousvoice.R;
 import de.uniHamburg.informatik.continuousvoice.constants.RecognitionConstants;
 
@@ -35,6 +39,8 @@ public class RecognizerFragment extends Fragment {
     private boolean bound = false;
     private Messenger messenger;
     private String broadcastIdentifier;
+    private int seconds = 0;
+    private String completeText = "";
 
     private ImageButton playBtn;
     private ImageButton stopBtn;
@@ -87,6 +93,7 @@ public class RecognizerFragment extends Fragment {
             }
         }
     };
+    private int words;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -121,6 +128,34 @@ public class RecognizerFragment extends Fragment {
         return view;
     }
 
+    /*********
+     * Timer *
+     *********/
+    private Handler handler = new Handler();
+    private boolean running = false;
+    private Runnable runnable = new Runnable() {
+        @Override
+        public void run() {
+            if (running) {
+                seconds++;
+                updateTimeText();
+                handler.postDelayed(this, 1000);
+            }
+        }
+    };
+    private void startTimer() {
+        running = true;
+        handler.postDelayed(runnable, 1000);
+    }
+
+    private void stopTimer() {
+        running = false;
+    }
+
+    private void resetTime() {
+        seconds = 0;
+    }
+
     private void createListeners() {
         playBtn.setOnClickListener(new OnClickListener() {
             @Override
@@ -151,6 +186,7 @@ public class RecognizerFragment extends Fragment {
             @Override
             public void onReceive(Context context, Intent intent) {
                 String words = intent.getStringExtra("words");
+                completeText += " " + words;
                 addTextToView(words);
             }
         };
@@ -161,9 +197,20 @@ public class RecognizerFragment extends Fragment {
     private void resetTexts() {
         titleText.setText(name);
         contentText.setHint(contentHintString);
-        timeText.setText(String.format(minutesStringSchema, "0:00"));
+        timeText.setText(String.format(minutesStringSchema, "00:00:00"));
         wordCountText.setText(String.format(wordsStringSchema, "0"));
-        
+    }
+
+    private void updateWordCount() {
+        wordCountText.setText(String.format(wordsStringSchema, words + ""));
+    }
+
+    private void updateTimeText() {
+        int h = seconds / 3600;
+        int min = (seconds % 3600) / 60;
+        int sec = seconds % 60;
+        String formattedTime = String.format("%02d:%02d:%02d", h, min, sec);
+        timeText.setText(String.format(minutesStringSchema, formattedTime));
     }
 
     private void switchState(short currentState) {
@@ -206,23 +253,38 @@ public class RecognizerFragment extends Fragment {
 
     private void addTextToView(String toAdd) {
         contentText.append(" " + toAdd);
+        completeText.replaceAll("\\s+", " ");
+        Log.e("", Arrays.toString(completeText.trim().split("\\s+")));
+        words = completeText.trim().split("\\s+").length;
+        updateWordCount();
         scrollDown();
     }
 
     public void play(View view) {
         switchState(STATE_2_WORKING);
         addTextToView("» ");
+
+        resetTime();
+        startTimer();
+
         send(RecognitionConstants.START_RECOGNIZING);
     }
 
     public void stop(View view) {
         switchState(STATE_3_DONE);
         addTextToView(" «");
+        stopTimer();
         send(RecognitionConstants.STOP_RECOGNIZING);
     }
 
     public void clear(View view) {
         switchState(STATE_1_READY);
+        stopTimer();
+        resetTime();
+        updateTimeText();
+        completeText = "";
+        words = 0;
+        updateWordCount();
         send(RecognitionConstants.RESET_SERVICE);
         contentText.setText("");
     }
@@ -230,7 +292,7 @@ public class RecognizerFragment extends Fragment {
     public void share(View view) {
         Intent sendIntent = new Intent();
         sendIntent.setAction(Intent.ACTION_SEND);
-        sendIntent.putExtra(Intent.EXTRA_TEXT, contentText.getText());
+        sendIntent.putExtra(Intent.EXTRA_TEXT, completeText);
         sendIntent.setType("text/plain");
         startActivity(sendIntent);
     }
