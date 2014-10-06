@@ -70,39 +70,45 @@
 
             <!-- btn:play -->
 
+<!--                 style="?android:attr/borderlessButtonStyle" -->
             <ImageButton
                 android:id="@+id/voiceRecognizerBtnPlay"
-                style="?android:attr/borderlessButtonStyle"
                 android:layout_width="@dimen/header_button_width"
                 android:layout_height="match_parent"
                 android:gravity="right"
+                android:scaleType="fitCenter"
+                android:adjustViewBounds="true"
                 android:src="@drawable/voice_play" />
             <!-- btn:stop -->
 
             <ImageButton
                 android:id="@+id/voiceRecognizerBtnStop"
-                style="?android:attr/borderlessButtonStyle"
                 android:layout_width="@dimen/header_button_width"
                 android:layout_height="match_parent"
                 android:gravity="right"
+                android:scaleType="fitCenter"
+                android:adjustViewBounds="true"
                 android:src="@drawable/voice_stop" />
             <!-- btn:clear -->
 
             <ImageButton
                 android:id="@+id/voiceRecognizerBtnClear"
-                style="?android:attr/borderlessButtonStyle"
                 android:layout_width="@dimen/header_button_width"
                 android:layout_height="match_parent"
                 android:gravity="right"
+                android:scaleType="fitCenter"
+                android:adjustViewBounds="true"
                 android:src="@drawable/voice_clear" />
+
             <!-- btn:share -->
 
             <ImageButton
                 android:id="@+id/voiceRecognizerBtnShare"
-                style="?android:attr/borderlessButtonStyle"
                 android:layout_width="@dimen/header_button_width"
                 android:layout_height="match_parent"
                 android:gravity="right"
+                android:scaleType="fitCenter"
+                android:adjustViewBounds="true"
                 android:src="@drawable/voice_share" />
         </LinearLayout>
     </LinearLayout>

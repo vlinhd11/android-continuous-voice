@@ -1,12 +1,14 @@
 package de.uniHamburg.informatik.continuousvoice;
 
 import android.app.Activity;
+import android.media.AudioFormat;
+import android.media.AudioRecord;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import de.uniHamburg.informatik.continousvoice.R;
 import de.uniHamburg.informatik.continuousvoice.services.builtIn.AndroidRecognitionService;
-import de.uniHamburg.informatik.continuousvoice.services.dummy.DummyRecognitionService;
 import de.uniHamburg.informatik.continuousvoice.services.pocketSphinx.PocketSphinxRecognitionService;
 import de.uniHamburg.informatik.continuousvoice.views.fragments.RecognizerFragment;
 
@@ -40,7 +42,7 @@ public class MainActivity extends Activity {
             }
         }
     }
-
+    
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.

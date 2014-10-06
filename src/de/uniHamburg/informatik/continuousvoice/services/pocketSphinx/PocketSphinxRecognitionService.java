@@ -33,6 +33,8 @@ import static edu.cmu.pocketsphinx.SpeechRecognizerSetup.defaultSetup;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import android.os.AsyncTask;
 import android.widget.Toast;
@@ -88,25 +90,34 @@ public class PocketSphinxRecognitionService extends AbstractRecognitionService i
     }
 
     private void setupRecognizer(File assetsDir) {
+        Map<String, String> deSphinx = new HashMap<String, String>();
+        deSphinx.put("acousticModel", "hmm/de-de-voxforge-sphinx");
+        deSphinx.put("dictionary", "dict/voxforge_de_sphinx.dic");
+        deSphinx.put("languageModel", "lm/voxforge_de_sphinx.lm");
+        Map<String, String> deFull = new HashMap<String, String>();
+        deFull.put("acousticModel", "hmm/de-de-voxforge");
+        deFull.put("dictionary", "dict/voxforge_de.dic");
+        deFull.put("languageModel", "lm/voxforge_de.dmp");
+        Map<String, String> enUs = new HashMap<String, String>();
+        enUs.put("acousticModel", "hmm/en-us");
+        enUs.put("dictionary", "dict/voxforge_en_us.dic");
+        enUs.put("languageModel", "lm/en-us.dmp");
+        
+        //SET LANGUAGE HERE!
+        Map<String, String> language = deFull;
+        
         File modelsDir = new File(assetsDir, "models");
         recognizer = defaultSetup()
-                //en: .setAcousticModel(new File(modelsDir, "hmm/en-us-semi"))
-                .setAcousticModel(new File(modelsDir, "hmm/de-de-voxforge"))
-                //en: .setDictionary(new File(modelsDir, "dict/cmu07a.dic"))
-                .setDictionary(new File(modelsDir, "dict/voxforge_de_sphinx.dic")).setRawLogDir(assetsDir)
+                
+                .setAcousticModel(new File(modelsDir, language.get("acousticModel")))
+                .setDictionary(new File(modelsDir, language.get("dictionary")))
+                
+                .setRawLogDir(assetsDir)
                 .setKeywordThreshold(1e-20f).getRecognizer();
         recognizer.addListener(this);
 
-        // Create keyword-activation search
-        // recognizer.addKeyphraseSearch("keyphrase", "AKTIVIEREN");
-        // Create grammar-based searches
-        // File grammar = new File(modelsDir, "grammar/menu.gram");
-        // recognizer.addGrammarSearch("grammarSearch", grammar);
-
-        // Create language model search.
-        File languageModel = new File(modelsDir, "lm/voxforge_de_sphinx.lm");
-        // File languageModel = new File(modelsDir, "lm/weather.dmp");
-        recognizer.addNgramSearch("freespeech", languageModel);
+        File languageModel = new File(modelsDir, language.get("languageModel"));
+        //recognizer.addNgramSearch("freespeech", languageModel);
     }
 
     @Override
