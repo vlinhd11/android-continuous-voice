@@ -1,6 +1,6 @@
-package de.uniHamburg.informatik.continuousvoice.services.builtIn;
+package de.uniHamburg.informatik.continuousvoice.services.recognition.builtIn;
 
-import de.uniHamburg.informatik.continuousvoice.services.AbstractRecognitionService;
+import de.uniHamburg.informatik.continuousvoice.services.recognition.AbstractRecognitionService;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
@@ -64,15 +64,15 @@ public class AndroidRecognitionService extends AbstractRecognitionService {
 
     // Service control ->
     @Override
-    protected void start() {
-        super.start();
+    protected void onStart() {
+        super.onStart();
         turnBeepOff();
         startVoiceRecognitionCycle();
     }
 
     @Override
-    public void stop() {
-        super.stop();
+    public void onStop() {
+        super.onStop();
         if (speech != null) {
             speech.destroy();
             speech = null;
@@ -84,8 +84,8 @@ public class AndroidRecognitionService extends AbstractRecognitionService {
      * Destroy the recognizer.
      */
     @Override
-    public void reset() {
-        super.reset();
+    public void onReset() {
+        super.onReset();
 
         if (speech != null) {
             speech.destroy();
@@ -121,7 +121,7 @@ public class AndroidRecognitionService extends AbstractRecognitionService {
     @Override
     public void onDestroy()
     {
-        stop();
+        onStop();
         super.onDestroy();
     }
 

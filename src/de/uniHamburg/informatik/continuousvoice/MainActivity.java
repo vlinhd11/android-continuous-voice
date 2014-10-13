@@ -8,18 +8,33 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import de.uniHamburg.informatik.continousvoice.R;
-import de.uniHamburg.informatik.continuousvoice.services.builtIn.AndroidRecognitionService;
-import de.uniHamburg.informatik.continuousvoice.services.pocketSphinx.PocketSphinxRecognitionService;
+import de.uniHamburg.informatik.continuousvoice.services.recognition.builtIn.AndroidRecognitionService;
+import de.uniHamburg.informatik.continuousvoice.services.recognition.builtIn.AndroidRecognitionService2;
+import de.uniHamburg.informatik.continuousvoice.services.recognition.builtIn.AndroidRecognitionService3;
+import de.uniHamburg.informatik.continuousvoice.services.recognition.pocketSphinx.PocketSphinxRecognitionService;
+import de.uniHamburg.informatik.continuousvoice.services.recognition.webService.AbstractWebServiceRecognitionService;
 import de.uniHamburg.informatik.continuousvoice.views.fragments.RecognizerFragment;
+import de.uniHamburg.informatik.continuousvoice.views.fragments.VisualizerFragment;
 
 public class MainActivity extends Activity {
 
     private RecognizerFragment androidVoiceRecognitionFragment;
+    private RecognizerFragment androidVoiceRecognitionFragment2;
+    private RecognizerFragment androidVoiceRecognitionFragment3;
     private RecognizerFragment sphinxVoiceRecognitionFragment;
+    private RecognizerFragment googleSpeechApiVoiceRecognitionFragment;
+    private VisualizerFragment visualizationFragment;
 
     public void createServices() {
         androidVoiceRecognitionFragment = new RecognizerFragment("Android Built-in", AndroidRecognitionService.class);
-        sphinxVoiceRecognitionFragment = new RecognizerFragment("PocketSphinx", PocketSphinxRecognitionService.class);
+
+        googleSpeechApiVoiceRecognitionFragment = new RecognizerFragment("Google Speech-To-text API", AbstractWebServiceRecognitionService.class);
+        
+        //sphinxVoiceRecognitionFragment = new RecognizerFragment("PocketSphinx", PocketSphinxRecognitionService.class);
+        //androidVoiceRecognitionFragment2 = new RecognizerFragment("Android Built-in (2)", AndroidRecognitionService2.class);
+        //androidVoiceRecognitionFragment3 = new RecognizerFragment("Android Built-in (3)", AndroidRecognitionService3.class);
+        
+        //visualizationFragment = new VisualizerFragment();
     }
 
     @Override
@@ -36,8 +51,10 @@ public class MainActivity extends Activity {
             setContentView(R.layout.activity_main);
             if (savedInstanceState == null) {
                 getFragmentManager().beginTransaction()
+                        //.add(R.id.visualizationFragmentContainer, visualizationFragment)
                         .add(R.id.voiceRecognitionFragmentContainer1, androidVoiceRecognitionFragment)
-                        .add(R.id.voiceRecognitionFragmentContainer2, sphinxVoiceRecognitionFragment)
+                        .add(R.id.voiceRecognitionFragmentContainer2, googleSpeechApiVoiceRecognitionFragment)
+                        //.add(R.id.voiceRecognitionFragmentContainer3, androidVoiceRecognitionFragment3)
                         .commit();
             }
         }

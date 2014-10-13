@@ -5,26 +5,17 @@
     android:paddingLeft="0dp"
     android:paddingRight="0dp" >
 
-    <!-- HEADER BAR -->
-
+    <!-- TITLE BAR -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="@dimen/header_bar_height"
-        android:background="#cccccc"
+        android:layout_height="@dimen/title_bar_height"
+        android:background="@color/main"
         android:baselineAligned="false"
         android:orientation="horizontal"
         android:paddingLeft="@dimen/header_vertical_spacing"
         android:paddingRight="@dimen/header_vertical_spacing" >
-
-        <!-- left -->
-
-        <RelativeLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:paddingRight="@dimen/activity_vertical_margin" >
-
-            <!-- Title -->
+    
+        <!-- Title -->
 
             <TextView
                 android:id="@+id/voiceRecognizerTitle"
@@ -32,27 +23,61 @@
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:paddingLeft="0dp"
-                android:paddingRight="0dp" />
+                android:paddingRight="0dp"
+                android:paddingTop="0dp"
+                android:textSize="@dimen/header_title_text_size"
+                android:text="Recognizer Name" />
+            
+    </LinearLayout>
+    
+    <!-- HEADER BAR -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/header_bar_height"
+        android:background="@color/main"
+        android:baselineAligned="false"
+        android:orientation="horizontal"
+        android:paddingLeft="@dimen/header_vertical_spacing"
+        android:paddingRight="@dimen/header_vertical_spacing" >
+
+        <!-- left -->
+        <RelativeLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:paddingRight="@dimen/activity_vertical_margin" >
+
+            <!-- Title -->
+            <TextView
+                android:text="Status\n\rStatus2"
+                android:id="@+id/voiceRecognizerState"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:paddingLeft="0dp"
+                android:paddingRight="0dp"
+                android:textSize="@dimen/header_state_text_size"  />
 
             <!-- Time -->
-
             <TextView
+                android:text="00:00:00"
                 android:id="@+id/voiceRecognizerTime"
                 android:layout_width="fill_parent"
                 android:layout_height="@dimen/header_bar_height_half"
-                android:layout_toRightOf="@id/voiceRecognizerTitle"
+                android:layout_toRightOf="@id/voiceRecognizerState"
                 android:gravity="right|bottom"
                 android:paddingLeft="0dp"
                 android:paddingRight="0dp"
                 android:textSize="@dimen/header_meta_text_size" />
-            <!-- Words -->
 
+            <!-- Words -->
             <TextView
+                android:text="0 words"
                 android:id="@+id/voiceRecognizerWordCount"
                 android:layout_width="fill_parent"
                 android:layout_height="@dimen/header_bar_height_half"
                 android:layout_below="@id/voiceRecognizerTime"
-                android:layout_toRightOf="@id/voiceRecognizerTitle"
+                android:layout_toRightOf="@id/voiceRecognizerState"
                 android:gravity="right|top"
                 android:paddingLeft="0dp"
                 android:paddingRight="0dp"
@@ -60,7 +85,6 @@
         </RelativeLayout>
 
         <!-- right -->
-
         <LinearLayout
             android:layout_width="@dimen/header_button_width_double"
             android:layout_height="match_parent"
@@ -69,9 +93,7 @@
             android:paddingLeft="0dp" >
 
             <!-- btn:play -->
-
-<!--                 style="?android:attr/borderlessButtonStyle" -->
-            <ImageButton
+           <ImageButton
                 android:id="@+id/voiceRecognizerBtnPlay"
                 android:layout_width="@dimen/header_button_width"
                 android:layout_height="match_parent"
@@ -79,8 +101,8 @@
                 android:scaleType="fitCenter"
                 android:adjustViewBounds="true"
                 android:src="@drawable/voice_play" />
-            <!-- btn:stop -->
 
+            <!-- btn:stop -->
             <ImageButton
                 android:id="@+id/voiceRecognizerBtnStop"
                 android:layout_width="@dimen/header_button_width"
@@ -89,8 +111,8 @@
                 android:scaleType="fitCenter"
                 android:adjustViewBounds="true"
                 android:src="@drawable/voice_stop" />
-            <!-- btn:clear -->
 
+            <!-- btn:clear -->
             <ImageButton
                 android:id="@+id/voiceRecognizerBtnClear"
                 android:layout_width="@dimen/header_button_width"
@@ -101,7 +123,6 @@
                 android:src="@drawable/voice_clear" />
 
             <!-- btn:share -->
-
             <ImageButton
                 android:id="@+id/voiceRecognizerBtnShare"
                 android:layout_width="@dimen/header_button_width"
@@ -110,6 +131,21 @@
                 android:scaleType="fitCenter"
                 android:adjustViewBounds="true"
                 android:src="@drawable/voice_share" />
+            
+            <!-- ToggleButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textOn=""
+                android:textOff=""
+                android:id="@+id/voiceRecognizerBtnRecord"
+                android:layout_width="@dimen/header_button_width"
+                android:layout_height="match_parent"
+                android:gravity="right"
+                android:scaleType="fitCenter"
+                android:adjustViewBounds="true"
+                android:drawableTop="@drawable/voice_share" />
+            http://stackoverflow.com/questions/18598255/android-create-a-toggle-button-with-image-and-no-text -->
+
         </LinearLayout>
     </LinearLayout>
 

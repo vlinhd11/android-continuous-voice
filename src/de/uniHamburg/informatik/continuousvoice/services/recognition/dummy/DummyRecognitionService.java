@@ -1,12 +1,12 @@
-package de.uniHamburg.informatik.continuousvoice.services.dummy;
+package de.uniHamburg.informatik.continuousvoice.services.recognition.dummy;
 
-import de.uniHamburg.informatik.continuousvoice.services.AbstractRecognitionService;
+import de.uniHamburg.informatik.continuousvoice.services.recognition.AbstractRecognitionService;
 
 public class DummyRecognitionService extends AbstractRecognitionService {
 
     @Override
-    protected void start() {
-        super.start();
+    protected void onStart() {
+        super.onStart();
         
         long endTime = System.currentTimeMillis() + 5 * 1000;
         while (System.currentTimeMillis() < endTime) {

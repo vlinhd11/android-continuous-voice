@@ -1,5 +1,6 @@
-package de.uniHamburg.informatik.continuousvoice.services;
+package de.uniHamburg.informatik.continuousvoice.services.recognition;
 
+import de.uniHamburg.informatik.continuousvoice.services.IServiceControl;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
@@ -8,19 +9,17 @@ import android.util.Log;
 
 public abstract class AbstractRecognitionService extends Service implements IRecognitionService {
 
-    private static final String TAG = "AndroidVoiceRecognitionService";
+    private static final String TAG = "AbstractRecognitionService";
     private Messenger messenger;
     private boolean running = false;
     private String recognizedText = "";
     private String broadcastIdentifier;
 
     public AbstractRecognitionService() {
-        Log.i(TAG, "CONSTRUCTOR");
-
-        IRecognitionControl control = new IRecognitionControl() {
+        IServiceControl control = new IServiceControl() {
             @Override
             public void start() {
-                AbstractRecognitionService.this.start();
+                onStart();
             }
             
             @Override
@@ -30,12 +29,13 @@ public abstract class AbstractRecognitionService extends Service implements IRec
 
             @Override
             public void stop() {
-                AbstractRecognitionService.this.stop();
+                Log.e(TAG, "### STOP (1)");
+                onStop();
             }
 
             @Override
             public void reset() {
-                AbstractRecognitionService.this.reset();
+                onReset();
             }
         };
         messenger = new Messenger(new RecognitionControlHandler(control));
@@ -45,8 +45,8 @@ public abstract class AbstractRecognitionService extends Service implements IRec
      * override this method if needed
      * remember to call super.stop();
      */
-    protected void stop() {
-        Log.i(TAG, "STOP");
+    protected void onStop() {
+        Log.e(TAG, "### STOP (2)");
         running = false;
     }
     
@@ -54,7 +54,7 @@ public abstract class AbstractRecognitionService extends Service implements IRec
      * override this method if needed
      * remember to call super.start();
      */
-    protected void start() {
+    protected void onStart() {
         Log.i(TAG, "START");
         running = true;
     }
@@ -63,9 +63,9 @@ public abstract class AbstractRecognitionService extends Service implements IRec
      * override this method if needed
      * remember to call super.reset();
      */
-    protected void reset() {
+    protected void onReset() {
         Log.i(TAG, "RESET");
-        stop();
+        onStop();
         recognizedText = "";
     }
 

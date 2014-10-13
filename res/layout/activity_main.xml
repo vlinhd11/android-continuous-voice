@@ -9,6 +9,11 @@
     tools:context="de.uniHamburg.informatik.continuousvoice.MainActivity" >
 
     <!-- fragment containers -->
+	<LinearLayout
+        android:id="@+id/visualizationFragmentContainer"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/visualizer_height"
+        android:orientation="vertical" />
 
     <LinearLayout
         android:id="@+id/voiceRecognitionFragmentContainer1"
@@ -24,4 +29,10 @@
         android:layout_weight="1.0"
         android:orientation="vertical" />
 
+   <!--  <LinearLayout
+        android:id="@+id/voiceRecognitionFragmentContainer3"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1.0"
+        android:orientation="vertical" /> -->
 </LinearLayout>

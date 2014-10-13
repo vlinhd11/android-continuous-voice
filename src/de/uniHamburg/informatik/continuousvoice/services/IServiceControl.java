@@ -1,6 +1,6 @@
 package de.uniHamburg.informatik.continuousvoice.services;
 
-public interface IRecognitionControl {
+public interface IServiceControl {
 
     public void start();
 

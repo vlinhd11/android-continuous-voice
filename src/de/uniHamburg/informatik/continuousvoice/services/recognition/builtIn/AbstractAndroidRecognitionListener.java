@@ -1,4 +1,4 @@
-package de.uniHamburg.informatik.continuousvoice.services.builtIn;
+package de.uniHamburg.informatik.continuousvoice.services.recognition.builtIn;
 
 import android.os.Bundle;
 import android.speech.RecognitionListener;

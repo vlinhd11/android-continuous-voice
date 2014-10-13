@@ -16,11 +16,6 @@
     <style name="AppTheme" parent="AppBaseTheme">
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
     </style>
-
-    <style name="voiceRecognizerFragmentStyle">
-        <item name="android:orientation">vertical</item>
-    </style>
-
     <!-- 
     <item name="android:background">#00ff00</item>
  -->

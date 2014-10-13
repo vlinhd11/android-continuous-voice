@@ -26,8 +26,9 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 import de.uniHamburg.informatik.continousvoice.R;
-import de.uniHamburg.informatik.continuousvoice.constants.RecognitionConstants;
+import de.uniHamburg.informatik.continuousvoice.constants.ServiceControlConstants;
 
 public class RecognizerFragment extends Fragment {
 
@@ -57,6 +58,7 @@ public class RecognizerFragment extends Fragment {
     public static final short STATE_1_READY = 1;
     public static final short STATE_2_WORKING = 2;
     public static final short STATE_3_DONE = 3;
+    private static final String TAG = RecognizerFragment.class.getCanonicalName();
 
     public RecognizerFragment(String name, Class<?> serviceClazz) {
         this.name = name;
@@ -87,7 +89,7 @@ public class RecognizerFragment extends Fragment {
             int respCode = msg.what;
 
             switch (respCode) {
-            case RecognitionConstants.SERVICE_CONTROL_RESPONSE:
+            case ServiceControlConstants.SERVICE_CONTROL_RESPONSE:
                 // boolean result = msg.getData().getBoolean("success");
                 // addTextToView("success: " + result);
             }
@@ -267,14 +269,15 @@ public class RecognizerFragment extends Fragment {
         resetTime();
         startTimer();
 
-        send(RecognitionConstants.START_RECOGNIZING);
+        send(ServiceControlConstants.START);
     }
 
     public void stop(View view) {
+        Log.e(TAG, "### STOP (0)");
         switchState(STATE_3_DONE);
         addTextToView(" «");
         stopTimer();
-        send(RecognitionConstants.STOP_RECOGNIZING);
+        send(ServiceControlConstants.STOP);
     }
 
     public void clear(View view) {
@@ -285,7 +288,7 @@ public class RecognizerFragment extends Fragment {
         completeText = "";
         words = 0;
         updateWordCount();
-        send(RecognitionConstants.RESET_SERVICE);
+        send(ServiceControlConstants.RESET);
         contentText.setText("");
     }
 
@@ -304,7 +307,7 @@ public class RecognizerFragment extends Fragment {
         try {
             messenger.send(msg);
         } catch (RemoteException e) {
-            e.printStackTrace();
+            Log.e(TAG, "Could not send code " + code + ". " + e.getMessage());
         }
     }
 

@@ -1,18 +1,19 @@
-package de.uniHamburg.informatik.continuousvoice.services;
+package de.uniHamburg.informatik.continuousvoice.services.recognition;
 
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.RemoteException;
 import android.util.Log;
-import de.uniHamburg.informatik.continuousvoice.constants.RecognitionConstants;
+import de.uniHamburg.informatik.continuousvoice.constants.ServiceControlConstants;
+import de.uniHamburg.informatik.continuousvoice.services.IServiceControl;
 
 public class RecognitionControlHandler extends Handler {
 
     private static final String TAG = "RecognitionControlHandler";
-    private IRecognitionControl recognitionControl;
+    private IServiceControl recognitionControl;
 
-    public RecognitionControlHandler(IRecognitionControl recognitionControl) {
+    public RecognitionControlHandler(IServiceControl recognitionControl) {
         this.recognitionControl = recognitionControl;
     }
 
@@ -22,7 +23,7 @@ public class RecognitionControlHandler extends Handler {
         Log.i(TAG, "MESSAGE received: " + messageType);
         
         switch (messageType) {
-        case RecognitionConstants.START_RECOGNIZING: {
+        case ServiceControlConstants.START: {
             if (recognitionControl.isRunning()) {
                 reply(msg, false);
             } else {
@@ -31,7 +32,7 @@ public class RecognitionControlHandler extends Handler {
             }
             break;
         }
-        case RecognitionConstants.STOP_RECOGNIZING: {
+        case ServiceControlConstants.STOP: {
             if (recognitionControl.isRunning()) {
                 recognitionControl.stop();
                 reply(msg, true);
@@ -40,7 +41,7 @@ public class RecognitionControlHandler extends Handler {
             }
             break;
         }
-        case RecognitionConstants.RESET_SERVICE: {
+        case ServiceControlConstants.RESET: {
             if (recognitionControl.isRunning()) {
                 reply(msg, false);
             } else {
@@ -56,7 +57,7 @@ public class RecognitionControlHandler extends Handler {
 
     protected void reply(Message msg, boolean success) {
         try {
-            Message resp = Message.obtain(null, RecognitionConstants.SERVICE_CONTROL_RESPONSE);
+            Message resp = Message.obtain(null, ServiceControlConstants.SERVICE_CONTROL_RESPONSE);
             Bundle bResp = new Bundle();
             bResp.putBoolean("success", success);
             resp.setData(bResp);

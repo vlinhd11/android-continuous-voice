@@ -27,7 +27,7 @@
  *
  * ====================================================================
  */
-package de.uniHamburg.informatik.continuousvoice.services.pocketSphinx;
+package de.uniHamburg.informatik.continuousvoice.services.recognition.pocketSphinx;
 
 import static edu.cmu.pocketsphinx.SpeechRecognizerSetup.defaultSetup;
 
@@ -38,7 +38,7 @@ import java.util.Map;
 
 import android.os.AsyncTask;
 import android.widget.Toast;
-import de.uniHamburg.informatik.continuousvoice.services.AbstractRecognitionService;
+import de.uniHamburg.informatik.continuousvoice.services.recognition.AbstractRecognitionService;
 import edu.cmu.pocketsphinx.Assets;
 import edu.cmu.pocketsphinx.Hypothesis;
 import edu.cmu.pocketsphinx.RecognitionListener;
@@ -49,8 +49,8 @@ public class PocketSphinxRecognitionService extends AbstractRecognitionService i
     private SpeechRecognizer recognizer;
 
     @Override
-    protected void start() {
-        super.start();
+    protected void onStart() {
+        super.onStart();
 
         new AsyncTask<Void, Void, Exception>() {
             @Override
@@ -79,8 +79,8 @@ public class PocketSphinxRecognitionService extends AbstractRecognitionService i
     }
 
     @Override
-    public void stop() {
-        super.stop();
+    public void onStop() {
+        super.onStop();
         recognizer.stop();
     }
 
@@ -117,7 +117,7 @@ public class PocketSphinxRecognitionService extends AbstractRecognitionService i
         recognizer.addListener(this);
 
         File languageModel = new File(modelsDir, language.get("languageModel"));
-        //recognizer.addNgramSearch("freespeech", languageModel);
+        recognizer.addNgramSearch("freespeech", languageModel);
     }
 
     @Override

@@ -5,7 +5,9 @@
     android:versionName="1.0" >
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.VIBRATE" />
     
     <uses-sdk
@@ -29,15 +31,31 @@
         </activity>
 
         <service
-            android:name="de.uniHamburg.informatik.continuousvoice.services.pocketSphinx.PocketSphinxRecognitionService"
+            android:name="de.uniHamburg.informatik.continuousvoice.services.recognition.pocketSphinx.PocketSphinxRecognitionService"
             android:label="PocketSphinx Voice Recognition"
             android:process="de.uniHamburg.informatik.continuousvoice.processes.PocketSphinxRecognitionProcess" >
         </service>
         
         <service
-            android:name="de.uniHamburg.informatik.continuousvoice.services.builtIn.AndroidRecognitionService"
+            android:name="de.uniHamburg.informatik.continuousvoice.services.recognition.builtIn.AndroidRecognitionService"
             android:label="Android Voice Recognition"
             android:process="de.uniHamburg.informatik.continuousvoice.processes.AndroidRecognitionService" >
+        </service>
+        
+        <service
+            android:name="de.uniHamburg.informatik.continuousvoice.services.recognition.builtIn.AndroidRecognitionService2"
+            android:label="Android Voice Recognition 2"
+            android:process="de.uniHamburg.informatik.continuousvoice.processes.AndroidRecognitionService2" >
+        </service>
+        <service
+            android:name="de.uniHamburg.informatik.continuousvoice.services.recognition.builtIn.AndroidRecognitionService3"
+            android:label="Android Voice Recognition 3"
+            android:process="de.uniHamburg.informatik.continuousvoice.processes.AndroidRecognitionService3" >
+        </service>
+        <service
+            android:name="de.uniHamburg.informatik.continuousvoice.services.recognition.webService.AbstractWebServiceRecognitionService"
+            android:label="ABSTRACT Web Service Recognition Service"
+            android:process="de.uniHamburg.informatik.continuousvoice.processes.webService.AbstractWebServiceRecognitionService" >
         </service>
     </application>
 
