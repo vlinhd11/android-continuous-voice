@@ -1,143 +1,76 @@
 package de.uniHamburg.informatik.continuousvoice.views.fragments;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import android.app.Fragment;
+import android.graphics.Color;
+import android.graphics.PorterDuff.Mode;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import de.uniHamburg.informatik.continousvoice.R;
-import de.uniHamburg.informatik.continuousvoice.services.visualizer.CDrawer;
-import de.uniHamburg.informatik.continuousvoice.services.visualizer.CSampler;
-import de.uniHamburg.informatik.continuousvoice.services.visualizer.IBufferReceiver;
+import de.uniHamburg.informatik.continuousvoice.services.sound.analysis.SoundMeter;
 
 public class VisualizerFragment extends Fragment {
 
-    private CDrawer.CDrawThread mDrawThread;
-    private CDrawer mdrawer;
-
-    private View.OnClickListener listener;
-    private Boolean m_bStart = Boolean.valueOf(false);
-    private Boolean recording;
-    private CSampler sampler;
-
+    protected static final String TAG = VisualizerFragment.class.getCanonicalName();
+    private ProgressBar progressBar;
+    private SoundMeter soundMeter;
+    private static final double precision = 1000.0;
+    private ScheduledExecutorService scheduleTaskExecutor;
+    
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.visualizer, container, false);
 
-        mdrawer = (CDrawer) view.findViewById(R.id.drawer);
-        m_bStart = Boolean.valueOf(false);
-
-        recording = false;
-        run();
+        progressBar = (ProgressBar) view.findViewById(R.id.soundlevel);
+        progressBar.getProgressDrawable().setColorFilter(Color.GREEN, Mode.MULTIPLY);
+        progressBar.setMax((int)(SoundMeter.MAXIMUM_AMPLITUDE*precision));
+        
+        startMeasurement();
 
         return view;
     }
 
-    /**
-     * Pause the visualizer when the app is paused
-     */
+    private void startMeasurement() {
+        if (soundMeter == null) {
+            soundMeter = new SoundMeter();
+        }
+        soundMeter.start();
+        if (scheduleTaskExecutor == null) {
+            scheduleTaskExecutor = Executors.newScheduledThreadPool(1);
+        }
+
+        // This schedule a runnable task every 2 minutes
+        scheduleTaskExecutor.scheduleAtFixedRate(new Runnable() {
+            public void run() {
+                progressBar.setProgress((int)(soundMeter.getAmplitude()*precision));
+            }
+        }, 0, 50, TimeUnit.MILLISECONDS);
+    }
+
     @Override
     public void onPause() {
-        System.out.println("onPause");
-        sampler.SetRun(Boolean.valueOf(false));
-        mDrawThread.setRun(Boolean.valueOf(false));
-        sampler.SetSleeping(Boolean.valueOf(true));
-        mDrawThread.SetSleeping(Boolean.valueOf(true));
-        Boolean.valueOf(false);
+        if (scheduleTaskExecutor != null) {
+            scheduleTaskExecutor.shutdown();
+        }
+        if (soundMeter != null) {
+            soundMeter.stop();
+            soundMeter = null;
+        }
         super.onPause();
     }
-
-    /**
-     * Resume the visualizer when the app resumes
-     */
+    
     @Override
     public void onResume() {
-        System.out.println("onResume");
-        int i = 0;
-        while (true) {
-            if ((sampler.GetDead2().booleanValue()) && (mdrawer.GetDead2().booleanValue())) {
-                System.out.println(sampler.GetDead2() + ", " + mdrawer.GetDead2());
-                sampler.Restart();
-                if (!m_bStart.booleanValue())
-                    mdrawer.Restart(Boolean.valueOf(true));
-                sampler.SetSleeping(Boolean.valueOf(false));
-                mDrawThread.SetSleeping(Boolean.valueOf(false));
-                m_bStart = Boolean.valueOf(false);
-                super.onResume();
-                return;
-            }
-            try {
-                Thread.sleep(500L);
-                System.out.println("Hang on..");
-                i++;
-                if (!sampler.GetDead2().booleanValue())
-                    System.out.println("sampler not DEAD!!!");
-                if (!mdrawer.GetDead2().booleanValue()) {
-                    System.out.println("mDrawer not DeAD!!");
-                    mdrawer.SetRun(Boolean.valueOf(false));
-                }
-                if (i <= 4)
-                    continue;
-                mDrawThread.SetDead2(Boolean.valueOf(true));
-            } catch (InterruptedException localInterruptedException) {
-                localInterruptedException.printStackTrace();
-            }
-        }
+        super.onResume();
+        //startMeasurement();
     }
-
-    @Override
-    public void onStart() {
-        System.out.println("onStart");
-        super.onStart();
-    }
-
-    @Override
-    public void onStop() {
-        System.out.println("onStop");
-        super.onStop();
-    }
-
-    /**
-     * Recives the buffert from the sampler
-     * 
-     * @param buffert
-     */
-    public void setBuffer(short[] paramArrayOfShort) {
-        mDrawThread = mdrawer.getThread();
-        mDrawThread.setBuffer(paramArrayOfShort);
-    }
-
-    /**
-     * Called by OnCreate to get everything up and running
-     */
-    public void run() {
-        try {
-            if (mDrawThread == null) {
-                mDrawThread = mdrawer.getThread();
-            }
-            if (sampler == null) {
-                sampler = new CSampler(new IBufferReceiver() {
-                    public void receiveBuffer(short[] paramArrayOfShort) {
-                        VisualizerFragment.this.setBuffer(paramArrayOfShort);
-                    }
-                });
-            }
-
-            mdrawer.setOnClickListener(listener);
-            if (sampler != null) {
-                try {
-                    sampler.Init();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                sampler.StartRecording();
-                sampler.StartSampling();
-            }
-        } catch (NullPointerException e) {
-            Log.e("Main_Run", "NullPointer: " + e.getMessage());
-        }
-    }
-
+    
 }

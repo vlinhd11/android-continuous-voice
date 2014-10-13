@@ -1,23 +1,25 @@
 package de.uniHamburg.informatik.continuousvoice.services.recognition.webService;
 
-import android.util.Log;
+import java.io.File;
+
+import android.content.Intent;
 import de.uniHamburg.informatik.continuousvoice.services.recognition.AbstractRecognitionService;
-import de.uniHamburg.informatik.continuousvoice.services.soundRecorder.SoundRecordingService;
+import de.uniHamburg.informatik.continuousvoice.services.sound.recorder.SoundRecordingService;
 
 //TODO abstract
 public  class AbstractWebServiceRecognitionService extends AbstractRecognitionService {
 
-    private static final String TAG = "AbstractWebServiceRecognitionService";
+    public static final String TAG = AbstractWebServiceRecognitionService.class.getCanonicalName();
     private SoundRecordingService recorder;
 
     public AbstractWebServiceRecognitionService() {
-        //recorder = new SoundRecordingService("soundfile_" + System.currentTimeMillis());
+        recorder = new SoundRecordingService("soundfile_" + System.currentTimeMillis());
     }
     
     @Override
     protected void onStart() {
         super.onStart();
-        //recorder.record();
+        recorder.record();
         addWords("start", true);
     }
     
@@ -25,8 +27,11 @@ public  class AbstractWebServiceRecognitionService extends AbstractRecognitionSe
     protected void onStop() {
         super.onStop();
         addWords("stop", true);
-        //recorder.stop();
-        Log.e(TAG, "### STOP (3)");
+        File file = recorder.stopAndReturnFile();
+        
+        Intent i = new Intent("DEBUGFILESHARE");
+        i.putExtra("filename", file.getAbsolutePath());
+        sendBroadcast(i);
     }
     
     

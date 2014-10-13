@@ -1,8 +1,6 @@
 package de.uniHamburg.informatik.continuousvoice.views.fragments;
 
 import java.util.Arrays;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import android.app.Fragment;
 import android.content.BroadcastReceiver;
@@ -26,7 +24,6 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.Toast;
 import de.uniHamburg.informatik.continousvoice.R;
 import de.uniHamburg.informatik.continuousvoice.constants.ServiceControlConstants;
 
@@ -273,7 +270,6 @@ public class RecognizerFragment extends Fragment {
     }
 
     public void stop(View view) {
-        Log.e(TAG, "### STOP (0)");
         switchState(STATE_3_DONE);
         addTextToView(" «");
         stopTimer();

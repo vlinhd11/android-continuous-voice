@@ -1,17 +1,18 @@
 package de.uniHamburg.informatik.continuousvoice;
 
+import java.io.File;
+
 import android.app.Activity;
-import android.media.AudioFormat;
-import android.media.AudioRecord;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import de.uniHamburg.informatik.continousvoice.R;
 import de.uniHamburg.informatik.continuousvoice.services.recognition.builtIn.AndroidRecognitionService;
-import de.uniHamburg.informatik.continuousvoice.services.recognition.builtIn.AndroidRecognitionService2;
-import de.uniHamburg.informatik.continuousvoice.services.recognition.builtIn.AndroidRecognitionService3;
-import de.uniHamburg.informatik.continuousvoice.services.recognition.pocketSphinx.PocketSphinxRecognitionService;
 import de.uniHamburg.informatik.continuousvoice.services.recognition.webService.AbstractWebServiceRecognitionService;
 import de.uniHamburg.informatik.continuousvoice.views.fragments.RecognizerFragment;
 import de.uniHamburg.informatik.continuousvoice.views.fragments.VisualizerFragment;
@@ -34,7 +35,21 @@ public class MainActivity extends Activity {
         //androidVoiceRecognitionFragment2 = new RecognizerFragment("Android Built-in (2)", AndroidRecognitionService2.class);
         //androidVoiceRecognitionFragment3 = new RecognizerFragment("Android Built-in (3)", AndroidRecognitionService3.class);
         
-        //visualizationFragment = new VisualizerFragment();
+        visualizationFragment = new VisualizerFragment();
+        
+        //TODO DELETEME
+        BroadcastReceiver voiceReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Intent shareIntent = new Intent();
+                shareIntent.setAction(Intent.ACTION_SEND);
+                shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(new File(intent.getStringExtra("filename"))));
+                shareIntent.setType("audio/amr");
+                Intent createChooser = Intent.createChooser(shareIntent, "Share record");
+                startActivity(createChooser);
+            }
+        };
+        registerReceiver(voiceReceiver, new IntentFilter("DEBUGFILESHARE"));
     }
 
     @Override
@@ -51,7 +66,7 @@ public class MainActivity extends Activity {
             setContentView(R.layout.activity_main);
             if (savedInstanceState == null) {
                 getFragmentManager().beginTransaction()
-                        //.add(R.id.visualizationFragmentContainer, visualizationFragment)
+                        .add(R.id.visualizationFragmentContainer, visualizationFragment)
                         .add(R.id.voiceRecognitionFragmentContainer1, androidVoiceRecognitionFragment)
                         .add(R.id.voiceRecognitionFragmentContainer2, googleSpeechApiVoiceRecognitionFragment)
                         //.add(R.id.voiceRecognitionFragmentContainer3, androidVoiceRecognitionFragment3)

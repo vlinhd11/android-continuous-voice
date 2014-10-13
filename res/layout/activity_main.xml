@@ -12,8 +12,9 @@
 	<LinearLayout
         android:id="@+id/visualizationFragmentContainer"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/visualizer_height"
+        android:layout_height="wrap_content"
         android:orientation="vertical" />
+	<!--  android:layout_height="@dimen/visualizer_height" -->
 
     <LinearLayout
         android:id="@+id/voiceRecognitionFragmentContainer1"

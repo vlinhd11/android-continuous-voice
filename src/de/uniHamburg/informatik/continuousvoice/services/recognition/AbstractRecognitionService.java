@@ -29,7 +29,6 @@ public abstract class AbstractRecognitionService extends Service implements IRec
 
             @Override
             public void stop() {
-                Log.e(TAG, "### STOP (1)");
                 onStop();
             }
 
@@ -46,7 +45,6 @@ public abstract class AbstractRecognitionService extends Service implements IRec
      * remember to call super.stop();
      */
     protected void onStop() {
-        Log.e(TAG, "### STOP (2)");
         running = false;
     }
     

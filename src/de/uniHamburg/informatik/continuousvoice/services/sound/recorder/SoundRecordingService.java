@@ -1,12 +1,14 @@
-package de.uniHamburg.informatik.continuousvoice.services.soundRecorder;
+package de.uniHamburg.informatik.continuousvoice.services.sound.recorder;
 
 import java.io.File;
 import java.io.IOException;
 
+import android.app.Service;
+import android.content.Intent;
 import android.media.MediaRecorder;
+import android.net.Uri;
 import android.os.Environment;
 import android.util.Log;
-import android.widget.Toast;
 import de.uniHamburg.informatik.continuousvoice.services.recognition.AbstractRecognitionService;
 
 public class SoundRecordingService extends AbstractRecognitionService {
@@ -39,11 +41,21 @@ public class SoundRecordingService extends AbstractRecognitionService {
             currentRecorder.stop();
             currentRecorder.reset();
             currentRecorder.release();
-
-            Log.e(TAG, "stopped -file: " + currentFileName);            
             
+            File file = new File(currentFileName);
+            Log.i(TAG, "stopped recording - file: " +
+                    currentFileName +
+                    " (exists: " +
+                    file.exists() +
+                    ")");            
             currentFileName = null;
         }
+    }
+    
+    public File stopAndReturnFile() {
+        File file = new File(currentFileName);
+        stop();
+        return file;
     }
 
     private MediaRecorder createRecorder() throws IllegalStateException, IOException {
@@ -63,12 +75,15 @@ public class SoundRecordingService extends AbstractRecognitionService {
 
     private String getNewFileName() {
         recorderIteration++;
-        File dir = Environment.getExternalStorageDirectory(); 
+        File dir;
+        //public dir
+        dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        //private dir
+        //dir = getApplicationContext().getExternalFilesDir(null);
         String basePath = dir.getAbsolutePath();
-        String suffix = "3gp";
+        String suffix = "amr";
 
         String msg = basePath + "/" + baseFileName + "_" + recorderIteration + "." + suffix;
-        Log.e(TAG, msg);
         return msg;
     }
 }
