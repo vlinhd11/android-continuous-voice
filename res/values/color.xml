@@ -5,6 +5,6 @@
     <color name="black">#000000</color>
     
     <color name="main">#e74c3c</color>
-    <color name="foreground">@color/black</color>
+    <color name="foreground">#333333</color>
 
 </resources>

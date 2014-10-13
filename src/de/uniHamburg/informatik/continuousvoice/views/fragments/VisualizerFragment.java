@@ -30,7 +30,7 @@ public class VisualizerFragment extends Fragment {
         View view = inflater.inflate(R.layout.visualizer, container, false);
 
         progressBar = (ProgressBar) view.findViewById(R.id.soundlevel);
-        progressBar.getProgressDrawable().setColorFilter(Color.GREEN, Mode.MULTIPLY);
+        progressBar.getProgressDrawable().setColorFilter(Color.parseColor("#333333"), Mode.SRC);
         progressBar.setMax((int)(SoundMeter.MAXIMUM_AMPLITUDE*precision));
         
         startMeasurement();
