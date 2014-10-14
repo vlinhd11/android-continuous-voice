@@ -13,6 +13,14 @@ Part of my master thesis in winter term 2014/2015:
 ```
 
 ##Changelog
+
+###Okt 14.
+- Removed PocketSphinx
+- Framework for HTTP web service recognizer implementations (for the coming soon: [Google Speech To Text API v2](https://github.com/gillesdemey/google-speech-v2) Recognition Service)
+- Audio Recorder that creates continuously small files with minimal downtime
+- Amplitude visualizer   
+- Enhanced Design
+
 ###Sep 24.
 - implement basic PocketSphinx Service with (Voxforge german language model)[http://sourceforge.net/projects/cmusphinx/files/Acoustic%20and%20Language%20Models/]  
 - now simultaneous voice recognition is possible (but the PocketSphinx recognition quality is very low at the moment)
