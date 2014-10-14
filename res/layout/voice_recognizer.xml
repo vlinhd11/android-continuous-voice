@@ -16,7 +16,6 @@
         android:paddingRight="@dimen/header_vertical_spacing" >
     
         <!-- Title -->
-
             <TextView
                 android:id="@+id/voiceRecognizerTitle"
                 android:layout_width="wrap_content"

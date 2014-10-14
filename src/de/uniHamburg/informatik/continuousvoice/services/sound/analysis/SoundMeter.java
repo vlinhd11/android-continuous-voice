@@ -3,10 +3,12 @@ package de.uniHamburg.informatik.continuousvoice.services.sound.analysis;
 import java.io.IOException;
 
 import android.media.MediaRecorder;
+import android.util.Log;
 
 public class SoundMeter {
 
     public static final double MAXIMUM_AMPLITUDE = (32768/2700.0); //from: http://stackoverflow.com/a/15613051/1686216
+    private static final String TAG = SoundMeter.class.getCanonicalName();
     private MediaRecorder mRecorder = null;
 
     public SoundMeter() {
@@ -39,8 +41,11 @@ public class SoundMeter {
     }
 
     public double getAmplitude() {
+        Log.i(TAG, "amplitude is: ...");
         if (mRecorder != null) {
-            return (mRecorder.getMaxAmplitude() / 2700.0);
+            double d = mRecorder.getMaxAmplitude() / 2700.0;
+            Log.i(TAG, "              " + d);
+            return d;
         } else {
             return 0;
         }

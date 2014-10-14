@@ -5,14 +5,14 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import android.app.Fragment;
-import android.graphics.Color;
-import android.graphics.PorterDuff.Mode;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import de.uniHamburg.informatik.continousvoice.R;
 import de.uniHamburg.informatik.continuousvoice.services.sound.analysis.SoundMeter;
 
@@ -20,18 +20,23 @@ public class VisualizerFragment extends Fragment {
 
     protected static final String TAG = VisualizerFragment.class.getCanonicalName();
     private ProgressBar progressBar;
+    private TextView aplitudeText;
     private SoundMeter soundMeter;
     private static final double precision = 1000.0;
     private ScheduledExecutorService scheduleTaskExecutor;
-    
+    private double max;
+    private Handler handler;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.visualizer, container, false);
 
+        aplitudeText = (TextView) view.findViewById(R.id.amplitudeText);
         progressBar = (ProgressBar) view.findViewById(R.id.soundlevel);
-        progressBar.getProgressDrawable().setColorFilter(Color.parseColor("#333333"), Mode.SRC);
-        progressBar.setMax((int)(SoundMeter.MAXIMUM_AMPLITUDE*precision));
+        max = SoundMeter.MAXIMUM_AMPLITUDE * precision;
+        progressBar.setMax(((int) max) + 1);
+        handler = new Handler();
         
         startMeasurement();
 
@@ -47,12 +52,20 @@ public class VisualizerFragment extends Fragment {
             scheduleTaskExecutor = Executors.newScheduledThreadPool(1);
         }
 
-        // This schedule a runnable task every 2 minutes
         scheduleTaskExecutor.scheduleAtFixedRate(new Runnable() {
+
             public void run() {
-                progressBar.setProgress((int)(soundMeter.getAmplitude()*precision));
+                final double amp = soundMeter.getAmplitude() * precision;
+                final int percent = (int) ((amp * 100.0) / max);
+                //Android Dev Rule 42: Use a handler to update UI stuff from a timer task
+                handler.post(new Runnable() {
+                    public void run() {
+                        progressBar.setProgress((int) amp);
+                        aplitudeText.setText(percent + "%");
+                    }
+                });
             }
-        }, 0, 50, TimeUnit.MILLISECONDS);
+        }, 0, 80, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -66,11 +79,11 @@ public class VisualizerFragment extends Fragment {
         }
         super.onPause();
     }
-    
+
     @Override
     public void onResume() {
         super.onResume();
-        //startMeasurement();
+        // startMeasurement();
     }
-    
+
 }

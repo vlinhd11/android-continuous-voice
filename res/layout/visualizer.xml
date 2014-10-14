@@ -1,10 +1,10 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/visualizer"
+    android:orientation="horizontal"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:background="@color/main"
-    android:padding="8dp" >
+    android:layout_height="wrap_content"
+    android:background="@color/main" >
 
     <!--
          <de.uniHamburg.informatik.continuousvoice.services.visualizer.CDrawer
@@ -17,12 +17,23 @@
         
         android:soundEffectsEnabled="true" />
     -->
+    
+    <TextView 
+        android:id="@+id/amplitudeText"
+        android:layout_width="48dp"
+        android:layout_height="28dp" 
+        android:text="amp"
+        android:gravity="right"
+        android:textSize="10sp"
+        android:padding="8dp"
+        />
 
     <ProgressBar
         android:id="@+id/soundlevel"
         style="@android:style/Widget.ProgressBar.Horizontal"
         android:layout_width="fill_parent"
-        android:layout_height="8dp"
+        android:layout_height="28dp"
+        android:padding="10dp"
         android:background="@color/main"/>
 
-</RelativeLayout>
+</LinearLayout>
