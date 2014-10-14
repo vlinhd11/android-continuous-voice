@@ -3,7 +3,6 @@ package de.uniHamburg.informatik.continuousvoice.services.sound.analysis;
 import java.io.IOException;
 
 import android.media.MediaRecorder;
-import android.util.Log;
 
 public class SoundMeter {
 

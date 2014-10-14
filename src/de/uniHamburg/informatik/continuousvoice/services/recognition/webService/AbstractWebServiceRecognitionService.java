@@ -1,25 +1,37 @@
 package de.uniHamburg.informatik.continuousvoice.services.recognition.webService;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URI;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import android.util.Log;
+import org.apache.http.HttpResponse;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.auth.BasicScheme;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.protocol.HTTP;
+
 import de.uniHamburg.informatik.continuousvoice.services.recognition.AbstractRecognitionService;
 import de.uniHamburg.informatik.continuousvoice.services.sound.recorder.SoundRecordingService;
 
-//TODO abstract
-public class AbstractWebServiceRecognitionService extends AbstractRecognitionService {
+public abstract class AbstractWebServiceRecognitionService extends AbstractRecognitionService {
 
     public static final String TAG = AbstractWebServiceRecognitionService.class.getCanonicalName();
     private SoundRecordingService recorder;
     private boolean active = false;
     private ScheduledExecutorService scheduleTaskExecutor;
     public final static int RECORDING_DURATION = 13;
+    
 
-    public AbstractWebServiceRecognitionService() {
-        recorder = new SoundRecordingService("soundfile_" + System.currentTimeMillis());
+    public AbstractWebServiceRecognitionService(String baseName) {
+        recorder = new SoundRecordingService(baseName);
     }
 
     @Override
@@ -42,6 +54,8 @@ public class AbstractWebServiceRecognitionService extends AbstractRecognitionSer
         // Intent i = new Intent("DEBUGFILESHARE");
         // i.putExtra("filename", file.getAbsolutePath());
         // sendBroadcast(i);
+        
+        //transcribe
     }
 
     private void startSplitting() {
@@ -53,7 +67,7 @@ public class AbstractWebServiceRecognitionService extends AbstractRecognitionSer
             public void run() {
                 if (active) {
                     File f = recorder.split();
-                    Log.w(TAG, f.getAbsolutePath());
+                    addWords(transcribe(f));
                 } else {
                     scheduleTaskExecutor.shutdown();
                 }
@@ -61,4 +75,11 @@ public class AbstractWebServiceRecognitionService extends AbstractRecognitionSer
         }, (RECORDING_DURATION - 1), RECORDING_DURATION, TimeUnit.SECONDS);
     }
 
+    protected String transcribe(File f) {
+        String result = request(f);
+        return result;
+    }
+
+    public abstract String request(File audioFile);
+    
 }
