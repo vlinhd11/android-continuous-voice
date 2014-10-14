@@ -12,24 +12,30 @@ public class SoundMeter {
     private MediaRecorder mRecorder = null;
 
     public SoundMeter() {
+        mRecorder = createRecorder();
+    }
+
+    private MediaRecorder createRecorder() {
+        MediaRecorder recorder = new MediaRecorder();
+        recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+        recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+        recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+        recorder.setOutputFile("/dev/null");
         try {
-            mRecorder = new MediaRecorder();
-            mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-            mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-            mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-            mRecorder.setOutputFile("/dev/null");
-            mRecorder.prepare();
+            recorder.prepare();
         } catch (IllegalStateException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return recorder;
     }
 
     public void start() {
-        if (mRecorder != null) {
-            mRecorder.start();
+        if (mRecorder == null) {
+            mRecorder = createRecorder();
         }
+        mRecorder.start();
     }
 
     public void stop() {
@@ -41,11 +47,8 @@ public class SoundMeter {
     }
 
     public double getAmplitude() {
-        Log.i(TAG, "amplitude is: ...");
         if (mRecorder != null) {
-            double d = mRecorder.getMaxAmplitude() / 2700.0;
-            Log.i(TAG, "              " + d);
-            return d;
+            return mRecorder.getMaxAmplitude() / 2700.0;
         } else {
             return 0;
         }

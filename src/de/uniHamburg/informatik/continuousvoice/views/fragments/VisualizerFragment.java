@@ -26,6 +26,7 @@ public class VisualizerFragment extends Fragment {
     private ScheduledExecutorService scheduleTaskExecutor;
     private double max;
     private Handler handler;
+    private boolean running = false;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -37,23 +38,19 @@ public class VisualizerFragment extends Fragment {
         max = SoundMeter.MAXIMUM_AMPLITUDE * precision;
         progressBar.setMax(((int) max) + 1);
         handler = new Handler();
-        
+        soundMeter = new SoundMeter();
         startMeasurement();
 
         return view;
     }
 
     private void startMeasurement() {
-        if (soundMeter == null) {
-            soundMeter = new SoundMeter();
-        }
         soundMeter.start();
         if (scheduleTaskExecutor == null) {
             scheduleTaskExecutor = Executors.newScheduledThreadPool(1);
         }
 
         scheduleTaskExecutor.scheduleAtFixedRate(new Runnable() {
-
             public void run() {
                 final double amp = soundMeter.getAmplitude() * precision;
                 final int percent = (int) ((amp * 100.0) / max);
@@ -66,16 +63,20 @@ public class VisualizerFragment extends Fragment {
                 });
             }
         }, 0, 80, TimeUnit.MILLISECONDS);
+        running = true;
     }
 
     @Override
     public void onPause() {
         if (scheduleTaskExecutor != null) {
             scheduleTaskExecutor.shutdown();
+            scheduleTaskExecutor = null;
+            Log.i(TAG, "timer: shutdown");
         }
         if (soundMeter != null) {
             soundMeter.stop();
-            soundMeter = null;
+            running = false;
+            Log.i(TAG, "soundmeter: stop");
         }
         super.onPause();
     }
@@ -83,7 +84,9 @@ public class VisualizerFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        // startMeasurement();
+        if (!running) {
+            startMeasurement();
+        }
     }
 
 }
