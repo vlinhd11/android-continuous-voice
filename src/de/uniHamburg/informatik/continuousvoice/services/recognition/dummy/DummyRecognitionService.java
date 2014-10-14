@@ -13,7 +13,7 @@ public class DummyRecognitionService extends AbstractRecognitionService {
             synchronized (this) {
                 try {
                     wait(endTime - System.currentTimeMillis());
-                    addWords("this is a test", true);
+                    addWords("this is a test");
                 } catch (Exception e) {
                 }
             }

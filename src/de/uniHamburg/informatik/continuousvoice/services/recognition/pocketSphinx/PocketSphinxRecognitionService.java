@@ -129,7 +129,7 @@ public class PocketSphinxRecognitionService extends AbstractRecognitionService i
     public void onResult(Hypothesis hypothesis) {
         if (hypothesis != null) {
             String text = hypothesis.getHypstr();
-            addWords(text, true);
+            addWords(text);
         }
     }
 

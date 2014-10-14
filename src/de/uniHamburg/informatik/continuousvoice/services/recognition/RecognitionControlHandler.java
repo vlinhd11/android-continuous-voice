@@ -4,13 +4,12 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.RemoteException;
-import android.util.Log;
 import de.uniHamburg.informatik.continuousvoice.constants.ServiceControlConstants;
 import de.uniHamburg.informatik.continuousvoice.services.IServiceControl;
 
 public class RecognitionControlHandler extends Handler {
 
-    private static final String TAG = "RecognitionControlHandler";
+    public static final String TAG = RecognitionControlHandler.class.getCanonicalName();
     private IServiceControl recognitionControl;
 
     public RecognitionControlHandler(IServiceControl recognitionControl) {
@@ -20,7 +19,6 @@ public class RecognitionControlHandler extends Handler {
     @Override
     public void handleMessage(Message msg) {
         int messageType = msg.what;
-        Log.i(TAG, "MESSAGE received: " + messageType);
         
         switch (messageType) {
         case ServiceControlConstants.START: {

@@ -7,7 +7,7 @@ import android.os.IBinder;
 import android.os.Messenger;
 import android.util.Log;
 
-public abstract class AbstractRecognitionService extends Service implements IRecognitionService {
+public abstract class AbstractRecognitionService extends Service {
 
     private static final String TAG = "AbstractRecognitionService";
     private Messenger messenger;
@@ -72,7 +72,7 @@ public abstract class AbstractRecognitionService extends Service implements IRec
         Log.i(TAG, "ON BIND");
         broadcastIdentifier = intent.getStringExtra("broadcastIdentifier");
         if (broadcastIdentifier == null) {
-            Log.e(TAG, "missing broadcastIdentifier extra in Service intent");
+            Log.e(TAG, "missing \"broadcastIdentifier\" extra in Service intent");
         }
         
         return messenger.getBinder();
@@ -84,15 +84,12 @@ public abstract class AbstractRecognitionService extends Service implements IRec
         running = false;
     }    
     
-    protected void addWords(String words, boolean sendBroadcast) {
+    protected void addWords(String words) {
         recognizedText += " " + words;
         
-        if (sendBroadcast) {
-            Intent i = new Intent(broadcastIdentifier);
-            i.putExtra("words", words);
-            sendBroadcast(i);
-            Log.i(TAG, "SEND BROADCAST");
-        }
+        Intent i = new Intent(broadcastIdentifier);
+        i.putExtra("words", words);
+        sendBroadcast(i);
     }
     
     /**

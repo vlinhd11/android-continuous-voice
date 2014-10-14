@@ -45,7 +45,7 @@ public class AndroidRecognitionService extends AbstractRecognitionService {
             if (results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION) != null) {
                 String chunk = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION).get(0);
                 if (chunk != null) {
-                    addWords(chunk, true);
+                    addWords(chunk);
                 }
             }
         }
