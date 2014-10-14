@@ -54,3 +54,6 @@ local.properties
 
 # TeXlipse plugin
 .texlipse
+
+#private key file
+res/values/keys.xml
