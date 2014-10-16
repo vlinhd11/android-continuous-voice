@@ -11,9 +11,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import de.uniHamburg.informatik.continousvoice.R;
 import de.uniHamburg.informatik.continuousvoice.services.recognition.builtIn.AndroidRecognitionService;
-import de.uniHamburg.informatik.continuousvoice.services.recognition.webService.AbstractWebServiceRecognitionService;
+import de.uniHamburg.informatik.continuousvoice.services.recognition.webService.GoogleWebServiceRecognitionService;
 import de.uniHamburg.informatik.continuousvoice.views.fragments.RecognizerFragment;
 import de.uniHamburg.informatik.continuousvoice.views.fragments.VisualizerFragment;
 
@@ -29,7 +28,7 @@ public class MainActivity extends Activity {
     public void createServices() {
         androidVoiceRecognitionFragment = new RecognizerFragment("Android Built-in", AndroidRecognitionService.class);
 
-        googleSpeechApiVoiceRecognitionFragment = new RecognizerFragment("Google Speech-To-text API", AbstractWebServiceRecognitionService.class);
+        googleSpeechApiVoiceRecognitionFragment = new RecognizerFragment("Google Speech-To-text API", GoogleWebServiceRecognitionService.class);
         
         //sphinxVoiceRecognitionFragment = new RecognizerFragment("PocketSphinx", PocketSphinxRecognitionService.class);
         //androidVoiceRecognitionFragment2 = new RecognizerFragment("Android Built-in (2)", AndroidRecognitionService2.class);

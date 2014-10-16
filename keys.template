@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+	<!-- Please get your key for the Google Web Service Recognition from the Google Developers Console: https://console.developers.google.com/ -->
+    <string name="googleApiKey">GOOGLEKEY</string>
+
+</resources>

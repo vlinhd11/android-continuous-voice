@@ -1,7 +1,5 @@
 package de.uniHamburg.informatik.continuousvoice.views.fragments;
 
-import java.util.Arrays;
-
 import android.app.Fragment;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -24,7 +22,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import de.uniHamburg.informatik.continousvoice.R;
+import de.uniHamburg.informatik.continuousvoice.R;
 import de.uniHamburg.informatik.continuousvoice.constants.ServiceControlConstants;
 
 public class RecognizerFragment extends Fragment {
@@ -142,6 +140,7 @@ public class RecognizerFragment extends Fragment {
             }
         }
     };
+
     private void startTimer() {
         running = true;
         handler.postDelayed(runnable, 1000);
@@ -253,39 +252,37 @@ public class RecognizerFragment extends Fragment {
     private void addTextToView(String toAdd) {
         contentText.append(" " + toAdd);
         completeText.replaceAll("\\s+", " ");
-        Log.e("", Arrays.toString(completeText.trim().split("\\s+")));
         words = completeText.trim().split("\\s+").length;
         updateWordCount();
         scrollDown();
     }
 
     public void play(View view) {
-        switchState(STATE_2_WORKING);
-        addTextToView("» ");
-
-        resetTime();
-        startTimer();
-
-        send(ServiceControlConstants.START);
+        if (send(ServiceControlConstants.START)) {
+            switchState(STATE_2_WORKING);
+            resetTime();
+            startTimer();
+        }
     }
 
     public void stop(View view) {
-        switchState(STATE_3_DONE);
-        addTextToView(" «");
-        stopTimer();
-        send(ServiceControlConstants.STOP);
+        if (send(ServiceControlConstants.STOP)) {
+            switchState(STATE_3_DONE);
+            stopTimer();
+        }
     }
 
     public void clear(View view) {
-        switchState(STATE_1_READY);
-        stopTimer();
-        resetTime();
-        updateTimeText();
-        completeText = "";
-        words = 0;
-        updateWordCount();
-        send(ServiceControlConstants.RESET);
-        contentText.setText("");
+        if (send(ServiceControlConstants.RESET)) {
+            switchState(STATE_1_READY);
+            stopTimer();
+            resetTime();
+            updateTimeText();
+            completeText = "";
+            words = 0;
+            updateWordCount();
+            contentText.setText("");
+        }
     }
 
     public void share(View view) {
@@ -296,14 +293,16 @@ public class RecognizerFragment extends Fragment {
         startActivity(sendIntent);
     }
 
-    private void send(int code) {
+    private boolean send(int code) {
         Message msg = Message.obtain(null, code);
         msg.replyTo = new Messenger(responseHandler);
 
         try {
             messenger.send(msg);
+            return true;
         } catch (RemoteException e) {
             Log.e(TAG, "Could not send code " + code + ". " + e.getMessage());
+            return false;
         }
     }
 

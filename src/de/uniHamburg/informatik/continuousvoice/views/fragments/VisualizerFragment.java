@@ -13,7 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import de.uniHamburg.informatik.continousvoice.R;
+import de.uniHamburg.informatik.continuousvoice.R;
 import de.uniHamburg.informatik.continuousvoice.services.sound.analysis.SoundMeter;
 
 public class VisualizerFragment extends Fragment {

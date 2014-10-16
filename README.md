@@ -43,5 +43,6 @@ Part of my master thesis in winter term 2014/2015:
 - clone this project
 - open with Android IDE (Eclipse)
 - You also need to have Eclipse Java development tools plugin installed, if you are using stock ADT from eclipse, go to Help→Install New Software. Select Eclipse Repository and install from Programming Languages section “Eclipse Java Development Tools”. (from: [PocketSphinx Tutorial for Android](http://cmusphinx.sourceforge.net/wiki/tutorialandroid))
+- move and rename the `/keys.template` to `/res/values/keys.xml` and set your API keys there
 - build/compile with Android v16
 - launch

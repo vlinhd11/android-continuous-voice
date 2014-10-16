@@ -1,14 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="de.uniHamburg.informatik.continousvoice"
+    package="de.uniHamburg.informatik.continuousvoice"
     android:versionCode="1"
     android:versionName="1.0" >
 
+    <!-- ### PERMISSIONS -->
+    <!-- temporarily store audio records, store pocketsphinx files -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <!-- needed to ensure audio can be recorded even though a bluetooth audio device is connected -->
     <uses-permission android:name="android.permission.BLUETOOTH" />
+	<!-- obviously -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- turn off beeping for built-in recognition -->
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
-    <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- send audio files to the recognizer web services -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- PERMISSIONS ### -->
     
     <uses-sdk
         android:minSdkVersion="16"
@@ -53,9 +60,9 @@
             android:process="de.uniHamburg.informatik.continuousvoice.processes.AndroidRecognitionService3" >
         </service>
         <service
-            android:name="de.uniHamburg.informatik.continuousvoice.services.recognition.webService.AbstractWebServiceRecognitionService"
+            android:name="de.uniHamburg.informatik.continuousvoice.services.recognition.webService.GoogleWebServiceRecognitionService"
             android:label="ABSTRACT Web Service Recognition Service"
-            android:process="de.uniHamburg.informatik.continuousvoice.processes.webService.AbstractWebServiceRecognitionService" >
+            android:process="de.uniHamburg.informatik.continuousvoice.processes.webService.GoogleWebServiceRecognitionService" >
         </service>
     </application>
 
