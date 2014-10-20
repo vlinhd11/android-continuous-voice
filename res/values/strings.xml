@@ -7,6 +7,6 @@
     <string name="minutes">%1$s</string>
     <string name="words">%1$s words</string>
     
-    <string name="fragment_hint">Press ▶ to activate\n%1$s Voice Recogniton</string>
+    <string name="fragment_hint">1 Choose recognition service\n2 Press ▶ to transcribe</string>
 
 </resources>

@@ -139,7 +139,7 @@ public class RecognizerFragment extends Fragment {
         return view;
     }
 
-    private void bindToService(String serviceClassName) {
+    private boolean bindToService(String serviceClassName) {
         unbindFromService();
 
         try {
@@ -155,6 +155,7 @@ public class RecognizerFragment extends Fragment {
             Toast.makeText(RecognizerFragment.this.getActivity(),
                     "Could not switch to " + serviceClassName + "\n" + e.getMessage(), Toast.LENGTH_LONG).show();
         }
+        return bound;
     }
 
     private void unbindFromService() {
@@ -213,10 +214,14 @@ public class RecognizerFragment extends Fragment {
                         getResources().getIdentifier(title.replace(' ', '_'), "string",
                                 "de.uniHamburg.informatik.continuousvoice"));
 
-                Toast.makeText(RecognizerFragment.this.getActivity(), "title: " + title + "\nclass:" + className,
-                        Toast.LENGTH_LONG).show();
-
-                bindToService(className);
+                // eg disable buttons
+                String notificationText;
+                if (bindToService(className)) {
+                    notificationText = title + " connection ready.";
+                } else {
+                    notificationText = "ERROR\nCould not connect to " + className;
+                }
+                Toast.makeText(RecognizerFragment.this.getActivity(), notificationText, Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -246,6 +251,7 @@ public class RecognizerFragment extends Fragment {
     }
 
     private void resetTexts() {
+        contentText.setHint(R.string.fragment_hint);
         timeText.setText(String.format(minutesStringSchema, "00:00:00"));
         wordCountText.setText(String.format(wordsStringSchema, "0"));
     }
