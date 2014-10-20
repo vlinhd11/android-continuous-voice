@@ -57,7 +57,7 @@ public class AndroidRecognitionService extends AbstractRecognitionService {
         public void onReadyForSpeech(Bundle params) {
             Log.d(TAG, "onReadyForSpeech");
         }
-        
+
     };
 
     @Override
@@ -118,15 +118,16 @@ public class AndroidRecognitionService extends AbstractRecognitionService {
      * Fire an intent to start the voice recognition process.
      */
     public void startVoiceRecognitionCycle() {
-        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-        getSpeechRecognizer().startListening(intent);
-        setStatus("listening");
+        if (running) {
+            Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+            getSpeechRecognizer().startListening(intent);
+            setStatus("listening");
+        }
     }
-    
+
     @Override
-    public void onDestroy()
-    {
+    public void onDestroy() {
         onStop();
         super.onDestroy();
     }

@@ -18,6 +18,7 @@ public class SoundRecordingService extends AbstractRecognitionService {
 
     private int recorderIteration = 0;
     private String baseFileName;
+    private boolean running = false;
 
     public SoundRecordingService(String baseFileName) {
         this.baseFileName = baseFileName;
@@ -30,7 +31,7 @@ public class SoundRecordingService extends AbstractRecognitionService {
     }
 
     public void start() {
-        currentRecorder.start();
+        startRecorder(currentRecorder);
     }
 
     public void terminate() {
@@ -98,7 +99,7 @@ public class SoundRecordingService extends AbstractRecognitionService {
                 recorder.stop();
                 recorder.reset();
                 recorder.release();
-                
+                running = false;
                 // DEBUG
                 Log.i(TAG, "stopped recording - file: " + currentFileName + " (exists: " + new File(currentFileName).exists() + ")");
             }
@@ -109,11 +110,13 @@ public class SoundRecordingService extends AbstractRecognitionService {
 
     private void startRecorder(MediaRecorder recorder) {
         try {
-            if (recorder != null) {
+            if (!running && recorder != null) {
                 recorder.start();
+                running = true;
             }
         } catch(IllegalStateException e) {
             //already started
+            Log.e(TAG, "started? " + e.getMessage());
         }
     }
 }

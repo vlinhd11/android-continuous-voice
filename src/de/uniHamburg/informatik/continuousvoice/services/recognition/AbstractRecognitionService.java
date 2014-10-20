@@ -11,7 +11,7 @@ public abstract class AbstractRecognitionService extends Service {
 
     private static final String TAG = AbstractRecognitionService.class.getName();
     private Messenger messenger;
-    private boolean running = false;
+    protected boolean running = false;
     private String recognizedText = "";
     private String broadcastIdentifier;
     private String statusBroadcastIdentifier;

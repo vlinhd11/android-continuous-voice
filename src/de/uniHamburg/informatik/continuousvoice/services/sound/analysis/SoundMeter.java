@@ -8,7 +8,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import android.media.MediaRecorder;
-import android.util.Log;
 
 public class SoundMeter {
 
@@ -26,7 +25,7 @@ public class SoundMeter {
     public static final int SILENT = 0;
     public static final int LOUD = 1;
     
-    public static final double SILENCE_THRESHOLD = 2.5;
+    public static final double SILENCE_THRESHOLD = 2.0;
     public static final int SILENCE_TIME = 2000;
     private static final long SILENCE_POLLING_TIME = 30;
     
