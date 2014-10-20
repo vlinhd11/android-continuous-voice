@@ -16,23 +16,10 @@
         android:orientation="vertical" />
 
     <LinearLayout
-        android:id="@+id/voiceRecognitionFragmentContainer1"
+        android:id="@+id/voiceRecognitionFragmentContainer"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1.0"
         android:orientation="vertical" />
 
-    <LinearLayout
-        android:id="@+id/voiceRecognitionFragmentContainer2"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1.0"
-        android:orientation="vertical" />
-
-   <!--  <LinearLayout
-        android:id="@+id/voiceRecognitionFragmentContainer3"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1.0"
-        android:orientation="vertical" /> -->
 </LinearLayout>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="services_array">
+        <item>Android Speech Recognizer</item>
+        <item>Google Speech API</item>
+    </string-array>
+    
+    <!-- IMPORTANT: Please specify the classes here. The name has to match the item string, replacing spaces to underscores -->
+    <string name="Android_Speech_Recognizer">de.uniHamburg.informatik.continuousvoice.services.recognition.builtIn.AndroidRecognitionService</string>
+    <string name="Google_Speech_API">de.uniHamburg.informatik.continuousvoice.services.recognition.webService.GoogleWebServiceRecognitionService</string>
+    
+</resources>

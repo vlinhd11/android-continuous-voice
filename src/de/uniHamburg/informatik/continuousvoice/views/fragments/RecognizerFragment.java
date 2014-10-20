@@ -19,32 +19,41 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ScrollView;
+import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 import de.uniHamburg.informatik.continuousvoice.R;
 import de.uniHamburg.informatik.continuousvoice.constants.ServiceControlConstants;
 
 public class RecognizerFragment extends Fragment {
 
-    private String name;
-    private String contentHintString;
+    private static final String TAG = RecognizerFragment.class.getName();
     private String minutesStringSchema;
     private String wordsStringSchema;
-    private Class<?> serviceClazz;
     private boolean bound = false;
     private Messenger messenger;
-    private String broadcastIdentifier;
+    private static final String BROADCAST_IDENTIFIER = "voicerecognition.VOICE_RECOGNIZED";
+    private static final String STATUS_BROADCAST_IDENTIFIER = "voicerecognition.STATUS";
     private int seconds = 0;
     private String completeText = "";
+    private int words = 0;
 
     private ImageButton playBtn;
     private ImageButton stopBtn;
     private ImageButton clearBtn;
     private ImageButton shareBtn;
 
-    private TextView titleText;
+    private Spinner serviceSpinner;
     private TextView timeText;
+    private TextView statusTextLine1;
+    private TextView statusTextLine2;
     private TextView wordCountText;
     private TextView contentText;
     private ScrollView scrollWrapper;
@@ -53,13 +62,20 @@ public class RecognizerFragment extends Fragment {
     public static final short STATE_1_READY = 1;
     public static final short STATE_2_WORKING = 2;
     public static final short STATE_3_DONE = 3;
-    private static final String TAG = RecognizerFragment.class.getCanonicalName();
 
-    public RecognizerFragment(String name, Class<?> serviceClazz) {
-        this.name = name;
-        this.serviceClazz = serviceClazz;
-        this.broadcastIdentifier = serviceClazz.toString() + ".VOICE_RECOGNIZED";
-    }
+    private Handler handler = new Handler();
+    private boolean running = false;
+    private Intent serviceIntent;
+    private Runnable runnable = new Runnable() {
+        @Override
+        public void run() {
+            if (running) {
+                seconds++;
+                updateTimeText();
+                handler.postDelayed(this, 1000);
+            }
+        }
+    };
 
     /** Defines callbacks for service binding, passed to bindService() */
     private ServiceConnection serviceConnection = new ServiceConnection() {
@@ -81,16 +97,13 @@ public class RecognizerFragment extends Fragment {
 
         @Override
         public void handleMessage(Message msg) {
-            int respCode = msg.what;
-
-            switch (respCode) {
+            switch (msg.what) {
             case ServiceControlConstants.SERVICE_CONTROL_RESPONSE:
                 // boolean result = msg.getData().getBoolean("success");
                 // addTextToView("success: " + result);
             }
         }
     };
-    private int words;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -102,21 +115,22 @@ public class RecognizerFragment extends Fragment {
         clearBtn = (ImageButton) view.findViewById(R.id.voiceRecognizerBtnClear);
         shareBtn = (ImageButton) view.findViewById(R.id.voiceRecognizerBtnShare);
 
-        titleText = (TextView) view.findViewById(R.id.voiceRecognizerTitle);
         timeText = (TextView) view.findViewById(R.id.voiceRecognizerTime);
         wordCountText = (TextView) view.findViewById(R.id.voiceRecognizerWordCount);
         contentText = (TextView) view.findViewById(R.id.voiceRecognizerContent);
         scrollWrapper = (ScrollView) view.findViewById(R.id.voiceRecognizerScrollWrapper);
+        statusTextLine1 = (TextView) view.findViewById(R.id.voiceRecognizerState1);
+        statusTextLine2 = (TextView) view.findViewById(R.id.voiceRecognizerState2);
+
+        serviceSpinner = (Spinner) view.findViewById(R.id.serviceSpinner);
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getActivity(), R.array.services_array,
+                android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        serviceSpinner.setAdapter(adapter);
 
         Resources res = getResources();
-        contentHintString = String.format(res.getString(R.string.fragment_hint), name);
         minutesStringSchema = res.getString(R.string.minutes);
         wordsStringSchema = res.getString(R.string.words);
-
-        // Bind to service
-        Intent intent = new Intent(getActivity(), serviceClazz);
-        intent.putExtra("broadcastIdentifier", broadcastIdentifier);
-        getActivity().bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
 
         createListeners();
         resetTexts();
@@ -125,21 +139,32 @@ public class RecognizerFragment extends Fragment {
         return view;
     }
 
-    /*********
-     * Timer *
-     *********/
-    private Handler handler = new Handler();
-    private boolean running = false;
-    private Runnable runnable = new Runnable() {
-        @Override
-        public void run() {
-            if (running) {
-                seconds++;
-                updateTimeText();
-                handler.postDelayed(this, 1000);
-            }
+    private void bindToService(String serviceClassName) {
+        unbindFromService();
+
+        try {
+            // Bind to service
+            serviceIntent = new Intent(getActivity(), Class.forName(serviceClassName));
+            serviceIntent.putExtra("broadcastIdentifier", BROADCAST_IDENTIFIER);
+            serviceIntent.putExtra("statusBroadcastIdentifier", STATUS_BROADCAST_IDENTIFIER);
+            getActivity().bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE);
+            bound = true;
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            Log.e(TAG, "could not bind to " + serviceClassName + "\n" + e.getMessage());
+            Toast.makeText(RecognizerFragment.this.getActivity(),
+                    "Could not switch to " + serviceClassName + "\n" + e.getMessage(), Toast.LENGTH_LONG).show();
         }
-    };
+    }
+
+    private void unbindFromService() {
+        if (bound) {
+            if (serviceConnection != null) {
+                getActivity().unbindService(serviceConnection);
+            }
+            bound = false;
+        }
+    }
 
     private void startTimer() {
         running = true;
@@ -180,6 +205,26 @@ public class RecognizerFragment extends Fragment {
             }
         });
 
+        serviceSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String title = (String) parent.getItemAtPosition(position);
+                String className = getResources().getString(
+                        getResources().getIdentifier(title.replace(' ', '_'), "string",
+                                "de.uniHamburg.informatik.continuousvoice"));
+
+                Toast.makeText(RecognizerFragment.this.getActivity(), "title: " + title + "\nclass:" + className,
+                        Toast.LENGTH_LONG).show();
+
+                bindToService(className);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
         BroadcastReceiver voiceReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -188,13 +233,19 @@ public class RecognizerFragment extends Fragment {
                 addTextToView(words);
             }
         };
-        getActivity().registerReceiver(voiceReceiver, new IntentFilter(broadcastIdentifier));
+        getActivity().registerReceiver(voiceReceiver, new IntentFilter(BROADCAST_IDENTIFIER));
 
+        BroadcastReceiver statusReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String status = intent.getStringExtra("message");
+                setStatus(status);
+            }
+        };
+        getActivity().registerReceiver(statusReceiver, new IntentFilter(STATUS_BROADCAST_IDENTIFIER));
     }
 
     private void resetTexts() {
-        titleText.setText(name);
-        contentText.setHint(contentHintString);
         timeText.setText(String.format(minutesStringSchema, "00:00:00"));
         wordCountText.setText(String.format(wordsStringSchema, "0"));
     }
@@ -209,6 +260,16 @@ public class RecognizerFragment extends Fragment {
         int sec = seconds % 60;
         String formattedTime = String.format("%02d:%02d:%02d", h, min, sec);
         timeText.setText(String.format(minutesStringSchema, formattedTime));
+    }
+
+    private void setStatus(final String newStatus) {
+        Log.e(TAG, newStatus);
+
+        statusTextLine2.setText(statusTextLine1.getText());
+        statusTextLine1.setText(newStatus);
+
+        Animation inAnim = AnimationUtils.loadAnimation(getActivity(), android.R.anim.slide_in_left);
+        statusTextLine1.setAnimation(inAnim);
     }
 
     private void switchState(short currentState) {
@@ -304,6 +365,11 @@ public class RecognizerFragment extends Fragment {
             Log.e(TAG, "Could not send code " + code + ". " + e.getMessage());
             return false;
         }
+    }
+
+    @Override
+    public void onDestroy() {
+        unbindFromService();
     }
 
 }

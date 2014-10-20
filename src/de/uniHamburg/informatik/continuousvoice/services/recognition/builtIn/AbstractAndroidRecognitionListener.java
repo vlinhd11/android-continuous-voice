@@ -31,6 +31,10 @@ public abstract class AbstractAndroidRecognitionListener implements RecognitionL
     
     @Override
     public void onError(int error) {
+        Log.i(TAG, "onError code:" + error + " message: " + translateError(error));
+    }
+
+    protected String translateError(int error) {
         String message;
         switch (error) {
         case SpeechRecognizer.ERROR_AUDIO:
@@ -64,10 +68,9 @@ public abstract class AbstractAndroidRecognitionListener implements RecognitionL
             message = "Not recognised";
             break;
         }
-        Log.d(TAG, "onError code:" + error + " message: " + message);
-
+        return message;
     }
-
+    
     @Override
     public void onPartialResults(Bundle partialResults) {
     }

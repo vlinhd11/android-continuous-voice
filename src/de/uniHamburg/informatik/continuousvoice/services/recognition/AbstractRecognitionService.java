@@ -9,11 +9,12 @@ import android.util.Log;
 
 public abstract class AbstractRecognitionService extends Service {
 
-    private static final String TAG = "AbstractRecognitionService";
+    private static final String TAG = AbstractRecognitionService.class.getName();
     private Messenger messenger;
     private boolean running = false;
     private String recognizedText = "";
     private String broadcastIdentifier;
+    private String statusBroadcastIdentifier;
 
     public AbstractRecognitionService() {
         IServiceControl control = new IServiceControl() {
@@ -65,6 +66,12 @@ public abstract class AbstractRecognitionService extends Service {
         Log.i(TAG, "RESET");
         onStop();
         recognizedText = "";
+        clearStatus();
+    }
+
+    public void clearStatus() {
+        setStatus("");
+        setStatus("");
     }
 
     @Override
@@ -73,6 +80,11 @@ public abstract class AbstractRecognitionService extends Service {
         broadcastIdentifier = intent.getStringExtra("broadcastIdentifier");
         if (broadcastIdentifier == null) {
             Log.e(TAG, "missing \"broadcastIdentifier\" extra in Service intent");
+        }
+        
+        statusBroadcastIdentifier = intent.getStringExtra("statusBroadcastIdentifier");
+        if (statusBroadcastIdentifier == null) {
+            Log.e(TAG, "missing \"statusBroadcastIdentifier\" extra in Service intent");
         }
         
         return messenger.getBinder();
@@ -89,6 +101,12 @@ public abstract class AbstractRecognitionService extends Service {
         
         Intent i = new Intent(broadcastIdentifier);
         i.putExtra("words", words);
+        sendBroadcast(i);
+    }
+    
+    protected void setStatus(String status) {
+        Intent i = new Intent(statusBroadcastIdentifier);
+        i.putExtra("message", status);
         sendBroadcast(i);
     }
     

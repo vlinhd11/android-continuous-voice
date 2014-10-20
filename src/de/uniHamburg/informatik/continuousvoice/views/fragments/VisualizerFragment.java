@@ -11,30 +11,31 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 import de.uniHamburg.informatik.continuousvoice.R;
+import de.uniHamburg.informatik.continuousvoice.services.sound.analysis.SilenceListener;
 import de.uniHamburg.informatik.continuousvoice.services.sound.analysis.SoundMeter;
 
 public class VisualizerFragment extends Fragment {
 
-    protected static final String TAG = VisualizerFragment.class.getCanonicalName();
+    protected static final String TAG = VisualizerFragment.class.getName();
     private ProgressBar progressBar;
-    private TextView aplitudeText;
     private SoundMeter soundMeter;
     private static final double precision = 1000.0;
     private ScheduledExecutorService scheduleTaskExecutor;
     private double max;
     private Handler handler;
     private boolean running = false;
+    private ImageView recordingIcon;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.visualizer, container, false);
 
-        aplitudeText = (TextView) view.findViewById(R.id.amplitudeText);
         progressBar = (ProgressBar) view.findViewById(R.id.soundlevel);
+        recordingIcon = (ImageView) view.findViewById(R.id.silenceState);
         max = SoundMeter.MAXIMUM_AMPLITUDE * precision;
         progressBar.setMax(((int) max) + 1);
         handler = new Handler();
@@ -53,17 +54,36 @@ public class VisualizerFragment extends Fragment {
         scheduleTaskExecutor.scheduleAtFixedRate(new Runnable() {
             public void run() {
                 final double amp = soundMeter.getAmplitude() * precision;
-                final int percent = (int) ((amp * 100.0) / max);
-                //Android Dev Rule 42: Use a handler to update UI stuff from a timer task
-                handler.post(new Runnable() {
-                    public void run() {
-                        progressBar.setProgress((int) amp);
-                        aplitudeText.setText(percent + "%");
-                    }
-                });
+                progressBar.setProgress((int) amp);
             }
         }, 0, 80, TimeUnit.MILLISECONDS);
         running = true;
+        
+        soundMeter.addSilenceListener(new SilenceListener() {
+            @Override
+            public void onSilence() {
+                switchRecordingIcon(SoundMeter.SILENT);
+            }
+            
+            @Override
+            public void onSpeech() {
+                switchRecordingIcon(SoundMeter.LOUD);
+            }
+        });
+    }
+
+    private void switchRecordingIcon(int state) {
+        final int imageId;
+        if (state == SoundMeter.LOUD) {
+            imageId = R.drawable.mic;
+        } else {
+            imageId = R.drawable.mic_muted;
+        }
+        handler.post(new Runnable() {
+            public void run() {
+                recordingIcon.setImageDrawable(getResources().getDrawable(imageId));
+            }
+        });
     }
 
     @Override

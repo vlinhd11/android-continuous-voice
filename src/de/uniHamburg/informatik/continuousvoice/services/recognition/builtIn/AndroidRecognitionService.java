@@ -23,15 +23,18 @@ public class AndroidRecognitionService extends AbstractRecognitionService {
         public void onError(int error) {
             super.onError(error);
 
+            setStatus(translateError(error) + "!");
             Log.i(TAG, "Restarting Android Speech Recognizer");
             if (super.restartWhenError(error)) {
                 getSpeechRecognizer().cancel();
                 startVoiceRecognitionCycle();
+                setStatus("restart");
             }
         }
 
         @Override
         public void onResults(Bundle results) {
+            setStatus("got results, restart");
             startVoiceRecognitionCycle(); // Restart new dictation cycle
 
             StringBuilder scores = new StringBuilder();
@@ -54,6 +57,7 @@ public class AndroidRecognitionService extends AbstractRecognitionService {
         public void onReadyForSpeech(Bundle params) {
             Log.d(TAG, "onReadyForSpeech");
         }
+        
     };
 
     @Override
@@ -68,6 +72,7 @@ public class AndroidRecognitionService extends AbstractRecognitionService {
         super.onStart();
         turnBeepOff();
         startVoiceRecognitionCycle();
+        setStatus("started");
     }
 
     @Override
@@ -116,6 +121,7 @@ public class AndroidRecognitionService extends AbstractRecognitionService {
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         getSpeechRecognizer().startListening(intent);
+        setStatus("listening");
     }
     
     @Override

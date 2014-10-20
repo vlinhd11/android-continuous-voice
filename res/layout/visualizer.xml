@@ -1,39 +1,35 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/visualizer"
-    android:orientation="horizontal"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:background="@color/main" >
+    android:background="@color/main"
+    android:orientation="horizontal" >
 
-    <!--
-         <de.uniHamburg.informatik.continuousvoice.services.visualizer.CDrawer
-        android:id="@+id/drawer"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        
-        android:soundEffectsEnabled="true" />
-    -->
-    
-    <TextView 
+    <!-- <TextView
         android:id="@+id/amplitudeText"
         android:layout_width="48dp"
-        android:layout_height="28dp" 
-        android:text="amp"
+        android:layout_height="28dp"
         android:gravity="right"
-        android:textSize="10sp"
         android:padding="8dp"
-        />
+        android:text="amp"
+        android:textSize="10sp" /> -->
 
+    <ImageView
+        android:id="@+id/silenceState"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:adjustViewBounds="true"
+        android:scaleType="fitCenter"
+        android:src="@drawable/mic_muted" />
+    
     <ProgressBar
         android:id="@+id/soundlevel"
         style="@android:style/Widget.ProgressBar.Horizontal"
         android:layout_width="fill_parent"
         android:layout_height="28dp"
-        android:padding="10dp"
-        android:background="@color/main"/>
+        android:background="@color/main"
+        android:padding="10dp" />
+
 
 </LinearLayout>

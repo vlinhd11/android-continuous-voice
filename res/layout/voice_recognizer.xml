@@ -8,14 +8,16 @@
     <!-- TITLE BAR -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="@dimen/title_bar_height"
+        android:layout_height="wrap_content"
         android:background="@color/main"
         android:baselineAligned="false"
         android:orientation="horizontal"
         android:paddingLeft="@dimen/header_vertical_spacing"
-        android:paddingRight="@dimen/header_vertical_spacing" >
+        android:paddingRight="@dimen/header_vertical_spacing"
+        android:paddingTop="@dimen/header_horizontal_spacing"
+        android:paddingBottom="@dimen/header_horizontal_spacing">
     
-        <!-- Title -->
+        <!-- Title 
             <TextView
                 android:id="@+id/voiceRecognizerTitle"
                 android:layout_width="wrap_content"
@@ -26,7 +28,17 @@
                 android:paddingTop="0dp"
                 android:textSize="@dimen/header_title_text_size"
                 android:text="Recognizer Name" />
-            
+            -->
+            <Spinner
+                android:id="@+id/serviceSpinner"
+                android:layout_width="fill_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:paddingLeft="0dp"
+                android:paddingRight="0dp"
+                android:paddingTop="0dp"
+                android:textSize="@dimen/header_title_text_size"
+                android:text="Recognizer Name" />
     </LinearLayout>
     
     <!-- HEADER BAR -->
@@ -46,13 +58,23 @@
             android:layout_weight="1"
             android:paddingRight="@dimen/activity_vertical_margin" >
 
-            <!-- Title -->
+            <!-- Status 2x -->
             <TextView
-                android:text="Status\n\rStatus2"
-                android:id="@+id/voiceRecognizerState"
+                android:id="@+id/voiceRecognizerState1"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:gravity="center"
+                android:layout_height="@dimen/header_bar_height_half"
+                android:gravity="left"
+                android:paddingLeft="0dp"
+                android:paddingRight="0dp"
+                android:textSize="@dimen/header_state_text_size"  />
+            
+            <TextView
+                android:id="@+id/voiceRecognizerState2"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/header_bar_height_half"
+                android:gravity="left"
+                android:layout_alignLeft="@id/voiceRecognizerState1"
+                android:layout_below="@id/voiceRecognizerState1"
                 android:paddingLeft="0dp"
                 android:paddingRight="0dp"
                 android:textSize="@dimen/header_state_text_size"  />
@@ -63,7 +85,7 @@
                 android:id="@+id/voiceRecognizerTime"
                 android:layout_width="fill_parent"
                 android:layout_height="@dimen/header_bar_height_half"
-                android:layout_toRightOf="@id/voiceRecognizerState"
+                android:layout_toRightOf="@id/voiceRecognizerState1"
                 android:gravity="right|bottom"
                 android:paddingLeft="0dp"
                 android:paddingRight="0dp"
@@ -76,7 +98,7 @@
                 android:layout_width="fill_parent"
                 android:layout_height="@dimen/header_bar_height_half"
                 android:layout_below="@id/voiceRecognizerTime"
-                android:layout_toRightOf="@id/voiceRecognizerState"
+                android:layout_toRightOf="@id/voiceRecognizerState1"
                 android:gravity="right|top"
                 android:paddingLeft="0dp"
                 android:paddingRight="0dp"

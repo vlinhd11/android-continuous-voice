@@ -23,7 +23,7 @@ import de.uniHamburg.informatik.continuousvoice.R;
 
 public class GoogleWebServiceRecognitionService extends AbstractWebServiceRecognitionService {
 
-    public static final String TAG = GoogleWebServiceRecognitionService.class.getCanonicalName();
+    public static final String TAG = GoogleWebServiceRecognitionService.class.getName();
     private String key;
 
     public GoogleWebServiceRecognitionService() {
@@ -93,6 +93,7 @@ public class GoogleWebServiceRecognitionService extends AbstractWebServiceRecogn
             Log.e(TAG, "e: " + e.getMessage().toString());
         } catch (JSONException e) {
             e.printStackTrace();
+            transcript = "(Is your API key valid?)";
             Log.e(TAG, "f: " + e.getMessage().toString());
         }
 
@@ -107,14 +108,19 @@ public class GoogleWebServiceRecognitionService extends AbstractWebServiceRecogn
         // x":0}
 
         Log.e(TAG, response);
+        String result = "(?)";
         
-        String cleansedResult = response.replace("{\"result\":[]}", "");
-        JSONObject json = new JSONObject(cleansedResult);
-
-        String result = "";
-        try {
-            result = json.getJSONArray("result").getJSONObject(0).getJSONArray("alternative").getJSONObject(0).getString("transcript");
-        } catch (NullPointerException npe) {
+        if (response != null) {
+            String cleansedResult = response.replace("{\"result\":[]}", "");
+            cleansedResult = cleansedResult.replace("\n", "").replace("\r", "").trim();
+            if (cleansedResult.length() != 0) { //empty result
+                JSONObject json = new JSONObject(cleansedResult);
+                
+                try {
+                    result = json.getJSONArray("result").getJSONObject(0).getJSONArray("alternative").getJSONObject(0).getString("transcript");
+                } catch (NullPointerException npe) {
+                }
+            }
         }
         return result;
     }

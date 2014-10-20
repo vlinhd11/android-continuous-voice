@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-
-	<!-- Please get your key from the Google Developers Console: https://console.developers.google.com/ -->
-    <string name="google_speech_to_text_api_key">GOOGLEKEY</string>
-
-</resources>

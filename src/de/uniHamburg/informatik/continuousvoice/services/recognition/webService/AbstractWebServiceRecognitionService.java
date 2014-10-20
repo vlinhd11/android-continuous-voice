@@ -11,7 +11,7 @@ import de.uniHamburg.informatik.continuousvoice.services.sound.recorder.SoundRec
 
 public abstract class AbstractWebServiceRecognitionService extends AbstractRecognitionService {
 
-    public static final String TAG = AbstractWebServiceRecognitionService.class.getCanonicalName();
+    public static final String TAG = AbstractWebServiceRecognitionService.class.getName();
     private SoundRecordingService recorder;
     private boolean active = false;
     private ScheduledExecutorService scheduleTaskExecutor;
@@ -26,15 +26,17 @@ public abstract class AbstractWebServiceRecognitionService extends AbstractRecog
         super.onStart();
         recorder.start(); // initially start the recording service
         active = true;
+        setStatus("started");
         startSplitting(); // begin splitting and continously sending the records
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        active = true;
+        active = false;
         recorder.terminate();
-
+        setStatus("stopped, transcribing");
+        
         transcribeAsync(recorder.getCurrentFile());
 
         // File file = recorder.getCurrentFile();
@@ -51,6 +53,7 @@ public abstract class AbstractWebServiceRecognitionService extends AbstractRecog
         scheduleTaskExecutor.scheduleAtFixedRate(new Runnable() {
             public void run() {
                 if (active) {
+                    setStatus("split, transcribe");
                     File f = recorder.split();
                     transcribeAsync(f);
                 } else {
@@ -77,6 +80,7 @@ public abstract class AbstractWebServiceRecognitionService extends AbstractRecog
 
             @Override
             protected void onPostExecute(String result) {
+                setStatus("success (" + result.split(" ").length + " words)");
                 addWords(result);
             }
         };
