@@ -14,6 +14,12 @@ Part of my master thesis in winter term 2014/2015:
 
 ##Changelog
 
+###Okt 20.
+- new UI with only one but choosable recognizer
+- silence notification in visualizer (perfect for automatic audio file splitting) 
+- Google Speech API recognition service
+- fixed some visualizer bugs 
+
 ###Okt 14.
 - Removed PocketSphinx
 - Framework for HTTP web service recognizer implementations (for the coming soon: [Google Speech To Text API v2](https://github.com/gillesdemey/google-speech-v2) Recognition Service)
