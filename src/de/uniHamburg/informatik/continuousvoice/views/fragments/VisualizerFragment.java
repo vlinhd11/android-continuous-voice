@@ -5,6 +5,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import android.app.Fragment;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -14,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import de.uniHamburg.informatik.continuousvoice.R;
+import de.uniHamburg.informatik.continuousvoice.constants.BroadcastIdentifiers;
 import de.uniHamburg.informatik.continuousvoice.services.sound.analysis.SilenceListener;
 import de.uniHamburg.informatik.continuousvoice.services.sound.analysis.SoundMeter;
 
@@ -63,13 +65,22 @@ public class VisualizerFragment extends Fragment {
             @Override
             public void onSilence() {
                 switchRecordingIcon(SoundMeter.SILENT);
+                sendBroadcast(SoundMeter.SILENT);
             }
             
             @Override
             public void onSpeech() {
                 switchRecordingIcon(SoundMeter.LOUD);
+                sendBroadcast(SoundMeter.LOUD);
             }
         });
+    }
+
+    private void sendBroadcast(int state) {
+        Intent i = new Intent(BroadcastIdentifiers.SILENCE_BROADCAST);
+        i.putExtra("SILENCE", (state == SoundMeter.SILENT));
+        i.putExtra("LOUD", (state == SoundMeter.LOUD));
+        getActivity().sendBroadcast(i);
     }
 
     private void switchRecordingIcon(int state) {

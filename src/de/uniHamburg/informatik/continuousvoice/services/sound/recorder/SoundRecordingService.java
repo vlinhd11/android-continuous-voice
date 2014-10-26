@@ -3,15 +3,17 @@ package de.uniHamburg.informatik.continuousvoice.services.sound.recorder;
 import java.io.File;
 import java.io.IOException;
 
+import android.app.Service;
+import android.content.Intent;
 import android.media.MediaRecorder;
 import android.os.Environment;
+import android.os.IBinder;
 import android.util.Log;
-import de.uniHamburg.informatik.continuousvoice.services.recognition.AbstractRecognitionService;
 
-public class SoundRecordingService extends AbstractRecognitionService {
+public class SoundRecordingService extends Service {
 
-    private static final String TAG = SoundRecordingService.class.getCanonicalName();
-    private MediaRecorder currentRecorder;
+    private static final String TAG = SoundRecordingService.class.getName();
+    public MediaRecorder currentRecorder; //TODO private
     private MediaRecorder nextRecorder;
     private String currentFileName;
     private String nextFileName;
@@ -34,38 +36,46 @@ public class SoundRecordingService extends AbstractRecognitionService {
         startRecorder(currentRecorder);
     }
 
-    public void terminate() {
+    /**
+     * Shuts down this recorder. You have to create a new instance of this class if you plan to continue.
+     * @return the last file.
+     */
+    public File shutdownAndRelease() {
         terminateRecorder(currentRecorder);
-    }
-
-    public File getCurrentFile() {
         File file = new File(currentFileName);
         return file;
     }
 
     /**
      * Stops the current recorder, releases and returns the file but keeps on
-     * recording to a new file until stopAndGetFile() oder split() is called.
+     * recording to a new file until terminate() or split() is called.
      * 
      * @return the recorded file
      */
-    public File split() {
+    public File split(boolean startDirectly) {
         // 1 terminate current recorder
         terminateRecorder(currentRecorder);
         // 2 create file
         File file = new File(currentFileName);
         // 3 start next recorder immediately
-        startRecorder(nextRecorder);
-        // 4 create new next recorder and filename
+        if (startDirectly) {
+            startRecorder(nextRecorder);
+        }
+        // 4 switch recorders and filenames
+        switchRecorders();
+        // 5 return file
+        return file;
+    }
+
+    private void switchRecorders() {
+        // a) create new next recorder and filename
         String newFileName = getNewFileName();
         MediaRecorder newRecorder = createRecorder(newFileName);
-        // 5 switch recorders and filenames
+        // b) switch recorders and filenames
         currentRecorder = nextRecorder;
         currentFileName = nextFileName;
         nextRecorder = newRecorder;
         nextFileName = newFileName;
-        // 6 return file
-        return file;
     }
 
     private MediaRecorder createRecorder(String fileName) {
@@ -95,16 +105,17 @@ public class SoundRecordingService extends AbstractRecognitionService {
 
     private void terminateRecorder(MediaRecorder recorder) {
         try {
-            if (recorder != null) {
+            if (recorder != null && running) {
                 recorder.stop();
                 recorder.reset();
                 recorder.release();
                 running = false;
                 // DEBUG
-                Log.i(TAG, "stopped recording - file: " + currentFileName + " (exists: " + new File(currentFileName).exists() + ")");
+                Log.w(TAG, "stopped recording - file: " + currentFileName + " (exists: " + new File(currentFileName).exists() + ")");
             }
         } catch(IllegalStateException e) {
             //already stopped / not started yet
+            terminateRecorder(recorder); //TODO ugly: infinite loop possible!
         }
     }
 
@@ -118,5 +129,11 @@ public class SoundRecordingService extends AbstractRecognitionService {
             //already started
             Log.e(TAG, "started? " + e.getMessage());
         }
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

@@ -5,15 +5,15 @@ import de.uniHamburg.informatik.continuousvoice.services.recognition.AbstractRec
 public class DummyRecognitionService extends AbstractRecognitionService {
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        
+    public void start() {
+        super.start();
+        addWords("start a timer: ");
         long endTime = System.currentTimeMillis() + 5 * 1000;
         while (System.currentTimeMillis() < endTime) {
             synchronized (this) {
                 try {
                     wait(endTime - System.currentTimeMillis());
-                    addWords("this is a test");
+                    addWords(" 5sec passed");
                 } catch (Exception e) {
                 }
             }

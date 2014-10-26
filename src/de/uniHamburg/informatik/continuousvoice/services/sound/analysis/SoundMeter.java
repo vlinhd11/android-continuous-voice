@@ -8,11 +8,12 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import android.media.MediaRecorder;
+import android.util.Log;
 
 public class SoundMeter {
 
     public static final double MAXIMUM_AMPLITUDE = (32768/2700.0); //from: http://stackoverflow.com/a/15613051/1686216
-    private static final String TAG = SoundMeter.class.getCanonicalName();
+    private final String TAG = this.getClass().getSimpleName();
     private MediaRecorder mRecorder = null;
     private List<SilenceListener> listeners = new ArrayList<SilenceListener>();
     private ScheduledExecutorService scheduleTaskExecutor;
@@ -41,25 +42,32 @@ public class SoundMeter {
         recorder.setOutputFile("/dev/null");
         try {
             recorder.prepare();
+            return recorder;
         } catch (IllegalStateException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return recorder;
+        return null;
     }
 
-    public void start() {
+    public boolean start() {
         if (mRecorder == null) {
             mRecorder = createRecorder();
         }
-        mRecorder.start();
-        running = true;
-        startMeasurement();
+        if (!running && mRecorder != null) {
+            Log.e(TAG, "start<-");
+            mRecorder.start();
+            running = true;
+            startMeasurement();
+            return true;
+        }
+        return false;
     }
 
     public void stop() {
-        if (mRecorder != null) {
+        Log.e(TAG, "->stop");
+        if (mRecorder != null && running) {
             mRecorder.stop();
             mRecorder.release();
             mRecorder = null;
@@ -97,10 +105,14 @@ public class SoundMeter {
     }
     
     private void notifyListeners(boolean silent) {
-        for (SilenceListener l: listeners) {
-            if (silent) {
+        Log.e(TAG, "notify: Silence " + silent);
+        Log.e(TAG, "Listeners: " + listeners.size());
+        if (silent) {
+            for (SilenceListener l: listeners) {
                 l.onSilence();
-            } else {
+            }
+        } else {
+            for (SilenceListener l: listeners) {
                 l.onSpeech();
             }
         }
@@ -108,7 +120,7 @@ public class SoundMeter {
     
     private void startMeasurement() {
         if (scheduleTaskExecutor == null) {
-            scheduleTaskExecutor = Executors.newScheduledThreadPool(1);
+            scheduleTaskExecutor = Executors.newScheduledThreadPool(2);
         }
 
         scheduleTaskExecutor.scheduleAtFixedRate(new Runnable() {
@@ -139,6 +151,10 @@ public class SoundMeter {
             notifyListeners(newState == SILENT);
             state = newState;
         }
+    }
+
+    public void removeSilenceListener(SilenceListener listener) {
+        listeners.remove(listener);        
     }
     
 }

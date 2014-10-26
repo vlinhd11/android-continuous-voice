@@ -78,7 +78,6 @@ public class GoogleWebServiceRecognitionService extends AbstractWebServiceRecogn
 
             transcript = parseResponse(stringBuilder.toString());
 
-            Log.e(TAG, "RESULT: " + transcript);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             Log.e(TAG, "b: " + e.getMessage().toString());
@@ -107,7 +106,6 @@ public class GoogleWebServiceRecognitionService extends AbstractWebServiceRecogn
         // "Hola a OpenDomo"},{"transcript":"hola a OpenDomo"}],"final":true}],"result_inde
         // x":0}
 
-        Log.e(TAG, response);
         String result = "(?)";
         
         if (response != null) {

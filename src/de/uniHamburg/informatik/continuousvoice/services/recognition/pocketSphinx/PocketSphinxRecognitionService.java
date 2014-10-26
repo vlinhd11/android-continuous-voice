@@ -49,8 +49,8 @@ public class PocketSphinxRecognitionService extends AbstractRecognitionService i
     private SpeechRecognizer recognizer;
 
     @Override
-    protected void onStart() {
-        super.onStart();
+    public void start() {
+        super.start();
 
         new AsyncTask<Void, Void, Exception>() {
             @Override
@@ -79,8 +79,8 @@ public class PocketSphinxRecognitionService extends AbstractRecognitionService i
     }
 
     @Override
-    public void onStop() {
-        super.onStop();
+    public void stop() {
+        super.stop();
         recognizer.stop();
     }
 

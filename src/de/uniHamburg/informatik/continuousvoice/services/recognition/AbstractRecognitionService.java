@@ -7,7 +7,7 @@ import android.os.IBinder;
 import android.os.Messenger;
 import android.util.Log;
 
-public abstract class AbstractRecognitionService extends Service {
+public abstract class AbstractRecognitionService extends Service implements IServiceControl {
 
     private static final String TAG = AbstractRecognitionService.class.getName();
     private Messenger messenger;
@@ -17,56 +17,40 @@ public abstract class AbstractRecognitionService extends Service {
     private String statusBroadcastIdentifier;
 
     public AbstractRecognitionService() {
-        IServiceControl control = new IServiceControl() {
-            @Override
-            public void start() {
-                onStart();
-            }
-            
-            @Override
-            public boolean isRunning() {
-                return running;
-            }
-
-            @Override
-            public void stop() {
-                onStop();
-            }
-
-            @Override
-            public void reset() {
-                onReset();
-            }
-        };
-        messenger = new Messenger(new RecognitionControlHandler(control));
+        messenger = new Messenger(new RecognitionControlHandler(this));
     }
     
     /**
      * override this method if needed
-     * remember to call super.stop();
+     * but then remember to call super.stop();
      */
-    protected void onStop() {
+    public void stop() {
         running = false;
     }
     
     /**
      * override this method if needed
-     * remember to call super.start();
+     * but then remember to call super.start();
      */
-    protected void onStart() {
+    public void start() {
         Log.i(TAG, "START");
         running = true;
     }
     
     /**
      * override this method if needed
-     * remember to call super.reset();
+     * but then remember to call super.reset();
      */
-    protected void onReset() {
+    public void reset() {
         Log.i(TAG, "RESET");
-        onStop();
+        stop();
         recognizedText = "";
         clearStatus();
+    }
+    
+    @Override
+    public boolean isRunning() {
+        return running;
     }
 
     public void clearStatus() {

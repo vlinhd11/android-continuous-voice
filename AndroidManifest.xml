@@ -42,22 +42,10 @@
             android:label="PocketSphinx Voice Recognition"
             android:process="de.uniHamburg.informatik.continuousvoice.processes.PocketSphinxRecognitionProcess" >
         </service>
-        
         <service
             android:name="de.uniHamburg.informatik.continuousvoice.services.recognition.builtIn.AndroidRecognitionService"
             android:label="Android Voice Recognition"
             android:process="de.uniHamburg.informatik.continuousvoice.processes.AndroidRecognitionService" >
-        </service>
-        
-        <service
-            android:name="de.uniHamburg.informatik.continuousvoice.services.recognition.builtIn.AndroidRecognitionService2"
-            android:label="Android Voice Recognition 2"
-            android:process="de.uniHamburg.informatik.continuousvoice.processes.AndroidRecognitionService2" >
-        </service>
-        <service
-            android:name="de.uniHamburg.informatik.continuousvoice.services.recognition.builtIn.AndroidRecognitionService3"
-            android:label="Android Voice Recognition 3"
-            android:process="de.uniHamburg.informatik.continuousvoice.processes.AndroidRecognitionService3" >
         </service>
         <service
             android:name="de.uniHamburg.informatik.continuousvoice.services.recognition.webService.GoogleWebServiceRecognitionService"

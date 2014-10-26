@@ -9,6 +9,7 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.os.DropBoxManager;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -30,6 +31,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import de.uniHamburg.informatik.continuousvoice.R;
+import de.uniHamburg.informatik.continuousvoice.constants.BroadcastIdentifiers;
 import de.uniHamburg.informatik.continuousvoice.constants.ServiceControlConstants;
 
 public class RecognizerFragment extends Fragment {
@@ -39,8 +41,6 @@ public class RecognizerFragment extends Fragment {
     private String wordsStringSchema;
     private boolean bound = false;
     private Messenger messenger;
-    private static final String BROADCAST_IDENTIFIER = "voicerecognition.VOICE_RECOGNIZED";
-    private static final String STATUS_BROADCAST_IDENTIFIER = "voicerecognition.STATUS";
     private int seconds = 0;
     private String completeText = "";
     private int words = 0;
@@ -145,8 +145,9 @@ public class RecognizerFragment extends Fragment {
         try {
             // Bind to service
             serviceIntent = new Intent(getActivity(), Class.forName(serviceClassName));
-            serviceIntent.putExtra("broadcastIdentifier", BROADCAST_IDENTIFIER);
-            serviceIntent.putExtra("statusBroadcastIdentifier", STATUS_BROADCAST_IDENTIFIER);
+            serviceIntent.putExtra("broadcastIdentifier", BroadcastIdentifiers.VOICE_RECOGNITION_BROADCAST_IDENTIFIER);
+            serviceIntent.putExtra("statusBroadcastIdentifier",
+                    BroadcastIdentifiers.VOICE_RECOGNITION_STATUS_BROADCAST_IDENTIFIER);
             getActivity().bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE);
             bound = true;
         } catch (ClassNotFoundException e) {
@@ -178,6 +179,7 @@ public class RecognizerFragment extends Fragment {
 
     private void resetTime() {
         seconds = 0;
+        updateTimeText();
     }
 
     private void createListeners() {
@@ -238,7 +240,8 @@ public class RecognizerFragment extends Fragment {
                 addTextToView(words);
             }
         };
-        getActivity().registerReceiver(voiceReceiver, new IntentFilter(BROADCAST_IDENTIFIER));
+        getActivity().registerReceiver(voiceReceiver,
+                new IntentFilter(BroadcastIdentifiers.VOICE_RECOGNITION_BROADCAST_IDENTIFIER));
 
         BroadcastReceiver statusReceiver = new BroadcastReceiver() {
             @Override
@@ -247,7 +250,8 @@ public class RecognizerFragment extends Fragment {
                 setStatus(status);
             }
         };
-        getActivity().registerReceiver(statusReceiver, new IntentFilter(STATUS_BROADCAST_IDENTIFIER));
+        getActivity().registerReceiver(statusReceiver,
+                new IntentFilter(BroadcastIdentifiers.VOICE_RECOGNITION_STATUS_BROADCAST_IDENTIFIER));
     }
 
     private void resetTexts() {
@@ -269,13 +273,11 @@ public class RecognizerFragment extends Fragment {
     }
 
     private void setStatus(final String newStatus) {
-        Log.e(TAG, newStatus);
-
         statusTextLine2.setText(statusTextLine1.getText());
         statusTextLine1.setText(newStatus);
 
-        Animation inAnim = AnimationUtils.loadAnimation(getActivity(), android.R.anim.slide_in_left);
-        statusTextLine1.setAnimation(inAnim);
+        //Animation inAnim = AnimationUtils.loadAnimation(getActivity(), android.R.anim.slide_in_left);
+        //statusTextLine1.setAnimation(inAnim);
     }
 
     private void switchState(short currentState) {
@@ -284,27 +286,34 @@ public class RecognizerFragment extends Fragment {
     }
 
     private void updateButtonState() {
-
         switch (this.currentState) {
         case STATE_1_READY:
             playBtn.setVisibility(View.VISIBLE);
             stopBtn.setVisibility(View.GONE);
             clearBtn.setVisibility(View.GONE);
             shareBtn.setVisibility(View.GONE);
+            toggleSpinnerState(true);
             break;
         case STATE_2_WORKING:
             playBtn.setVisibility(View.GONE);
             stopBtn.setVisibility(View.VISIBLE);
             clearBtn.setVisibility(View.GONE);
             shareBtn.setVisibility(View.GONE);
+            toggleSpinnerState(false);
             break;
         case STATE_3_DONE:
             playBtn.setVisibility(View.GONE);
             stopBtn.setVisibility(View.GONE);
             clearBtn.setVisibility(View.VISIBLE);
             shareBtn.setVisibility(View.VISIBLE);
+            toggleSpinnerState(false);
             break;
         }
+    }
+
+    private void toggleSpinnerState(boolean b) {
+        serviceSpinner.setClickable(b);
+        serviceSpinner.setEnabled(b);
     }
 
     private void scrollDown() {
@@ -342,9 +351,7 @@ public class RecognizerFragment extends Fragment {
     public void clear(View view) {
         if (send(ServiceControlConstants.RESET)) {
             switchState(STATE_1_READY);
-            stopTimer();
             resetTime();
-            updateTimeText();
             completeText = "";
             words = 0;
             updateWordCount();

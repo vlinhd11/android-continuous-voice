@@ -9,7 +9,7 @@ import de.uniHamburg.informatik.continuousvoice.services.IServiceControl;
 
 public class RecognitionControlHandler extends Handler {
 
-    public static final String TAG = RecognitionControlHandler.class.getCanonicalName();
+    public static final String TAG = RecognitionControlHandler.class.getName();
     private IServiceControl recognitionControl;
 
     public RecognitionControlHandler(IServiceControl recognitionControl) {

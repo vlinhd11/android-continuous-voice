@@ -16,7 +16,7 @@ public class AndroidRecognitionService extends AbstractRecognitionService {
     private SpeechRecognizer speech = null; // Speech recognizer instance
     private AudioManager audioManager;
     private boolean beepOff = false;
-
+    
     private RecognitionListener recognitionListener = new AbstractAndroidRecognitionListener() {
 
         @Override
@@ -68,16 +68,16 @@ public class AndroidRecognitionService extends AbstractRecognitionService {
 
     // Service control ->
     @Override
-    protected void onStart() {
-        super.onStart();
+    public void start() {
+        super.start();
         turnBeepOff();
         startVoiceRecognitionCycle();
         setStatus("started");
     }
 
     @Override
-    public void onStop() {
-        super.onStop();
+    public void stop() {
+        super.stop();
         if (speech != null) {
             speech.destroy();
             speech = null;
@@ -89,16 +89,14 @@ public class AndroidRecognitionService extends AbstractRecognitionService {
      * Destroy the recognizer.
      */
     @Override
-    public void onReset() {
-        super.onReset();
+    public void reset() {
+        super.reset();
 
         if (speech != null) {
             speech.destroy();
             speech = null;
         }
     }
-
-    // <- Service control
 
     /**
      * Lazy instantiation method for getting the speech recognizer
@@ -128,12 +126,13 @@ public class AndroidRecognitionService extends AbstractRecognitionService {
 
     @Override
     public void onDestroy() {
-        onStop();
+        stop();
         super.onDestroy();
     }
 
     private void turnBeepOff() {
         if (!beepOff) {
+            audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
             audioManager.setStreamSolo(AudioManager.STREAM_VOICE_CALL, true);
             beepOff = true;
         }
