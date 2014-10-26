@@ -9,6 +9,7 @@ import de.uniHamburg.informatik.continuousvoice.views.fragments.VisualizerFragme
 
 public class MainActivity extends Activity {
 
+    //private String TAG = this.getClass().getSimpleName();
     private RecognizerFragment voiceRecognitionFragment;
     private VisualizerFragment visualizationFragment;
 
@@ -52,4 +53,15 @@ public class MainActivity extends Activity {
         }
         return super.onOptionsItemSelected(item);
     }
+    
+    @Override
+    public void onPause() {
+        super.onPause();
+    }
+    
+    @Override
+    public void onStop() {
+        super.onStop();
+    }
+    
 }

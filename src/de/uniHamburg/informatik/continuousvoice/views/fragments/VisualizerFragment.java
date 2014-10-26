@@ -42,6 +42,7 @@ public class VisualizerFragment extends Fragment {
         progressBar.setMax(((int) max) + 1);
         handler = new Handler();
         soundMeter = new SoundMeter();
+        Log.e(TAG, "VISUALIZER: on create view");
         startMeasurement();
 
         return view;
@@ -100,24 +101,20 @@ public class VisualizerFragment extends Fragment {
     @Override
     public void onPause() {
         if (scheduleTaskExecutor != null) {
-            scheduleTaskExecutor.shutdown();
+            scheduleTaskExecutor.shutdownNow();
             scheduleTaskExecutor = null;
-            Log.i(TAG, "timer: shutdown");
         }
         if (soundMeter != null) {
             soundMeter.stop();
             running = false;
-            Log.i(TAG, "soundmeter: stop");
         }
         super.onPause();
     }
 
     @Override
     public void onResume() {
+        Log.e(TAG, "VISUALIZER: on resume");
         super.onResume();
-        if (!running) {
-            startMeasurement();
-        }
     }
 
 }

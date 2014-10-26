@@ -32,8 +32,8 @@ public class GoogleWebServiceRecognitionService extends AbstractWebServiceRecogn
 
     @Override
     public void onCreate() {
-        super.onCreate();
         key = getString(R.string.googleApiKey);
+        super.onCreate();
     }
 
     private String getLanguageId() {

@@ -27,16 +27,13 @@ public abstract class AbstractWebServiceRecognitionService extends AbstractRecog
     private boolean recording;
     private String baseName;
     public final static int RECORDING_MAX_DURATION = 10 * 1000;
-
+    private final Handler handler = new Handler();
+    private BroadcastReceiver statusReceiver;
+    
     public AbstractWebServiceRecognitionService(String baseName) {
         this.baseName = baseName;
-    }
-    
-    @Override
-    public void onCreate() {
-        recorder = new SoundRecordingService(baseName);
         
-        BroadcastReceiver statusReceiver = new BroadcastReceiver() {
+        statusReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 if (running) {
@@ -49,12 +46,18 @@ public abstract class AbstractWebServiceRecognitionService extends AbstractRecog
                 }
             }
         };
-        registerReceiver(statusReceiver, new IntentFilter(BroadcastIdentifiers.SILENCE_BROADCAST));
+    }
+    
+    @Override
+    public void onCreate() {
+        recorder = new SoundRecordingService(baseName);
+        super.onCreate();
     }
 
     @Override
     public void start() {
         super.start();
+        registerReceiver(statusReceiver, new IntentFilter(BroadcastIdentifiers.SILENCE_BROADCAST));
         //soundMeter = new SoundMeter();
         recorder.start(); // initially start the recording service
         setStatus("started");
@@ -65,15 +68,26 @@ public abstract class AbstractWebServiceRecognitionService extends AbstractRecog
 
     @Override
     public void stop() {
-        super.stop();
+        Log.e(TAG, "STOP!");
+        try {
+            unregisterReceiver(statusReceiver);
+        } catch(IllegalArgumentException e) {
+            //receiver not registered, ok - cool.
+        }
+
         if (soundMeter != null) {
             soundMeter.stop();
             //not necessary soundMeter.removeSilenceListener(this);
             soundMeter = null;
         }
+        if (maxRecordingTimeScheduler != null) {
+            maxRecordingTimeScheduler.shutdownNow();
+        }
         File toTranscribe = recorder.shutdownAndRelease();
         setStatus("stopped, transcribing");
         transcribeAsync(toTranscribe);
+        
+        super.stop();
     }
 
     /**
@@ -118,20 +132,18 @@ public abstract class AbstractWebServiceRecognitionService extends AbstractRecog
 
     @Override
     public void onSpeech() {
-        Log.e(TAG, "record >=======");
         startRecording();
     }
     
     @Override
     public void onSilence() {
-        Log.e(TAG, "                =======| stop ");
         stopRecording();
     }
 
     private void startRecording() {
+        Log.e(TAG, "record >=======");
         if (!recording) {
             //start recorder
-            Log.e(TAG, "Recorder: " + recorder.currentRecorder);
             recorder.start();
             recording = true;
             startMaxTimeScheduler();
@@ -139,6 +151,7 @@ public abstract class AbstractWebServiceRecognitionService extends AbstractRecog
     }
 
     private void stopRecording() {
+        Log.e(TAG, "                =======| stop ");
         if (recording) {
             //Stop recorder
             File toTranscribe = recorder.split(false);
@@ -161,7 +174,7 @@ public abstract class AbstractWebServiceRecognitionService extends AbstractRecog
                     public void run() {
                         setStatus("split");
                         File f = recorder.split(true);
-                        //transcribeAsync(f);
+                        transcribeAsync(f);
                         startMaxTimeScheduler();
                     }
                 });
@@ -169,5 +182,4 @@ public abstract class AbstractWebServiceRecognitionService extends AbstractRecog
         }, RECORDING_MAX_DURATION, TimeUnit.MILLISECONDS);
     }
     
-    private final Handler handler = new Handler();
 }

@@ -56,7 +56,6 @@ public class SoundMeter {
             mRecorder = createRecorder();
         }
         if (!running && mRecorder != null) {
-            Log.e(TAG, "start<-");
             mRecorder.start();
             running = true;
             startMeasurement();
@@ -66,11 +65,13 @@ public class SoundMeter {
     }
 
     public void stop() {
-        Log.e(TAG, "->stop");
         if (mRecorder != null && running) {
             mRecorder.stop();
             mRecorder.release();
             mRecorder = null;
+        }
+        if (scheduleTaskExecutor != null) {
+            scheduleTaskExecutor.shutdownNow();
         }
         running = false;
     }
@@ -105,8 +106,6 @@ public class SoundMeter {
     }
     
     private void notifyListeners(boolean silent) {
-        Log.e(TAG, "notify: Silence " + silent);
-        Log.e(TAG, "Listeners: " + listeners.size());
         if (silent) {
             for (SilenceListener l: listeners) {
                 l.onSilence();

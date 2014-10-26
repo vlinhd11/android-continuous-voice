@@ -186,25 +186,25 @@ public class RecognizerFragment extends Fragment {
         playBtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                play(v);
+                play();
             }
         });
         stopBtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                stop(v);
+                stop();
             }
         });
         clearBtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                clear(v);
+                clear();
             }
         });
         shareBtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                share(v);
+                share();
             }
         });
 
@@ -333,7 +333,7 @@ public class RecognizerFragment extends Fragment {
         scrollDown();
     }
 
-    public void play(View view) {
+    public void play() {
         if (send(ServiceControlConstants.START)) {
             switchState(STATE_2_WORKING);
             resetTime();
@@ -341,14 +341,14 @@ public class RecognizerFragment extends Fragment {
         }
     }
 
-    public void stop(View view) {
+    public void stop() {
         if (send(ServiceControlConstants.STOP)) {
             switchState(STATE_3_DONE);
             stopTimer();
         }
     }
 
-    public void clear(View view) {
+    public void clear() {
         if (send(ServiceControlConstants.RESET)) {
             switchState(STATE_1_READY);
             resetTime();
@@ -359,7 +359,7 @@ public class RecognizerFragment extends Fragment {
         }
     }
 
-    public void share(View view) {
+    public void share() {
         Intent sendIntent = new Intent();
         sendIntent.setAction(Intent.ACTION_SEND);
         sendIntent.putExtra(Intent.EXTRA_TEXT, completeText);
@@ -381,8 +381,32 @@ public class RecognizerFragment extends Fragment {
     }
 
     @Override
-    public void onDestroy() {
+    public void onPause() {
+        stop();
+        while (!send(ServiceControlConstants.STOP)) {
+            //will you stop, you goddamn service!
+            Log.e(TAG, "will you stop, you goddamn service!");
+        }
         unbindFromService();
+
+        super.onPause();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    public void onDestroy() {
+        stop();
+        while (!send(ServiceControlConstants.STOP)) {
+            //will you stop, you goddamn service!
+            Log.e(TAG, "will you stop, you goddamn service!");
+        }
+        unbindFromService();
+
+        super.onDestroy();
     }
 
 }
