@@ -41,16 +41,17 @@ public class VisualizerFragment extends Fragment {
         max = SoundMeter.MAXIMUM_AMPLITUDE * precision;
         progressBar.setMax(((int) max) + 1);
         handler = new Handler();
-        soundMeter = new SoundMeter();
+        
         startMeasurement();
 
         return view;
     }
 
     private void startMeasurement() {
+        soundMeter = new SoundMeter();
         soundMeter.start();
         if (scheduleTaskExecutor == null) {
-            scheduleTaskExecutor = Executors.newScheduledThreadPool(1);
+            scheduleTaskExecutor = Executors.newScheduledThreadPool(5);
         }
 
         scheduleTaskExecutor.scheduleAtFixedRate(new Runnable() {
@@ -102,6 +103,11 @@ public class VisualizerFragment extends Fragment {
     public void onPause() {
         if (scheduleTaskExecutor != null) {
             scheduleTaskExecutor.shutdownNow();
+            try {
+                scheduleTaskExecutor.awaitTermination(5, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                Log.e(TAG, e.getMessage());
+            }
             scheduleTaskExecutor = null;
         }
         if (soundMeter != null) {
