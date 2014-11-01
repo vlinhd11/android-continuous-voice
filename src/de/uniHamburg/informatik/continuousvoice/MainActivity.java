@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import de.uniHamburg.informatik.continuousvoice.services.sound.AudioService;
 import de.uniHamburg.informatik.continuousvoice.views.fragments.RecognizerFragment;
 import de.uniHamburg.informatik.continuousvoice.views.fragments.VisualizerFragment;
 
@@ -14,8 +15,10 @@ public class MainActivity extends Activity {
     private VisualizerFragment visualizationFragment;
 
     public void createServices() {
-        voiceRecognitionFragment = new RecognizerFragment();
-        visualizationFragment = new VisualizerFragment();
+        AudioService audioService = new AudioService();
+        
+        voiceRecognitionFragment = new RecognizerFragment(audioService);
+        visualizationFragment = new VisualizerFragment(audioService);
     }
 
     @Override
@@ -32,11 +35,12 @@ public class MainActivity extends Activity {
             setContentView(R.layout.activity_main);
             if (savedInstanceState == null) {
                 getFragmentManager().beginTransaction()
-                        .add(R.id.visualizationFragmentContainer, visualizationFragment)
                         .add(R.id.voiceRecognitionFragmentContainer, voiceRecognitionFragment)
+                        .add(R.id.visualizationFragmentContainer, visualizationFragment)
                         .commit();
             }
         }
+
     }
     
     @Override

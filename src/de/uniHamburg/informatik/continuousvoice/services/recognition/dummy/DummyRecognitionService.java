@@ -19,4 +19,14 @@ public class DummyRecognitionService extends AbstractRecognitionService {
             }
         }
     }
+
+    @Override
+    public String getName() {
+        return "Dummy Recognizer";
+    }
+
+    @Override
+    public void initialize() {
+        //nothing to do here.
+    }
 }

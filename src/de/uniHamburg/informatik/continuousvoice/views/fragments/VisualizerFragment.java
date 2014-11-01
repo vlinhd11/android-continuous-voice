@@ -1,93 +1,91 @@
 package de.uniHamburg.informatik.continuousvoice.views.fragments;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
 import android.app.Fragment;
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.Switch;
+import android.widget.TextView;
 import de.uniHamburg.informatik.continuousvoice.R;
-import de.uniHamburg.informatik.continuousvoice.constants.BroadcastIdentifiers;
-import de.uniHamburg.informatik.continuousvoice.services.sound.analysis.SilenceListener;
-import de.uniHamburg.informatik.continuousvoice.services.sound.analysis.SoundMeter;
+import de.uniHamburg.informatik.continuousvoice.services.sound.AmplitudeListener;
+import de.uniHamburg.informatik.continuousvoice.services.sound.AudioService;
 
 public class VisualizerFragment extends Fragment {
 
     protected static final String TAG = VisualizerFragment.class.getName();
+    private static final int PROGRESSBAR_GRANULARITY = 1000;
     private ProgressBar progressBar;
-    private SoundMeter soundMeter;
-    private static final double precision = 1000.0;
-    private ScheduledExecutorService scheduleTaskExecutor;
-    private double max;
-    private Handler handler;
-    private boolean running = false;
     private ImageView recordingIcon;
+    private TextView amplitudeText;
+    private Switch audioServiceSwitch;
+    private Handler handler = new Handler();
+    private AudioService audioService;
+    
+    public VisualizerFragment(AudioService audioService) {
+        this.audioService = audioService;
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.visualizer, container, false);
 
+        audioServiceSwitch = (Switch) view.findViewById(R.id.audioServiceSwitch);
+        audioServiceSwitch.setActivated(audioService.isRunning());
+        //amplitudeText = (TextView) view.findViewById(R.id.amplitudeText);
         progressBar = (ProgressBar) view.findViewById(R.id.soundlevel);
         recordingIcon = (ImageView) view.findViewById(R.id.silenceState);
-        max = SoundMeter.MAXIMUM_AMPLITUDE * precision;
-        progressBar.setMax(((int) max) + 1);
-        handler = new Handler();
-        
-        startMeasurement();
+        progressBar.setMax(PROGRESSBAR_GRANULARITY); //percent
+
+        createListeners();
 
         return view;
     }
 
-    private void startMeasurement() {
-        soundMeter = new SoundMeter();
-        soundMeter.start();
-        if (scheduleTaskExecutor == null) {
-            scheduleTaskExecutor = Executors.newScheduledThreadPool(5);
-        }
+    private void createListeners() {
+        audioServiceSwitch.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 
-        scheduleTaskExecutor.scheduleAtFixedRate(new Runnable() {
-            public void run() {
-                final double amp = soundMeter.getAmplitude() * precision;
-                progressBar.setProgress((int) amp);
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    if (!audioService.isRunning()) {
+                        audioService.initialize();
+                    }
+                } else {
+                    if (audioService.isRunning()) {
+                        audioService.shutdown();
+                        progressBar.setProgress(0);
+                    }
+                }
             }
-        }, 0, 80, TimeUnit.MILLISECONDS);
-        
-        running = true;
-        
-        soundMeter.addSilenceListener(new SilenceListener() {
+        });
+
+        audioService.addAmplitudeListener(new AmplitudeListener() {
             @Override
             public void onSilence() {
-                switchRecordingIcon(SoundMeter.SILENT);
-                sendBroadcast(SoundMeter.SILENT);
+                switchRecordingIcon(AudioService.State.SILENCE);
             }
-            
+
             @Override
             public void onSpeech() {
-                switchRecordingIcon(SoundMeter.LOUD);
-                sendBroadcast(SoundMeter.LOUD);
+                switchRecordingIcon(AudioService.State.SPEECH);
+            }
+
+            @Override
+            public void onAmplitudeUpdate(double percent) {
+                progressBar.setProgress((int) (percent * PROGRESSBAR_GRANULARITY));
             }
         });
     }
 
-    private void sendBroadcast(int state) {
-        Intent i = new Intent(BroadcastIdentifiers.SILENCE_BROADCAST);
-        i.putExtra("SILENCE", (state == SoundMeter.SILENT));
-        i.putExtra("LOUD", (state == SoundMeter.LOUD));
-        getActivity().sendBroadcast(i);
-    }
-
-    private void switchRecordingIcon(int state) {
+    private void switchRecordingIcon(AudioService.State state) {
         final int imageId;
-        if (state == SoundMeter.LOUD) {
+        if (state == AudioService.State.SPEECH) {
             imageId = R.drawable.mic;
         } else {
             imageId = R.drawable.mic_muted;
@@ -101,29 +99,12 @@ public class VisualizerFragment extends Fragment {
 
     @Override
     public void onPause() {
-        if (scheduleTaskExecutor != null) {
-            scheduleTaskExecutor.shutdownNow();
-            try {
-                scheduleTaskExecutor.awaitTermination(5, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                Log.e(TAG, e.getMessage());
-            }
-            scheduleTaskExecutor = null;
-        }
-        if (soundMeter != null) {
-            soundMeter.stop();
-        }
-        running = false;
         super.onPause();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-
-        if (!running) {
-            startMeasurement();
-        }
     }
 
 }

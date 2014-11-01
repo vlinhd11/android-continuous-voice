@@ -1,53 +1,46 @@
 package de.uniHamburg.informatik.continuousvoice.services.recognition;
 
-import de.uniHamburg.informatik.continuousvoice.services.IServiceControl;
-import android.app.Service;
-import android.content.Intent;
-import android.os.IBinder;
-import android.os.Messenger;
+import java.util.ArrayList;
+import java.util.List;
+
 import android.util.Log;
 
-public abstract class AbstractRecognitionService extends Service implements IServiceControl {
+public abstract class AbstractRecognitionService implements IRecognizerControl {
 
-    private static final String TAG = AbstractRecognitionService.class.getName();
-    private Messenger messenger;
+    private final String TAG = this.getClass().getSimpleName();
     protected boolean running = false;
     private String recognizedText = "";
-    private String broadcastIdentifier;
-    private String statusBroadcastIdentifier;
+    private List<TranscriptionResultListener> transcriptionResultListeners;
+    private List<StatusListener> statusListeners;
 
     public AbstractRecognitionService() {
-        messenger = new Messenger(new RecognitionControlHandler(this));
+        statusListeners = new ArrayList<StatusListener>();
+        transcriptionResultListeners = new ArrayList<TranscriptionResultListener>();
     }
-    
+
     /**
-     * override this method if needed
-     * but then remember to call super.stop();
+     * override this method if needed but then remember to call super.stop();
      */
     public void stop() {
         running = false;
     }
-    
+
     /**
-     * override this method if needed
-     * but then remember to call super.start();
+     * override this method if needed but then remember to call super.start();
      */
     public void start() {
-        Log.i(TAG, "START");
         running = true;
     }
-    
+
     /**
-     * override this method if needed
-     * but then remember to call super.reset();
+     * override this method if needed but then remember to call super.reset();
      */
     public void reset() {
-        Log.i(TAG, "RESET");
         stop();
         recognizedText = "";
         clearStatus();
     }
-    
+
     @Override
     public boolean isRunning() {
         return running;
@@ -58,46 +51,41 @@ public abstract class AbstractRecognitionService extends Service implements ISer
         setStatus("");
     }
 
-    @Override
-    public IBinder onBind(Intent intent) {
-        Log.i(TAG, "ON BIND");
-        broadcastIdentifier = intent.getStringExtra("broadcastIdentifier");
-        if (broadcastIdentifier == null) {
-            Log.e(TAG, "missing \"broadcastIdentifier\" extra in Service intent");
-        }
-        
-        statusBroadcastIdentifier = intent.getStringExtra("statusBroadcastIdentifier");
-        if (statusBroadcastIdentifier == null) {
-            Log.e(TAG, "missing \"statusBroadcastIdentifier\" extra in Service intent");
-        }
-        
-        return messenger.getBinder();
-    }
-
-    @Override
-    public void onDestroy() {
-        Log.i(TAG, "ON DESTROY");
-        running = false;
-    }    
-    
     protected void addWords(String words) {
         recognizedText += " " + words;
         
-        Intent i = new Intent(broadcastIdentifier);
-        i.putExtra("words", words);
-        sendBroadcast(i);
+        for (TranscriptionResultListener trl: transcriptionResultListeners) {
+            trl.onTranscriptResult(words);
+        }
     }
-    
+
     protected void setStatus(String status) {
-        Intent i = new Intent(statusBroadcastIdentifier);
-        i.putExtra("message", status);
-        sendBroadcast(i);
+        for (StatusListener sl: statusListeners) {
+            sl.onStatusUpdate(status);
+        }
     }
-    
+
     /**
      * @return the complete text since the last reset
      */
     public String getRecognizedText() {
         return recognizedText;
     }
+    public abstract String getName();
+    
+    public void addStatusListener(StatusListener sl) {
+        statusListeners.add(sl);
+    }
+    
+    public void addTranscriptionListener(TranscriptionResultListener trl) {
+        transcriptionResultListeners.add(trl);
+    }
+    
+    @Override
+    public void shutdown() {
+        statusListeners.clear();
+        transcriptionResultListeners.clear();
+    }
+    
+   
 }

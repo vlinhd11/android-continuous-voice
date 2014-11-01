@@ -32,14 +32,10 @@ package de.uniHamburg.informatik.continuousvoice.services.recognition.pocketSphi
 import static edu.cmu.pocketsphinx.SpeechRecognizerSetup.defaultSetup;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import android.os.AsyncTask;
-import android.widget.Toast;
 import de.uniHamburg.informatik.continuousvoice.services.recognition.AbstractRecognitionService;
-import edu.cmu.pocketsphinx.Assets;
 import edu.cmu.pocketsphinx.Hypothesis;
 import edu.cmu.pocketsphinx.RecognitionListener;
 import edu.cmu.pocketsphinx.SpeechRecognizer;
@@ -47,77 +43,79 @@ import edu.cmu.pocketsphinx.SpeechRecognizer;
 public class PocketSphinxRecognitionService extends AbstractRecognitionService implements RecognitionListener {
 
     private SpeechRecognizer recognizer;
+    private File assetsDir;
 
     @Override
     public void start() {
-        super.start();
-
-        new AsyncTask<Void, Void, Exception>() {
-            @Override
-            protected Exception doInBackground(Void... params) {
-                try {
-                    Assets assets = new Assets(PocketSphinxRecognitionService.this);
-                    File assetDir = assets.syncAssets();
-                    setupRecognizer(assetDir);
-                } catch (IOException e) {
-                    return e;
-                }
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Exception result) {
-                if (result != null) {
-                    String text = "Failed to init PocketSphinx: " + result;
-                    Toast.makeText(getApplicationContext(), text, Toast.LENGTH_LONG).show();
-                } else {
-                    continueRecognizing();
-                    Toast.makeText(getApplicationContext(), "PocketSphinx Ready!", Toast.LENGTH_SHORT).show();
-                }
-            }
-        }.execute();
+//        super.start();
+//
+//        new AsyncTask<Void, Void, Exception>() {
+//            @Override
+//            protected Exception doInBackground(Void... params) {
+//                try {
+//                    Assets assets = new Assets(PocketSphinxRecognitionService.this);
+//                    File assetDir = assets.syncAssets();
+//                    assetsDir = assetDir;
+//                } catch (IOException e) {
+//                    return e;
+//                }
+//                return null;
+//            }
+//
+//            @Override
+//            protected void onPostExecute(Exception result) {
+//                if (result != null) {
+//                    String text = "Failed to init PocketSphinx: " + result;
+//                    Toast.makeText(getApplicationContext(), text, Toast.LENGTH_LONG).show();
+//                } else {
+//                    continueRecognizing();
+//                    Toast.makeText(getApplicationContext(), "PocketSphinx Ready!", Toast.LENGTH_SHORT).show();
+//                }
+//            }
+//        }.execute();
     }
 
     @Override
     public void stop() {
-        super.stop();
-        recognizer.stop();
+//        super.stop();
+//        recognizer.stop();
     }
 
     private void continueRecognizing() {
-        recognizer.stop();
-        recognizer.startListening("freespeech");
+//        recognizer.stop();
+//        recognizer.startListening("freespeech");
     }
 
-    private void setupRecognizer(File assetsDir) {
-        Map<String, String> deSphinx = new HashMap<String, String>();
-        deSphinx.put("acousticModel", "hmm/de-de-voxforge-sphinx");
-        deSphinx.put("dictionary", "dict/voxforge_de_sphinx.dic");
-        deSphinx.put("languageModel", "lm/voxforge_de_sphinx.lm");
-        Map<String, String> deFull = new HashMap<String, String>();
-        deFull.put("acousticModel", "hmm/de-de-voxforge");
-        deFull.put("dictionary", "dict/voxforge_de.dic");
-        deFull.put("languageModel", "lm/voxforge_de.dmp");
-        Map<String, String> enUs = new HashMap<String, String>();
-        enUs.put("acousticModel", "hmm/en-us");
-        enUs.put("dictionary", "dict/voxforge_en_us.dic");
-        enUs.put("languageModel", "lm/en-us.dmp");
-        
-        //SET LANGUAGE HERE!
-        Map<String, String> language = deFull;
-        
-        File modelsDir = new File(assetsDir, "models");
-        recognizer = defaultSetup()
-                
-                .setAcousticModel(new File(modelsDir, language.get("acousticModel")))
-                .setDictionary(new File(modelsDir, language.get("dictionary")))
-                
-                .setRawLogDir(assetsDir)
-                .setKeywordThreshold(1e-20f).getRecognizer();
-        recognizer.addListener(this);
-
-        File languageModel = new File(modelsDir, language.get("languageModel"));
-        recognizer.addNgramSearch("freespeech", languageModel);
+    @Override
+    public void initialize() {
+//        Map<String, String> deSphinx = new HashMap<String, String>();
+//        deSphinx.put("acousticModel", "hmm/de-de-voxforge-sphinx");
+//        deSphinx.put("dictionary", "dict/voxforge_de_sphinx.dic");
+//        deSphinx.put("languageModel", "lm/voxforge_de_sphinx.lm");
+//        Map<String, String> deFull = new HashMap<String, String>();
+//        deFull.put("acousticModel", "hmm/de-de-voxforge");
+//        deFull.put("dictionary", "dict/voxforge_de.dic");
+//        deFull.put("languageModel", "lm/voxforge_de.dmp");
+//        Map<String, String> enUs = new HashMap<String, String>();
+//        enUs.put("acousticModel", "hmm/en-us");
+//        enUs.put("dictionary", "dict/voxforge_en_us.dic");
+//        enUs.put("languageModel", "lm/en-us.dmp");
+//        
+//        //SET LANGUAGE HERE!
+//        Map<String, String> language = deFull;
+//        
+//        File modelsDir = new File(assetsDir, "models");
+//        recognizer = defaultSetup()
+//                
+//                .setAcousticModel(new File(modelsDir, language.get("acousticModel")))
+//                .setDictionary(new File(modelsDir, language.get("dictionary")))
+//                
+//                .setRawLogDir(assetsDir)
+//                .setKeywordThreshold(1e-20f).getRecognizer();
+//        recognizer.addListener(this);
+//
+//        File languageModel = new File(modelsDir, language.get("languageModel"));
+//        recognizer.addNgramSearch("freespeech", languageModel);
     }
 
     @Override
@@ -140,5 +138,10 @@ public class PocketSphinxRecognitionService extends AbstractRecognitionService i
     @Override
     public void onEndOfSpeech() {
         continueRecognizing();
+    }
+
+    @Override
+    public String getName() {
+        return "PocketSphinx";
     }
 }

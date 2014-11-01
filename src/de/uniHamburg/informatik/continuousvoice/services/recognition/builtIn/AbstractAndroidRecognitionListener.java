@@ -7,7 +7,7 @@ import android.util.Log;
 
 public abstract class AbstractAndroidRecognitionListener implements RecognitionListener {
 
-    private static final String TAG = "AbstractAndroidRecognitionListener";
+    private final String TAG = this.getClass().getSimpleName();
 
     @Override
     public void onBeginningOfSpeech() {

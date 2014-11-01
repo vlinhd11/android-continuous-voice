@@ -2,7 +2,6 @@ package de.uniHamburg.informatik.continuousvoice.services.recognition.webService
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,27 +12,22 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.InputStreamEntity;
+import org.apache.http.entity.FileEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.util.Log;
-import de.uniHamburg.informatik.continuousvoice.R;
+import de.uniHamburg.informatik.continuousvoice.services.sound.AudioService;
 
 public class GoogleWebServiceRecognitionService extends AbstractWebServiceRecognitionService {
 
     public static final String TAG = GoogleWebServiceRecognitionService.class.getName();
     private String key;
 
-    public GoogleWebServiceRecognitionService() {
-        super("google_soundfile_" + System.currentTimeMillis());
-    }
-
-    @Override
-    public void onCreate() {
-        key = getString(R.string.googleApiKey);
-        super.onCreate();
+    public GoogleWebServiceRecognitionService(String apiKey, AudioService audioService) {
+        super(audioService);
+        this.key = apiKey;
     }
 
     private String getLanguageId() {
@@ -57,13 +51,9 @@ public class GoogleWebServiceRecognitionService extends AbstractWebServiceRecogn
         HttpClient httpclient = new DefaultHttpClient();
         HttpPost httppost = new HttpPost(getUrl());
 
-        InputStreamEntity reqEntity;
         String transcript = "";
         try {
-            reqEntity = new InputStreamEntity(new FileInputStream(f), -1);
-            reqEntity.setContentType("audio/amr; rate=8000");
-            reqEntity.setChunked(false); // Send in multiple parts if needed
-            httppost.setEntity(reqEntity);
+            httppost.setEntity(new FileEntity(f, recording_mime_type));
             HttpResponse response;
             response = httpclient.execute(httppost);
 
@@ -83,7 +73,7 @@ public class GoogleWebServiceRecognitionService extends AbstractWebServiceRecogn
             Log.e(TAG, "b: " + e.getMessage().toString());
         } catch (ClientProtocolException e) {
             e.printStackTrace();
-            Log.e(TAG, "c: " + e.getMessage().toString());
+            Log.e(TAG, "c: " + e.getMessage());
         } catch (IOException e) {
             e.printStackTrace();
             Log.e(TAG, "d: " + e.getMessage().toString());
@@ -121,5 +111,10 @@ public class GoogleWebServiceRecognitionService extends AbstractWebServiceRecogn
             }
         }
         return result;
+    }
+
+    @Override
+    public String getName() {
+        return "Google Webservice Recognizer";
     }
 }

@@ -5,88 +5,63 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.AsyncTask;
-import android.os.Handler;
 import android.util.Log;
-import de.uniHamburg.informatik.continuousvoice.constants.BroadcastIdentifiers;
 import de.uniHamburg.informatik.continuousvoice.services.recognition.AbstractRecognitionService;
-import de.uniHamburg.informatik.continuousvoice.services.sound.analysis.SilenceListener;
-import de.uniHamburg.informatik.continuousvoice.services.sound.analysis.SoundMeter;
-import de.uniHamburg.informatik.continuousvoice.services.sound.recorder.SoundRecordingService;
+import de.uniHamburg.informatik.continuousvoice.services.sound.AmplitudeListener;
+import de.uniHamburg.informatik.continuousvoice.services.sound.AudioService;
+import de.uniHamburg.informatik.continuousvoice.services.sound.IRecorder;
 
 public abstract class AbstractWebServiceRecognitionService extends AbstractRecognitionService implements
-        SilenceListener {
+        AmplitudeListener {
 
     public final String TAG = this.getClass().getSimpleName();
-    private SoundRecordingService recorder;
-    private SoundMeter soundMeter;
+    private IRecorder recorder;
+    protected String recording_mime_type;
     private boolean recording;
-    private String baseName;
-    public final static int RECORDING_MAX_DURATION = 10 * 1000;
-    private final Handler handler = new Handler();
-    private BroadcastReceiver statusReceiver;
-    
-    public AbstractWebServiceRecognitionService(String baseName) {
-        this.baseName = baseName;
-        
-        statusReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                if (running) {
-                    boolean silent = intent.getBooleanExtra("SILENCE", true);
-                    if (silent) {
-                        AbstractWebServiceRecognitionService.this.onSilence();
-                    } else {
-                        AbstractWebServiceRecognitionService.this.onSpeech();
-                    }
-                }
-            }
-        };
+    public final static int RECORDING_MAX_DURATION_MILLIS = 10 * 1000;
+    private AudioService audioService;
+
+    public AbstractWebServiceRecognitionService(AudioService audioService) {
+        this.audioService = audioService;
+        this.recorder = audioService;
     }
-    
+
     @Override
-    public void onCreate() {
-        recorder = new SoundRecordingService(baseName);
-        super.onCreate();
+    public void initialize() {
+        //1 ensure audioService is running
+        if (!audioService.isRunning()) {
+            audioService.initialize();
+        }
+        audioService.addAmplitudeListener(this);
+
+    }
+
+    @Override
+    public void shutdown() {
+        audioService.removeAmplitudeListener(this);
     }
 
     @Override
     public void start() {
         super.start();
-        registerReceiver(statusReceiver, new IntentFilter(BroadcastIdentifiers.SILENCE_BROADCAST));
-        //soundMeter = new SoundMeter();
-        recorder.start(); // initially start the recording service
-        setStatus("started");
 
-//        soundMeter.addSilenceListener(this);
-//        soundMeter.start();
+        if (audioService.getCurrentSilenceState() == AudioService.State.SPEECH) {
+            startRecording();
+            recording = true;
+        }
     }
 
     @Override
     public void stop() {
-        Log.e(TAG, "STOP!");
-        try {
-            unregisterReceiver(statusReceiver);
-        } catch(IllegalArgumentException e) {
-            //receiver not registered, ok - cool.
-        }
-
-        if (soundMeter != null) {
-            soundMeter.stop();
-            //not necessary soundMeter.removeSilenceListener(this);
-            soundMeter = null;
-        }
         if (maxRecordingTimeScheduler != null) {
             maxRecordingTimeScheduler.shutdownNow();
         }
-        File toTranscribe = recorder.shutdownAndRelease();
+        File toTranscribe = recorder.stopRecording();
+        recorder.shutdown();
         setStatus("stopped, transcribing");
         transcribeAsync(toTranscribe);
-        
+
         super.stop();
     }
 
@@ -116,45 +91,38 @@ public abstract class AbstractWebServiceRecognitionService extends AbstractRecog
         asyncTask.execute(f);
     }
 
-    public abstract String request(File audioFile);
-
-    /*
-     * Recording procedure
-     * a) split at least after 13s
-     * b) split on silence (silence is delayed by SoundMeter, files are never under 3s)
-     * c) start on Loud if not running
-     * 
-     * onLoud ------> startIfNotRunning incl. startTimer --13s--> stopIfRunning -,
-     *             ^-------------------------------------------------------------'
-     * onSilence ------> stopIfRunning
-     */
     private ScheduledExecutorService maxRecordingTimeScheduler;
 
     @Override
     public void onSpeech() {
         startRecording();
     }
-    
+
     @Override
     public void onSilence() {
         stopRecording();
+    }
+
+    @Override
+    public void onAmplitudeUpdate(double percent) {
+        //nothing
     }
 
     private void startRecording() {
         Log.e(TAG, "record >=======");
         if (!recording) {
             //start recorder
-            recorder.start();
+            recorder.startRecording();
             recording = true;
             startMaxTimeScheduler();
         }
     }
 
     private void stopRecording() {
-        Log.e(TAG, "                =======| stop ");
+        Log.e(TAG, "               =======| stop ");
         if (recording) {
             //Stop recorder
-            File toTranscribe = recorder.split(false);
+            File toTranscribe = recorder.stopRecording();
             //transcribe
             transcribeAsync(toTranscribe);
             //stopTimer
@@ -169,17 +137,13 @@ public abstract class AbstractWebServiceRecognitionService extends AbstractRecog
         maxRecordingTimeScheduler.schedule(new Runnable() {
             @Override
             public void run() {
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        setStatus("split");
-                        File f = recorder.split(true);
-                        transcribeAsync(f);
-                        startMaxTimeScheduler();
-                    }
-                });
+                setStatus("splitting");
+                File f = recorder.splitRecording();
+                transcribeAsync(f);
+                startMaxTimeScheduler();                
             }
-        }, RECORDING_MAX_DURATION, TimeUnit.MILLISECONDS);
+        }, RECORDING_MAX_DURATION_MILLIS, TimeUnit.MILLISECONDS);
     }
-    
+
+    public abstract String request(File audioFile);
 }

@@ -1,27 +1,22 @@
 package de.uniHamburg.informatik.continuousvoice.views.fragments;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import android.app.Fragment;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.content.res.Resources;
+import android.media.MediaRecorder;
 import android.os.Bundle;
-import android.os.DropBoxManager;
 import android.os.Handler;
-import android.os.IBinder;
-import android.os.Message;
 import android.os.Messenger;
-import android.os.RemoteException;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
@@ -29,18 +24,20 @@ import android.widget.ImageButton;
 import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 import de.uniHamburg.informatik.continuousvoice.R;
 import de.uniHamburg.informatik.continuousvoice.constants.BroadcastIdentifiers;
-import de.uniHamburg.informatik.continuousvoice.constants.ServiceControlConstants;
+import de.uniHamburg.informatik.continuousvoice.services.recognition.AbstractRecognitionService;
+import de.uniHamburg.informatik.continuousvoice.services.recognition.StatusListener;
+import de.uniHamburg.informatik.continuousvoice.services.recognition.TranscriptionResultListener;
+import de.uniHamburg.informatik.continuousvoice.services.recognition.builtIn.AndroidRecognitionService;
+import de.uniHamburg.informatik.continuousvoice.services.recognition.webService.GoogleWebServiceRecognitionService;
+import de.uniHamburg.informatik.continuousvoice.services.sound.AudioService;
 
 public class RecognizerFragment extends Fragment {
 
-    private static final String TAG = RecognizerFragment.class.getName();
+    private final String TAG = this.getClass().getSimpleName();
     private String minutesStringSchema;
     private String wordsStringSchema;
-    private boolean bound = false;
-    private Messenger messenger;
     private int seconds = 0;
     private String completeText = "";
     private int words = 0;
@@ -63,47 +60,29 @@ public class RecognizerFragment extends Fragment {
     public static final short STATE_2_WORKING = 2;
     public static final short STATE_3_DONE = 3;
 
-    private Handler handler = new Handler();
+    private Handler handler;
     private boolean running = false;
-    private Intent serviceIntent;
-    private Runnable runnable = new Runnable() {
-        @Override
-        public void run() {
-            if (running) {
-                seconds++;
-                updateTimeText();
-                handler.postDelayed(this, 1000);
+    private Runnable timeUpdateRunner;
+    private AudioService audioService;
+    private List<AbstractRecognitionService> availableRecognizers;
+    private AbstractRecognitionService currentRecognizer;  
+    
+    public RecognizerFragment(AudioService audioService) {
+        this.audioService = audioService;
+        
+        timeUpdateRunner = new Runnable() {
+            @Override
+            public void run() {
+                if (running) {
+                    seconds++;
+                    updateTimeText();
+                    handler.postDelayed(this, 1000);
+                }
             }
-        }
-    };
-
-    /** Defines callbacks for service binding, passed to bindService() */
-    private ServiceConnection serviceConnection = new ServiceConnection() {
-
-        @Override
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            messenger = new Messenger(service);
-            bound = true;
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-            bound = false;
-        }
-    };
-
-    // This class handles the Service response
-    private Handler responseHandler = new Handler() {
-
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-            case ServiceControlConstants.SERVICE_CONTROL_RESPONSE:
-                // boolean result = msg.getData().getBoolean("success");
-                // addTextToView("success: " + result);
-            }
-        }
-    };
+        };
+        
+        handler = new Handler();
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -122,12 +101,20 @@ public class RecognizerFragment extends Fragment {
         statusTextLine1 = (TextView) view.findViewById(R.id.voiceRecognizerState1);
         statusTextLine2 = (TextView) view.findViewById(R.id.voiceRecognizerState2);
 
+        availableRecognizers = new ArrayList<AbstractRecognitionService>();
+        availableRecognizers.add(new AndroidRecognitionService(getActivity()));
+        availableRecognizers.add(new GoogleWebServiceRecognitionService(getString(R.string.googleApiKey), audioService));
+        
         serviceSpinner = (Spinner) view.findViewById(R.id.serviceSpinner);
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getActivity(), R.array.services_array,
-                android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        serviceSpinner.setAdapter(adapter);
-
+        List<String> list = new ArrayList<String>();
+        for (AbstractRecognitionService ars: availableRecognizers) {
+            list.add(ars.getName());
+        }
+        ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_dropdown_item, list);
+        dataAdapter.setDropDownViewResource
+                     (android.R.layout.simple_spinner_dropdown_item);
+        serviceSpinner.setAdapter(dataAdapter);
+        
         Resources res = getResources();
         minutesStringSchema = res.getString(R.string.minutes);
         wordsStringSchema = res.getString(R.string.words);
@@ -135,42 +122,40 @@ public class RecognizerFragment extends Fragment {
         createListeners();
         resetTexts();
         updateButtonState();
+        
 
         return view;
     }
 
-    private boolean bindToService(String serviceClassName) {
-        unbindFromService();
-
-        try {
-            // Bind to service
-            serviceIntent = new Intent(getActivity(), Class.forName(serviceClassName));
-            serviceIntent.putExtra("broadcastIdentifier", BroadcastIdentifiers.VOICE_RECOGNITION_BROADCAST_IDENTIFIER);
-            serviceIntent.putExtra("statusBroadcastIdentifier",
-                    BroadcastIdentifiers.VOICE_RECOGNITION_STATUS_BROADCAST_IDENTIFIER);
-            getActivity().bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE);
-            bound = true;
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-            Log.e(TAG, "could not bind to " + serviceClassName + "\n" + e.getMessage());
-            Toast.makeText(RecognizerFragment.this.getActivity(),
-                    "Could not switch to " + serviceClassName + "\n" + e.getMessage(), Toast.LENGTH_LONG).show();
+    private void switchService(AbstractRecognitionService newRecognizer) {
+        if (currentRecognizer != null) {
+            currentRecognizer.shutdown();
         }
-        return bound;
+        currentRecognizer = newRecognizer;
+        initializeRecognizer(currentRecognizer);
     }
-
-    private void unbindFromService() {
-        if (bound) {
-            if (serviceConnection != null) {
-                getActivity().unbindService(serviceConnection);
+    
+    private void initializeRecognizer(AbstractRecognitionService recognizer) {
+        recognizer.initialize();
+        recognizer.addTranscriptionListener(new TranscriptionResultListener() {
+            @Override
+            public void onTranscriptResult(String transcriptResult) {
+                addTextToView(transcriptResult);
             }
-            bound = false;
-        }
+        });
+        recognizer.addStatusListener(new StatusListener() {
+            @Override
+            public void onStatusUpdate(String newStatus) {
+                setStatus(newStatus);
+            }
+        });
     }
-
+    
+    
+    
     private void startTimer() {
         running = true;
-        handler.postDelayed(runnable, 1000);
+        handler.postDelayed(timeUpdateRunner, 1000);
     }
 
     private void stopTimer() {
@@ -211,19 +196,7 @@ public class RecognizerFragment extends Fragment {
         serviceSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String title = (String) parent.getItemAtPosition(position);
-                String className = getResources().getString(
-                        getResources().getIdentifier(title.replace(' ', '_'), "string",
-                                "de.uniHamburg.informatik.continuousvoice"));
-
-                // eg disable buttons
-                String notificationText;
-                if (bindToService(className)) {
-                    notificationText = title + " connection ready.";
-                } else {
-                    notificationText = "ERROR\nCould not connect to " + className;
-                }
-                Toast.makeText(RecognizerFragment.this.getActivity(), notificationText, Toast.LENGTH_SHORT).show();
+                switchService(availableRecognizers.get(position));
             }
 
             @Override
@@ -231,27 +204,6 @@ public class RecognizerFragment extends Fragment {
 
             }
         });
-
-        BroadcastReceiver voiceReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                String words = intent.getStringExtra("words");
-                completeText += " " + words;
-                addTextToView(words);
-            }
-        };
-        getActivity().registerReceiver(voiceReceiver,
-                new IntentFilter(BroadcastIdentifiers.VOICE_RECOGNITION_BROADCAST_IDENTIFIER));
-
-        BroadcastReceiver statusReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                String status = intent.getStringExtra("message");
-                setStatus(status);
-            }
-        };
-        getActivity().registerReceiver(statusReceiver,
-                new IntentFilter(BroadcastIdentifiers.VOICE_RECOGNITION_STATUS_BROADCAST_IDENTIFIER));
     }
 
     private void resetTexts() {
@@ -334,29 +286,29 @@ public class RecognizerFragment extends Fragment {
     }
 
     public void play() {
-        if (send(ServiceControlConstants.START)) {
-            switchState(STATE_2_WORKING);
-            resetTime();
-            startTimer();
-        }
+        currentRecognizer.start();
+        switchState(STATE_2_WORKING);
+        resetTime();
+        startTimer();
     }
 
     public void stop() {
-        if (send(ServiceControlConstants.STOP)) {
-            switchState(STATE_3_DONE);
-            stopTimer();
-        }
+        currentRecognizer.stop();
+        switchState(STATE_3_DONE);
+        stopTimer();
     }
 
     public void clear() {
-        if (send(ServiceControlConstants.RESET)) {
-            switchState(STATE_1_READY);
-            resetTime();
-            completeText = "";
-            words = 0;
-            updateWordCount();
-            contentText.setText("");
+        if (currentRecognizer.isRunning()) {
+            currentRecognizer.stop();
         }
+        
+        switchState(STATE_1_READY);
+        resetTime();
+        completeText = "";
+        words = 0;
+        updateWordCount();
+        contentText.setText("");
     }
 
     public void share() {
@@ -367,28 +319,11 @@ public class RecognizerFragment extends Fragment {
         startActivity(sendIntent);
     }
 
-    private boolean send(int code) {
-        Message msg = Message.obtain(null, code);
-        msg.replyTo = new Messenger(responseHandler);
-
-        try {
-            messenger.send(msg);
-            return true;
-        } catch (RemoteException e) {
-            Log.e(TAG, "Could not send code " + code + ". " + e.getMessage());
-            return false;
-        }
-    }
-
     @Override
     public void onPause() {
         stop();
-        while (!send(ServiceControlConstants.STOP)) {
-            //will you stop, you goddamn service!
-            Log.e(TAG, "will you stop, you goddamn service!");
-        }
-        unbindFromService();
-
+        currentRecognizer.shutdown();
+        
         super.onPause();
     }
 
@@ -400,11 +335,7 @@ public class RecognizerFragment extends Fragment {
     @Override
     public void onDestroy() {
         stop();
-        while (!send(ServiceControlConstants.STOP)) {
-            //will you stop, you goddamn service!
-            Log.e(TAG, "will you stop, you goddamn service!");
-        }
-        unbindFromService();
+        currentRecognizer.shutdown();
 
         super.onDestroy();
     }

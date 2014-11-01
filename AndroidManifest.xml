@@ -15,6 +15,7 @@
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <!-- send audio files to the recognizer web services -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="com.sonymobile.permission.SYSTEM_UI_VISIBILITY_EXTENSIONS" />
     <!-- PERMISSIONS ### -->
     
     <uses-sdk
@@ -36,6 +37,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        
+        <service
+            android:name="de.uniHamburg.informatik.continuousvoice.services.sound.AudioService"
+            android:label="Audio Service"
+            android:process="de.uniHamburg.informatik.continuousvoice.processes.AudioService" >
+        </service>
 
         <service
             android:name="de.uniHamburg.informatik.continuousvoice.services.recognition.pocketSphinx.PocketSphinxRecognitionService"
