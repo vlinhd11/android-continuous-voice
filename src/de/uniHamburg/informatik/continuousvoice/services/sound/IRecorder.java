@@ -30,4 +30,6 @@ public interface IRecorder {
      * @return the recorded file
      */
     public File splitRecording();
+
+    public boolean isRecording();
 }

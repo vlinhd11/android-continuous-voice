@@ -29,7 +29,7 @@ import android.util.Log;
  */
 public class AudioService implements IRecorder {
     //config
-    private final String TAG = this.getClass().getSimpleName();
+    private final String        TAG = "AudioService";
     private static final int    SOURCE = MediaRecorder.AudioSource.MIC;
     private static final int    FORMAT = MediaRecorder.OutputFormat.AMR_NB;
     private static final int    ENCODER = MediaRecorder.AudioEncoder.AMR_NB;
@@ -41,12 +41,11 @@ public class AudioService implements IRecorder {
     public static int           SILENCE_OFFSET_MILLIS = 2000;
 
     //media recorders
-    private MediaRecorder currentRecorder = null;
-    private MediaRecorder persistentRecorder = null;
-    private MediaRecorder transientRecorder = null;
+    private FileMediaRecorder currentRecorder = null;
+    private FileMediaRecorder persistentRecorder = null;
+    private FileMediaRecorder transientRecorder = null;
 
     //soundfile recording
-    private String currentFileName = null;
     private int recorderIteration = 0;
     private boolean recording = false;
     private List<AmplitudeListener> listeners = new ArrayList<AmplitudeListener>();
@@ -110,11 +109,12 @@ public class AudioService implements IRecorder {
             throw new IllegalStateException("Currently not recording.");
         }
 
-        //1 create the file
-        File currentFile = new File(currentFileName);
-        //2 terminate the current recorder (which is a persistent recorder)
+        //1 terminate the current recorder (which is a persistent recorder)
         terminateRecorder(currentRecorder);
         recording = false;
+        //2 get the file
+        File currentFile = currentRecorder.getFile();
+        Log.i(TAG, "Soundfile: " + currentFile.getName() + " exists: " + currentFile.exists() + " size: " + (currentFile.length()/1024.0) + "kb");
         //3 set the ready-to-start transient recorder as current
         currentRecorder = transientRecorder;
         //4 start the current transient recorder
@@ -123,7 +123,7 @@ public class AudioService implements IRecorder {
         transientRecorder = createRecorder(false);
         //5 check if file exists
         if (!currentFile.exists()) {
-            throw new IllegalStateException("The soundfile " + currentFileName + " does not exist.");
+            throw new IllegalStateException("The soundfile " + currentFile.getAbsolutePath() + " does not exist.");
         }
 
         return currentFile;
@@ -136,28 +136,28 @@ public class AudioService implements IRecorder {
         }
         // 1 terminate current recorder
         terminateRecorder(currentRecorder);
-        // 2 create file
-        File file = new File(currentFileName);
+        // 2 get the file
+        File file = currentRecorder.getFile();
         // 3 start next recorder immediately
         currentRecorder = persistentRecorder;
         startRecorder(persistentRecorder);
         // 4 create new recorder
         persistentRecorder = createRecorder(true);
-        // 5 return file
+        // 5 return the file
         return file;
     }
 
-    private MediaRecorder createRecorder(boolean persistent) {
-        MediaRecorder recorder = new MediaRecorder();
+    private FileMediaRecorder createRecorder(boolean persistent) {
+        String currentFileName = null;
+        if (persistent) {
+            currentFileName = getNextFileName();
+        }
+
+        FileMediaRecorder recorder = new FileMediaRecorder(currentFileName);
         recorder.setAudioSource(SOURCE);
         recorder.setOutputFormat(FORMAT);
         recorder.setAudioEncoder(ENCODER);
 
-        currentFileName = "/dev/null";
-        if (persistent) {
-            currentFileName = getNextFileName();
-        }
-        recorder.setOutputFile(currentFileName);
 
         try {
             recorder.prepare();
@@ -284,5 +284,10 @@ public class AudioService implements IRecorder {
 
     public boolean isRunning() {
         return running;
+    }
+
+    @Override
+    public boolean isRecording() {
+        return recording;
     }
 }

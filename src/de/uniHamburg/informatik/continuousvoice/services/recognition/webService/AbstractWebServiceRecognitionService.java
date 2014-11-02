@@ -15,11 +15,9 @@ import de.uniHamburg.informatik.continuousvoice.services.sound.IRecorder;
 public abstract class AbstractWebServiceRecognitionService extends AbstractRecognitionService implements
         AmplitudeListener {
 
-    public final String TAG = this.getClass().getSimpleName();
-    private IRecorder recorder;
-    protected String recording_mime_type;
-    private boolean recording;
+    public final String TAG = "AbstractWebServiceRecognitionService";
     public final static int RECORDING_MAX_DURATION_MILLIS = 10 * 1000;
+    private IRecorder recorder;
     private AudioService audioService;
 
     public AbstractWebServiceRecognitionService(AudioService audioService) {
@@ -33,22 +31,22 @@ public abstract class AbstractWebServiceRecognitionService extends AbstractRecog
         if (!audioService.isRunning()) {
             audioService.initialize();
         }
-        audioService.addAmplitudeListener(this);
 
     }
 
     @Override
     public void shutdown() {
-        audioService.removeAmplitudeListener(this);
+        if (running) {
+            stop();
+        }
     }
 
     @Override
     public void start() {
         super.start();
-
+        audioService.addAmplitudeListener(this);
         if (audioService.getCurrentSilenceState() == AudioService.State.SPEECH) {
             startRecording();
-            recording = true;
         }
     }
 
@@ -57,10 +55,15 @@ public abstract class AbstractWebServiceRecognitionService extends AbstractRecog
         if (maxRecordingTimeScheduler != null) {
             maxRecordingTimeScheduler.shutdownNow();
         }
-        File toTranscribe = recorder.stopRecording();
+        audioService.removeAmplitudeListener(this);
+        if (recorder.isRecording()) {
+            File toTranscribe = recorder.stopRecording();
+            setStatus("stopped, transcribing");
+            transcribeAsync(toTranscribe);
+        } else {
+            setStatus("stopped");
+        }
         recorder.shutdown();
-        setStatus("stopped, transcribing");
-        transcribeAsync(toTranscribe);
 
         super.stop();
     }
@@ -109,25 +112,25 @@ public abstract class AbstractWebServiceRecognitionService extends AbstractRecog
     }
 
     private void startRecording() {
-        Log.e(TAG, "record >=======");
-        if (!recording) {
+        Log.e(TAG, "is rec: " + recorder.isRecording());
+        Log.e(TAG, "❰ record ❱─────┐");
+        if (!recorder.isRecording()) {
             //start recorder
             recorder.startRecording();
-            recording = true;
             startMaxTimeScheduler();
         }
     }
 
     private void stopRecording() {
-        Log.e(TAG, "               =======| stop ");
-        if (recording) {
+        Log.e(TAG, "               └─────❰ stop ❱");
+        Log.e(TAG, "is rec: " + recorder.isRecording());
+        if (recorder.isRecording()) {
             //Stop recorder
             File toTranscribe = recorder.stopRecording();
             //transcribe
             transcribeAsync(toTranscribe);
             //stopTimer
             maxRecordingTimeScheduler.shutdownNow();
-            recording = false;
         }
     }
 

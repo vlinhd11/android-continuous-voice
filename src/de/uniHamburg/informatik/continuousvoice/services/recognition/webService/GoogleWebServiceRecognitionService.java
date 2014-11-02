@@ -53,7 +53,7 @@ public class GoogleWebServiceRecognitionService extends AbstractWebServiceRecogn
 
         String transcript = "";
         try {
-            httppost.setEntity(new FileEntity(f, recording_mime_type));
+            httppost.setEntity(new FileEntity(f, AudioService.MIME_TYPE));
             HttpResponse response;
             response = httpclient.execute(httppost);
 
@@ -96,6 +96,8 @@ public class GoogleWebServiceRecognitionService extends AbstractWebServiceRecogn
         // "Hola a OpenDomo"},{"transcript":"hola a OpenDomo"}],"final":true}],"result_inde
         // x":0}
 
+        Log.i(TAG, response);
+        
         String result = "(?)";
         
         if (response != null) {
