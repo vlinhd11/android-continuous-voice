@@ -6,6 +6,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.util.Log;
 import de.uniHamburg.informatik.continuousvoice.services.recognition.AbstractRecognitionService;
 import de.uniHamburg.informatik.continuousvoice.services.sound.AmplitudeListener;
@@ -16,22 +17,32 @@ public abstract class AbstractWebServiceRecognitionService extends AbstractRecog
         AmplitudeListener {
 
     public final String TAG = "AbstractWebServiceRecognitionService";
-    public final static int RECORDING_MAX_DURATION_MILLIS = 10 * 1000;
+    private ScheduledExecutorService maxRecordingTimeScheduler;
+    protected long RECORDING_MAX_DURATION = 10 * 1000;
     private IRecorder recorder;
     private AudioService audioService;
+    private Runnable splitRunnable;
+    private Handler handler = new Handler();
 
     public AbstractWebServiceRecognitionService(AudioService audioService) {
         this.audioService = audioService;
         this.recorder = audioService;
+        this.splitRunnable = new Runnable() {
+            @Override
+            public void run() {
+                setStatus("splitting");
+                Log.e(TAG, "          ┌────┴────┐");
+                Log.e(TAG, "          │❰ split ❱│");
+                Log.e(TAG, "          └────┬────┘");
+                File f = recorder.splitRecording();
+                transcribeAsync(f);
+                startMaxTimeScheduler();
+            }
+        };
     }
 
     @Override
     public void initialize() {
-        //1 ensure audioService is running
-        if (!audioService.isRunning()) {
-            audioService.initialize();
-        }
-
     }
 
     @Override
@@ -43,7 +54,14 @@ public abstract class AbstractWebServiceRecognitionService extends AbstractRecog
 
     @Override
     public void start() {
+        //1 ensure audioService is running
+        if (!audioService.isRunning()) {
+            audioService.initialize();
+            setStatus("AudioService turn on");
+        }
+
         super.start();
+
         audioService.addAmplitudeListener(this);
         if (audioService.getCurrentSilenceState() == AudioService.State.SPEECH) {
             startRecording();
@@ -52,9 +70,7 @@ public abstract class AbstractWebServiceRecognitionService extends AbstractRecog
 
     @Override
     public void stop() {
-        if (maxRecordingTimeScheduler != null) {
-            maxRecordingTimeScheduler.shutdownNow();
-        }
+        stopMaxTimeScheduler();
         audioService.removeAmplitudeListener(this);
         if (recorder.isRecording()) {
             File toTranscribe = recorder.stopRecording();
@@ -63,7 +79,6 @@ public abstract class AbstractWebServiceRecognitionService extends AbstractRecog
         } else {
             setStatus("stopped");
         }
-        recorder.shutdown();
 
         super.stop();
     }
@@ -94,8 +109,6 @@ public abstract class AbstractWebServiceRecognitionService extends AbstractRecog
         asyncTask.execute(f);
     }
 
-    private ScheduledExecutorService maxRecordingTimeScheduler;
-
     @Override
     public void onSpeech() {
         startRecording();
@@ -112,40 +125,42 @@ public abstract class AbstractWebServiceRecognitionService extends AbstractRecog
     }
 
     private void startRecording() {
-        Log.e(TAG, "is rec: " + recorder.isRecording());
-        Log.e(TAG, "❰ record ❱─────┐");
         if (!recorder.isRecording()) {
+            Log.e(TAG, "❰ record ❱─────┐");
+            startMaxTimeScheduler();
             //start recorder
             recorder.startRecording();
-            startMaxTimeScheduler();
         }
     }
 
     private void stopRecording() {
-        Log.e(TAG, "               └─────❰ stop ❱");
-        Log.e(TAG, "is rec: " + recorder.isRecording());
         if (recorder.isRecording()) {
+            Log.e(TAG, "               └─────❰ stop ❱");
             //Stop recorder
             File toTranscribe = recorder.stopRecording();
             //transcribe
             transcribeAsync(toTranscribe);
             //stopTimer
-            maxRecordingTimeScheduler.shutdownNow();
+            stopMaxTimeScheduler();
         }
     }
 
     private void startMaxTimeScheduler() {
-        //start 13s Timer
+        stopMaxTimeScheduler();
+
         maxRecordingTimeScheduler = Executors.newScheduledThreadPool(1);
         maxRecordingTimeScheduler.schedule(new Runnable() {
             @Override
             public void run() {
-                setStatus("splitting");
-                File f = recorder.splitRecording();
-                transcribeAsync(f);
-                startMaxTimeScheduler();                
+                handler.post(splitRunnable);
             }
-        }, RECORDING_MAX_DURATION_MILLIS, TimeUnit.MILLISECONDS);
+        }, RECORDING_MAX_DURATION, TimeUnit.MILLISECONDS);
+    }
+
+    private void stopMaxTimeScheduler() {
+        if (maxRecordingTimeScheduler != null) {
+            maxRecordingTimeScheduler.shutdownNow();
+        }
     }
 
     public abstract String request(File audioFile);

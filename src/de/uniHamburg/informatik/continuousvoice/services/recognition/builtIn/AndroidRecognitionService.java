@@ -1,6 +1,7 @@
 package de.uniHamburg.informatik.continuousvoice.services.recognition.builtIn;
 
 import de.uniHamburg.informatik.continuousvoice.services.recognition.AbstractRecognitionService;
+import de.uniHamburg.informatik.continuousvoice.services.sound.AudioService;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -19,9 +20,11 @@ public class AndroidRecognitionService extends AbstractRecognitionService {
     private boolean beepOff = false;
     private RecognitionListener recognitionListener;
     private Context context;
+    private AudioService audioService;
 
-    public AndroidRecognitionService(Context context) {
+    public AndroidRecognitionService(Context context, AudioService audioService) {
         this.context = context;
+        this.audioService = audioService;
     }
     
     @Override
@@ -36,11 +39,11 @@ public class AndroidRecognitionService extends AbstractRecognitionService {
 
                 setStatus(translateError(error) + "!");
                 Log.i(TAG, "Restarting Android Speech Recognizer");
-                //                if (super.restartWhenError(error)) {
-                //                    getSpeechRecognizer().cancel();
-                //                    startVoiceRecognitionCycle();
-                //                    setStatus("restart");
-                //                }
+                                if (super.restartWhenError(error)) {
+                                    getSpeechRecognizer().cancel();
+                                    startVoiceRecognitionCycle();
+                                    setStatus("restart");
+                                }
             }
 
             @Override
@@ -76,6 +79,12 @@ public class AndroidRecognitionService extends AbstractRecognitionService {
     @Override
     public void start() {
         super.start();
+        
+        if (audioService.isRunning()) {
+            audioService.shutdown();
+            setStatus("AudioService turn off");
+        }
+        
         turnBeepOff();
         startVoiceRecognitionCycle();
         setStatus("started");
@@ -89,6 +98,11 @@ public class AndroidRecognitionService extends AbstractRecognitionService {
             speech = null;
         }
         turnBeepOn();
+
+        if (!audioService.isRunning()) {
+            audioService.initialize();
+            setStatus("AudioService turn on");
+        }
     }
 
     /**

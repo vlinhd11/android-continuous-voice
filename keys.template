@@ -3,5 +3,6 @@
 
 	<!-- Please get your key for the Google Web Service Recognition from the Google Developers Console: https://console.developers.google.com/ -->
     <string name="googleApiKey">GOOGLEKEY</string>
+    <string name="attApiOauthKey">AT&T OAUTH2 TOKEN</string>
 
 </resources>

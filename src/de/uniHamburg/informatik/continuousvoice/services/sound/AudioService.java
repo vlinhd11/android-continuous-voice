@@ -49,6 +49,7 @@ public class AudioService implements IRecorder {
     private int recorderIteration = 0;
     private boolean recording = false;
     private List<AmplitudeListener> listeners = new ArrayList<AmplitudeListener>();
+    private List<IAudioServiceStartStopListener> startStopListeners = new ArrayList<IAudioServiceStartStopListener>();
     public static final String SUFFIX = "amr";
 
     //aplitude measurement
@@ -72,12 +73,14 @@ public class AudioService implements IRecorder {
 
         startRecorder(currentRecorder);
         running = true;
+        notifyStartStopListeners();
         startAmplitudeMeasurement();
     }
 
     @Override
     public void shutdown() {
         running = false;
+        notifyStartStopListeners();
         scheduleTaskExecutor = null;
         terminateRecorder(currentRecorder); //no matter if persistent or transient
 
@@ -289,5 +292,15 @@ public class AudioService implements IRecorder {
     @Override
     public boolean isRecording() {
         return recording;
+    }
+    
+    public void addStartStopListener(IAudioServiceStartStopListener l) {
+        startStopListeners.add(l);
+    }
+    
+    private void notifyStartStopListeners() {
+        for (IAudioServiceStartStopListener l: startStopListeners) {
+            l.onAudioServiceStateChange();
+        }
     }
 }

@@ -30,6 +30,7 @@ import de.uniHamburg.informatik.continuousvoice.services.recognition.AbstractRec
 import de.uniHamburg.informatik.continuousvoice.services.recognition.StatusListener;
 import de.uniHamburg.informatik.continuousvoice.services.recognition.TranscriptionResultListener;
 import de.uniHamburg.informatik.continuousvoice.services.recognition.builtIn.AndroidRecognitionService;
+import de.uniHamburg.informatik.continuousvoice.services.recognition.webService.AttWebServiceRecognitionService;
 import de.uniHamburg.informatik.continuousvoice.services.recognition.webService.GoogleWebServiceRecognitionService;
 import de.uniHamburg.informatik.continuousvoice.services.sound.AudioService;
 
@@ -102,8 +103,9 @@ public class RecognizerFragment extends Fragment {
         statusTextLine2 = (TextView) view.findViewById(R.id.voiceRecognizerState2);
 
         availableRecognizers = new ArrayList<AbstractRecognitionService>();
-        availableRecognizers.add(new AndroidRecognitionService(getActivity()));
+        availableRecognizers.add(new AndroidRecognitionService(getActivity(), audioService));
         availableRecognizers.add(new GoogleWebServiceRecognitionService(getString(R.string.googleApiKey), audioService));
+        availableRecognizers.add(new AttWebServiceRecognitionService(getString(R.string.attApiOauthKey), audioService));
         
         serviceSpinner = (Spinner) view.findViewById(R.id.serviceSpinner);
         List<String> list = new ArrayList<String>();
