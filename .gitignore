@@ -55,5 +55,6 @@ local.properties
 # TeXlipse plugin
 .texlipse
 
-#private key file
+#private key files
 res/values/keys.xml
+src/de/uniHamburg/informatik/continuousvoice/services/recognition/nuance/NuanceCredentials.java
