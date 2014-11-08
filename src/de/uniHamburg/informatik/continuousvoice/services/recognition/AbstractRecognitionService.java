@@ -3,19 +3,26 @@ package de.uniHamburg.informatik.continuousvoice.services.recognition;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.util.Log;
+import de.uniHamburg.informatik.continuousvoice.settings.GeneralSettings;
+import de.uniHamburg.informatik.continuousvoice.settings.Language;
+import de.uniHamburg.informatik.continuousvoice.settings.SettingsChangedListener;
 
-public abstract class AbstractRecognitionService implements IRecognizerControl {
+public abstract class AbstractRecognitionService implements IRecognizerControl, SettingsChangedListener {
 
     private final String TAG = this.getClass().getSimpleName();
     protected boolean running = false;
     private String recognizedText = "";
     private List<TranscriptionResultListener> transcriptionResultListeners;
     private List<StatusListener> statusListeners;
+    protected final GeneralSettings settings;
+    protected Language currentLanguage;
 
     public AbstractRecognitionService() {
         statusListeners = new ArrayList<StatusListener>();
         transcriptionResultListeners = new ArrayList<TranscriptionResultListener>();
+        settings = GeneralSettings.getInstance();
+        settings.addSettingsChangedListener(this);
+        currentLanguage = settings.getLanguage();
     }
 
     /**
@@ -87,5 +94,9 @@ public abstract class AbstractRecognitionService implements IRecognizerControl {
         transcriptionResultListeners.clear();
     }
     
+    @Override
+    public void settingChanged() {
+        currentLanguage = settings.getLanguage();
+    }
    
 }

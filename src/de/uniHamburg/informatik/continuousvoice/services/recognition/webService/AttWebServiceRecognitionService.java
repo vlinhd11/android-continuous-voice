@@ -15,9 +15,11 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.FileEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.util.Log;
 import de.uniHamburg.informatik.continuousvoice.services.sound.AudioService;
+import de.uniHamburg.informatik.continuousvoice.settings.Language;
 
 public class AttWebServiceRecognitionService extends AbstractWebServiceRecognitionService {
 
@@ -28,6 +30,17 @@ public class AttWebServiceRecognitionService extends AbstractWebServiceRecogniti
     public AttWebServiceRecognitionService(String apiKey, AudioService audioService) {
         super(audioService);
         this.key = apiKey;
+    }
+    
+    @Override
+    public void start() {
+        //reset language to en-us if not en-us!
+        if (!settings.getLanguage().equals(Language.EnUs)) {
+            settings.setLanguage(Language.EnUs);
+            setStatus("ONLY EN-US!");
+        }
+        
+        super.start();
     }
 
     private String getUrl() {
@@ -85,7 +98,7 @@ public class AttWebServiceRecognitionService extends AbstractWebServiceRecogniti
             Log.e(TAG, "e: " + e.getMessage().toString());
         } catch (JSONException e) {
             e.printStackTrace();
-            transcript = "(Is your API key valid?)";
+            transcript = "[JSON ERROR]";
             Log.e(TAG, "f: " + e.getMessage().toString());
         }
 
@@ -93,28 +106,32 @@ public class AttWebServiceRecognitionService extends AbstractWebServiceRecogniti
     }
 
     private String parseResponse(String response) throws IllegalStateException, IOException, JSONException {
-        // "{\"result\":[]}{"result":[{"alternative":[{"transcript":"Hola
-        // OpenDomo","confidence":0.95670336
-        // },{"transcript":"holaaa OpenDomo"},{"transcript":"Olga OpenDomo"},{"transcript":
-        // "Hola a OpenDomo"},{"transcript":"hola a OpenDomo"}],"final":true}],"result_inde
-        // x":0}
-
-        Log.i(TAG, response);
-        
         String result = response;
-//        
-//        if (response != null) {
-//            String cleansedResult = response.replace("{\"result\":[]}", "");
-//            cleansedResult = cleansedResult.replace("\n", "").replace("\r", "").trim();
-//            if (cleansedResult.length() != 0) { //empty result
-//                JSONObject json = new JSONObject(cleansedResult);
-//                
-//                try {
-//                    result = json.getJSONArray("result").getJSONObject(0).getJSONArray("alternative").getJSONObject(0).getString("transcript");
-//                } catch (NullPointerException npe) {
-//                }
-//            }
-//        }
+
+        if (result != null) {
+            result = result.trim();
+            if (result.length() != 0) { //empty result
+                JSONObject json = new JSONObject(result);
+
+                try {
+                    if (json.has("Recognition")) {
+                        JSONObject info = json.getJSONObject("Recognition");
+                        if (info.has("NBest")) {
+                            result = info.getJSONArray("NBest")
+                            .getJSONObject(0).getString("ResultText");
+                        } else {
+                            result = "(?)";
+                        }
+                    } else if (json.has("RequestError")) {
+                       result = json.getJSONObject("RequestError").toString(2);
+                    } else {
+                        result = "(?)";
+                    }
+                } catch (NullPointerException npe) {
+                    result = "(?)";
+                }
+            }
+        }
         return result;
     }
 

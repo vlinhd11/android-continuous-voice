@@ -30,14 +30,9 @@ public class GoogleWebServiceRecognitionService extends AbstractWebServiceRecogn
         this.key = apiKey;
     }
 
-    private String getLanguageId() {
-        // en-us en-en fr es ...
-        return "de";
-    }
-
     private String getUrl() {
         // 'https://www.google.com/speech-api/v2/recognize?output=json&lang=en-us&key=[KEY]'
-        return "https://www.google.com/speech-api/v2/recognize?output=json&lang=" + getLanguageId() + "&key=" + key
+        return "https://www.google.com/speech-api/v2/recognize?output=json&lang=" + currentLanguage.getCode4() + "&key=" + key
                 + "&client=chromium&maxresults=1&pfilter=2";
     }
 

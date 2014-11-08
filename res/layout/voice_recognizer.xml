@@ -20,14 +20,29 @@
             android:layout_height="wrap_content"
             android:layout_weight="1.0"
             android:orientation="vertical">
-            <!-- spinner -->
-            <Spinner
-                android:id="@+id/serviceSpinner"
+            <!-- spinners -->
+
+            <LinearLayout
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:paddingRight="@dimen/activity_vertical_margin"
-                android:paddingLeft="@dimen/activity_vertical_margin" />
+                android:layout_weight="1.0"
+                android:orientation="horizontal" >
+	            <Spinner
+	                android:id="@+id/serviceSpinner"
+	                android:layout_width="0dp"
+	                android:layout_weight="0.7"
+	                android:layout_height="wrap_content"
+	                android:paddingRight="0dp"
+	                android:paddingLeft="@dimen/activity_vertical_margin" />
+	            <Spinner
+	                android:id="@+id/languageSpinner"
+	                android:layout_weight="0.3"
+	                android:layout_width="0dp"
+	                android:layout_height="wrap_content"
+	                android:paddingRight="@dimen/activity_vertical_margin"
+	                android:paddingLeft="0dp"
+	                android:layout_toRightOf="@id/serviceSpinner" />
+	        </LinearLayout>
             <!-- texts -->
             <RelativeLayout
                 android:layout_width="fill_parent"

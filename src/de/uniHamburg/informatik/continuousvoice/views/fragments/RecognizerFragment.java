@@ -4,15 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Fragment;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.res.Resources;
-import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Messenger;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -25,14 +21,17 @@ import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import de.uniHamburg.informatik.continuousvoice.R;
-import de.uniHamburg.informatik.continuousvoice.constants.BroadcastIdentifiers;
 import de.uniHamburg.informatik.continuousvoice.services.recognition.AbstractRecognitionService;
 import de.uniHamburg.informatik.continuousvoice.services.recognition.StatusListener;
 import de.uniHamburg.informatik.continuousvoice.services.recognition.TranscriptionResultListener;
 import de.uniHamburg.informatik.continuousvoice.services.recognition.builtIn.AndroidRecognitionService;
+import de.uniHamburg.informatik.continuousvoice.services.recognition.nuance.NuanceRecognitionService;
 import de.uniHamburg.informatik.continuousvoice.services.recognition.webService.AttWebServiceRecognitionService;
 import de.uniHamburg.informatik.continuousvoice.services.recognition.webService.GoogleWebServiceRecognitionService;
 import de.uniHamburg.informatik.continuousvoice.services.sound.AudioService;
+import de.uniHamburg.informatik.continuousvoice.settings.GeneralSettings;
+import de.uniHamburg.informatik.continuousvoice.settings.Language;
+import de.uniHamburg.informatik.continuousvoice.settings.SettingsChangedListener;
 
 public class RecognizerFragment extends Fragment {
 
@@ -42,6 +41,7 @@ public class RecognizerFragment extends Fragment {
     private int seconds = 0;
     private String completeText = "";
     private int words = 0;
+    private GeneralSettings settings;
 
     private ImageButton playBtn;
     private ImageButton stopBtn;
@@ -49,6 +49,7 @@ public class RecognizerFragment extends Fragment {
     private ImageButton shareBtn;
 
     private Spinner serviceSpinner;
+    private Spinner languageSpinner;
     private TextView timeText;
     private TextView statusTextLine1;
     private TextView statusTextLine2;
@@ -66,11 +67,13 @@ public class RecognizerFragment extends Fragment {
     private Runnable timeUpdateRunner;
     private AudioService audioService;
     private List<AbstractRecognitionService> availableRecognizers;
-    private AbstractRecognitionService currentRecognizer;  
-    
+    private AbstractRecognitionService currentRecognizer;
+    private ArrayAdapter<CharSequence> availableLanguages;
+
     public RecognizerFragment(AudioService audioService) {
         this.audioService = audioService;
-        
+        this.settings = GeneralSettings.getInstance();
+
         timeUpdateRunner = new Runnable() {
             @Override
             public void run() {
@@ -81,7 +84,7 @@ public class RecognizerFragment extends Fragment {
                 }
             }
         };
-        
+
         handler = new Handler();
     }
 
@@ -104,19 +107,13 @@ public class RecognizerFragment extends Fragment {
 
         availableRecognizers = new ArrayList<AbstractRecognitionService>();
         availableRecognizers.add(new AndroidRecognitionService(getActivity(), audioService));
-        availableRecognizers.add(new GoogleWebServiceRecognitionService(getString(R.string.googleApiKey), audioService));
+        availableRecognizers.add(new NuanceRecognitionService(getActivity(), audioService));
+        availableRecognizers
+                .add(new GoogleWebServiceRecognitionService(getString(R.string.googleApiKey), audioService));
         availableRecognizers.add(new AttWebServiceRecognitionService(getString(R.string.attApiOauthKey), audioService));
-        
-        serviceSpinner = (Spinner) view.findViewById(R.id.serviceSpinner);
-        List<String> list = new ArrayList<String>();
-        for (AbstractRecognitionService ars: availableRecognizers) {
-            list.add(ars.getName());
-        }
-        ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_dropdown_item, list);
-        dataAdapter.setDropDownViewResource
-                     (android.R.layout.simple_spinner_dropdown_item);
-        serviceSpinner.setAdapter(dataAdapter);
-        
+
+        createSpinners(view);
+
         Resources res = getResources();
         minutesStringSchema = res.getString(R.string.minutes);
         wordsStringSchema = res.getString(R.string.words);
@@ -124,9 +121,27 @@ public class RecognizerFragment extends Fragment {
         createListeners();
         resetTexts();
         updateButtonState();
-        
 
         return view;
+    }
+
+    private void createSpinners(View parent) {
+        serviceSpinner = (Spinner) parent.findViewById(R.id.serviceSpinner);
+        List<String> list = new ArrayList<String>();
+        for (AbstractRecognitionService ars : availableRecognizers) {
+            list.add(ars.getName());
+        }
+        ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(getActivity(),
+                android.R.layout.simple_spinner_item, list);
+        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        serviceSpinner.setAdapter(dataAdapter);
+
+        languageSpinner = (Spinner) parent.findViewById(R.id.languageSpinner);
+        availableLanguages = ArrayAdapter.createFromResource(getActivity(), R.array.availableLanguages,
+                android.R.layout.simple_spinner_item);
+        availableLanguages.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        languageSpinner.setAdapter(availableLanguages);
+
     }
 
     private void switchService(AbstractRecognitionService newRecognizer) {
@@ -136,7 +151,7 @@ public class RecognizerFragment extends Fragment {
         currentRecognizer = newRecognizer;
         initializeRecognizer(currentRecognizer);
     }
-    
+
     private void initializeRecognizer(AbstractRecognitionService recognizer) {
         recognizer.initialize();
         recognizer.addTranscriptionListener(new TranscriptionResultListener() {
@@ -152,9 +167,7 @@ public class RecognizerFragment extends Fragment {
             }
         });
     }
-    
-    
-    
+
     private void startTimer() {
         running = true;
         handler.postDelayed(timeUpdateRunner, 1000);
@@ -204,6 +217,25 @@ public class RecognizerFragment extends Fragment {
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
 
+            }
+        });
+        
+        languageSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                settings.setLanguage(Language.getByName((String) parent.getItemAtPosition(position)));
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+        settings.addSettingsChangedListener(new SettingsChangedListener() {
+            @Override
+            public void settingChanged() {
+                int pos = availableLanguages.getPosition(settings.getLanguage().getCode4());
+                languageSpinner.setSelection(pos);
             }
         });
     }
@@ -268,6 +300,8 @@ public class RecognizerFragment extends Fragment {
     private void toggleSpinnerState(boolean b) {
         serviceSpinner.setClickable(b);
         serviceSpinner.setEnabled(b);
+        languageSpinner.setClickable(b);
+        languageSpinner.setEnabled(b);
     }
 
     private void scrollDown() {
@@ -304,7 +338,7 @@ public class RecognizerFragment extends Fragment {
         if (currentRecognizer.isRunning()) {
             currentRecognizer.stop();
         }
-        
+
         switchState(STATE_1_READY);
         resetTime();
         completeText = "";
@@ -325,7 +359,7 @@ public class RecognizerFragment extends Fragment {
     public void onPause() {
         stop();
         currentRecognizer.shutdown();
-        
+
         super.onPause();
     }
 

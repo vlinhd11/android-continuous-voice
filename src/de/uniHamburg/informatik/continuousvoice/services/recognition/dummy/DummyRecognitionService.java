@@ -7,6 +7,7 @@ public class DummyRecognitionService extends AbstractRecognitionService {
     @Override
     public void start() {
         super.start();
+        
         addWords("start a timer: ");
         long endTime = System.currentTimeMillis() + 5 * 1000;
         while (System.currentTimeMillis() < endTime) {
@@ -27,6 +28,18 @@ public class DummyRecognitionService extends AbstractRecognitionService {
 
     @Override
     public void initialize() {
-        //nothing to do here.
+
+    }
+
+    @Override
+    public void stop() {
+
+        super.stop();
+    }
+    
+    @Override
+    public void shutdown() {
+        
+        super.shutdown();
     }
 }

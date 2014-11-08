@@ -1,8 +1,5 @@
 package de.uniHamburg.informatik.continuousvoice.services.recognition.builtIn;
 
-import de.uniHamburg.informatik.continuousvoice.services.recognition.AbstractRecognitionService;
-import de.uniHamburg.informatik.continuousvoice.services.sound.AudioService;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
@@ -11,6 +8,8 @@ import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.util.Log;
+import de.uniHamburg.informatik.continuousvoice.services.recognition.AbstractRecognitionService;
+import de.uniHamburg.informatik.continuousvoice.services.sound.AudioService;
 
 public class AndroidRecognitionService extends AbstractRecognitionService {
 
@@ -145,7 +144,7 @@ public class AndroidRecognitionService extends AbstractRecognitionService {
             Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
             intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
             intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, context.getPackageName());
-            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "de-DE");
+            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, currentLanguage.getCode4());
             intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, "de-DE");
             getSpeechRecognizer().startListening(intent);
             setStatus("listening");

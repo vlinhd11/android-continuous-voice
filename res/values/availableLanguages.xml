@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="availableLanguages">
+        <item>en-US</item>
+        <item>de-DE</item>
+    </string-array>
+</resources>
