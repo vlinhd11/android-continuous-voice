@@ -15,7 +15,8 @@
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <!-- send audio files to the recognizer web services -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="com.sonymobile.permission.SYSTEM_UI_VISIBILITY_EXTENSIONS" />
+    <!-- for nuance -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <!-- PERMISSIONS ### -->
     
     <uses-sdk
@@ -30,7 +31,8 @@
         <activity
             android:name="de.uniHamburg.informatik.continuousvoice.MainActivity"
             android:label="@string/app_name"
-            android:screenOrientation="portrait" >
+             >
+             <!-- android:screenOrientation="portrait" -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -38,27 +40,6 @@
             </intent-filter>
         </activity>
         
-        <service
-            android:name="de.uniHamburg.informatik.continuousvoice.services.sound.AudioService"
-            android:label="Audio Service"
-            android:process="de.uniHamburg.informatik.continuousvoice.processes.AudioService" >
-        </service>
-
-        <service
-            android:name="de.uniHamburg.informatik.continuousvoice.services.recognition.pocketSphinx.PocketSphinxRecognitionService"
-            android:label="PocketSphinx Voice Recognition"
-            android:process="de.uniHamburg.informatik.continuousvoice.processes.PocketSphinxRecognitionProcess" >
-        </service>
-        <service
-            android:name="de.uniHamburg.informatik.continuousvoice.services.recognition.builtIn.AndroidRecognitionService"
-            android:label="Android Voice Recognition"
-            android:process="de.uniHamburg.informatik.continuousvoice.processes.AndroidRecognitionService" >
-        </service>
-        <service
-            android:name="de.uniHamburg.informatik.continuousvoice.services.recognition.webService.GoogleWebServiceRecognitionService"
-            android:label="ABSTRACT Web Service Recognition Service"
-            android:process="de.uniHamburg.informatik.continuousvoice.processes.webService.GoogleWebServiceRecognitionService" >
-        </service>
     </application>
 
 </manifest>

@@ -16,7 +16,8 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:checked="false"
-            android:text="Audio Service" />
+            android:text="Audio Service"
+            android:padding="10dp" />
         
         <!-- <TextView
             android:id="@+id/amplitudeText"
