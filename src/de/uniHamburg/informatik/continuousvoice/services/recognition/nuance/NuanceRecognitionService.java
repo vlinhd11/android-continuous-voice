@@ -64,7 +64,7 @@ public class NuanceRecognitionService extends AbstractRecognitionService impleme
             //None: Do not detect the end of speech.
             //Short: Detect the end of a short phrase with no pauses.
             currentRecognizer = speechKit.createRecognizer(Recognizer.RecognizerType.Dictation,
-                    Recognizer.EndOfSpeechDetection.Long, currentLanguage.getCode6(), this, handler);
+                    Recognizer.EndOfSpeechDetection.Long, settings.getLanguage().getCode6(), this, handler);
             currentRecognizer.start();
         }
     }

@@ -19,36 +19,57 @@ import org.json.JSONObject;
 
 import android.util.Log;
 import de.uniHamburg.informatik.continuousvoice.services.sound.AudioService;
+import de.uniHamburg.informatik.continuousvoice.settings.Language;
 
-public class GoogleWebServiceRecognitionService extends AbstractWebServiceRecognitionService {
+public class ATTWebServiceRecognitionService extends AbstractWebServiceRecognitionService {
 
-    public static final String TAG = GoogleWebServiceRecognitionService.class.getName();
+    public static final String TAG = "AttWebServiceRecognitionService";
     private String key;
+    protected long RECORDING_MAX_DURATION = 5 * 1000;
 
-    public GoogleWebServiceRecognitionService(String apiKey, AudioService audioService) {
+    public ATTWebServiceRecognitionService(String apiKey, AudioService audioService) {
         super(audioService);
         this.key = apiKey;
     }
+    
+    @Override
+    public void start() {
+        //reset language to en-us if not en-us!
+        if (!settings.getLanguage().equals(Language.EnUs)) {
+            settings.setLanguage(Language.EnUs);
+            setStatus("ONLY EN-US!");
+        }
+        
+        super.start();
+    }
 
     private String getUrl() {
-        // 'https://www.google.com/speech-api/v2/recognize?output=json&lang=en-us&key=[KEY]'
-        return "https://www.google.com/speech-api/v2/recognize?output=json&lang=" + settings.getLanguage().getCode4() + "&key=" + key
-                + "&client=chromium&maxresults=1&pfilter=2";
+        return "https://api.att.com/speech/v3/speechToText";
     }
 
     @Override
     public String request(File f) {
         /*
-         * curl -X POST --data-binary @soundfile_1413203798952_1.amr --header
-         * 'Content-Type: audio/amr; rate=8000;'
-         * 'https://www.google.com/speech-api/v2/recognize?output=json&lang=en-us&key=[KEY]'
+         * POST /speech/v3/speechToText HTTP/1.1
+         *  Host: api.att.com
+         *  Authorization: Bearer [oauth-key]
+         *  Accept: application/xml
+         *  Content-length: 5655
+         *  Connection: keep-alive
+         *  Content-Type: audio/amr
+         *  X-SpeechContext: BusinessSearch
+         *  X-Arg: ClientApp=NoteTaker,ClientVersion=1.0.1,DeviceType=Android
          */
         HttpClient httpclient = new DefaultHttpClient();
         HttpPost httppost = new HttpPost(getUrl());
 
         String transcript = "";
         try {
-            httppost.setEntity(new FileEntity(f, AudioService.MIME_TYPE));
+            httppost.addHeader("Authorization", "Bearer " + key);
+            httppost.addHeader("Accept", "application/json");
+            //only with fixed grammars httppost.addHeader("Content-Language", "de-DE");
+            httppost.addHeader("X-SpeechContect", "Generic");
+            httppost.setEntity(new FileEntity(f, "audio/amr"));
             HttpResponse response;
             response = httpclient.execute(httppost);
 
@@ -77,7 +98,7 @@ public class GoogleWebServiceRecognitionService extends AbstractWebServiceRecogn
             Log.e(TAG, "e: " + e.getMessage().toString());
         } catch (JSONException e) {
             e.printStackTrace();
-            transcript = "(Is your API key valid?)";
+            transcript = "[JSON ERROR]";
             Log.e(TAG, "f: " + e.getMessage().toString());
         }
 
@@ -85,25 +106,29 @@ public class GoogleWebServiceRecognitionService extends AbstractWebServiceRecogn
     }
 
     private String parseResponse(String response) throws IllegalStateException, IOException, JSONException {
-        // "{\"result\":[]}{"result":[{"alternative":[{"transcript":"Hola
-        // OpenDomo","confidence":0.95670336
-        // },{"transcript":"holaaa OpenDomo"},{"transcript":"Olga OpenDomo"},{"transcript":
-        // "Hola a OpenDomo"},{"transcript":"hola a OpenDomo"}],"final":true}],"result_inde
-        // x":0}
+        String result = response;
 
-        Log.i(TAG, response);
-        
-        String result = "(?)";
-        
-        if (response != null) {
-            String cleansedResult = response.replace("{\"result\":[]}", "");
-            cleansedResult = cleansedResult.replace("\n", "").replace("\r", "").trim();
-            if (cleansedResult.length() != 0) { //empty result
-                JSONObject json = new JSONObject(cleansedResult);
-                
+        if (result != null) {
+            result = result.trim();
+            if (result.length() != 0) { //empty result
+                JSONObject json = new JSONObject(result);
+
                 try {
-                    result = json.getJSONArray("result").getJSONObject(0).getJSONArray("alternative").getJSONObject(0).getString("transcript");
+                    if (json.has("Recognition")) {
+                        JSONObject info = json.getJSONObject("Recognition");
+                        if (info.has("NBest")) {
+                            result = info.getJSONArray("NBest")
+                            .getJSONObject(0).getString("ResultText");
+                        } else {
+                            result = "(?)";
+                        }
+                    } else if (json.has("RequestError")) {
+                       result = json.getJSONObject("RequestError").toString(2);
+                    } else {
+                        result = "(?)";
+                    }
                 } catch (NullPointerException npe) {
+                    result = "(?)";
                 }
             }
         }
@@ -112,6 +137,6 @@ public class GoogleWebServiceRecognitionService extends AbstractWebServiceRecogn
 
     @Override
     public String getName() {
-        return "Google Webservice Recognizer";
+        return "AT&T Webservice Recognizer";
     }
 }
