@@ -35,12 +35,12 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-import de.uniHamburg.informatik.continuousvoice.services.recognition.AbstractRecognitionService;
+import de.uniHamburg.informatik.continuousvoice.services.recognition.AbstractRecognizer;
 import edu.cmu.pocketsphinx.Hypothesis;
 import edu.cmu.pocketsphinx.RecognitionListener;
 import edu.cmu.pocketsphinx.SpeechRecognizer;
 
-public class PocketSphinxRecognitionService extends AbstractRecognitionService implements RecognitionListener {
+public class PocketSphinxRecognizer extends AbstractRecognizer implements RecognitionListener {
 
     private SpeechRecognizer recognizer;
     private File assetsDir;

@@ -7,18 +7,18 @@ import de.uniHamburg.informatik.continuousvoice.settings.GeneralSettings;
 import de.uniHamburg.informatik.continuousvoice.settings.Language;
 import de.uniHamburg.informatik.continuousvoice.settings.SettingsChangedListener;
 
-public abstract class AbstractRecognitionService implements IRecognizerControl {
+public abstract class AbstractRecognizer implements IRecognizerControl {
 
     private final String TAG = this.getClass().getSimpleName();
     protected boolean running = false;
     private String recognizedText = "";
-    private List<TranscriptionResultListener> transcriptionResultListeners;
-    private List<StatusListener> statusListeners;
+    private List<ITranscriptionResultListener> transcriptionResultListeners;
+    private List<IStatusListener> statusListeners;
     protected final GeneralSettings settings;
 
-    public AbstractRecognitionService() {
-        statusListeners = new ArrayList<StatusListener>();
-        transcriptionResultListeners = new ArrayList<TranscriptionResultListener>();
+    public AbstractRecognizer() {
+        statusListeners = new ArrayList<IStatusListener>();
+        transcriptionResultListeners = new ArrayList<ITranscriptionResultListener>();
         settings = GeneralSettings.getInstance();
     }
 
@@ -58,13 +58,13 @@ public abstract class AbstractRecognitionService implements IRecognizerControl {
     protected void addWords(String words) {
         recognizedText += " " + words;
         
-        for (TranscriptionResultListener trl: transcriptionResultListeners) {
+        for (ITranscriptionResultListener trl: transcriptionResultListeners) {
             trl.onTranscriptResult(words);
         }
     }
 
     protected void setStatus(String status) {
-        for (StatusListener sl: statusListeners) {
+        for (IStatusListener sl: statusListeners) {
             sl.onStatusUpdate(status);
         }
     }
@@ -77,11 +77,11 @@ public abstract class AbstractRecognitionService implements IRecognizerControl {
     }
     public abstract String getName();
     
-    public void addStatusListener(StatusListener sl) {
+    public void addStatusListener(IStatusListener sl) {
         statusListeners.add(sl);
     }
     
-    public void addTranscriptionListener(TranscriptionResultListener trl) {
+    public void addTranscriptionListener(ITranscriptionResultListener trl) {
         transcriptionResultListeners.add(trl);
     }
     

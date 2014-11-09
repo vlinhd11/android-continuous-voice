@@ -21,14 +21,14 @@ import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import de.uniHamburg.informatik.continuousvoice.R;
-import de.uniHamburg.informatik.continuousvoice.services.recognition.AbstractRecognitionService;
-import de.uniHamburg.informatik.continuousvoice.services.recognition.StatusListener;
-import de.uniHamburg.informatik.continuousvoice.services.recognition.TranscriptionResultListener;
-import de.uniHamburg.informatik.continuousvoice.services.recognition.builtIn.AndroidRecognitionService;
-import de.uniHamburg.informatik.continuousvoice.services.recognition.nuance.NuanceRecognitionService;
-import de.uniHamburg.informatik.continuousvoice.services.recognition.webService.ATTWebServiceRecognitionService;
-import de.uniHamburg.informatik.continuousvoice.services.recognition.webService.GoogleWebServiceRecognitionService;
-import de.uniHamburg.informatik.continuousvoice.services.recognition.webService.ISpeechWebServiceRecognitionService;
+import de.uniHamburg.informatik.continuousvoice.services.recognition.AbstractRecognizer;
+import de.uniHamburg.informatik.continuousvoice.services.recognition.IStatusListener;
+import de.uniHamburg.informatik.continuousvoice.services.recognition.ITranscriptionResultListener;
+import de.uniHamburg.informatik.continuousvoice.services.recognition.builtIn.AndroidRecognizer;
+import de.uniHamburg.informatik.continuousvoice.services.recognition.nuance.NuanceRecognizer;
+import de.uniHamburg.informatik.continuousvoice.services.recognition.webService.ATTWebServiceRecognizer;
+import de.uniHamburg.informatik.continuousvoice.services.recognition.webService.GoogleWebServiceRecognizer;
+import de.uniHamburg.informatik.continuousvoice.services.recognition.webService.IspeechWebServiceRecognizer;
 import de.uniHamburg.informatik.continuousvoice.services.sound.AudioService;
 import de.uniHamburg.informatik.continuousvoice.settings.GeneralSettings;
 import de.uniHamburg.informatik.continuousvoice.settings.Language;
@@ -67,8 +67,8 @@ public class RecognizerFragment extends Fragment {
     private boolean running = false;
     private Runnable timeUpdateRunner;
     private AudioService audioService;
-    private List<AbstractRecognitionService> availableRecognizers;
-    private AbstractRecognitionService currentRecognizer;
+    private List<AbstractRecognizer> availableRecognizers;
+    private AbstractRecognizer currentRecognizer;
     private ArrayAdapter<CharSequence> availableLanguages;
 
     public RecognizerFragment(AudioService audioService) {
@@ -120,17 +120,17 @@ public class RecognizerFragment extends Fragment {
     }
 
     private void createSpinners(View parent) {
-        availableRecognizers = new ArrayList<AbstractRecognitionService>();
-        availableRecognizers.add(new AndroidRecognitionService(getActivity(), audioService));
-        availableRecognizers.add(new NuanceRecognitionService(getActivity(), audioService));
+        availableRecognizers = new ArrayList<AbstractRecognizer>();
+        availableRecognizers.add(new AndroidRecognizer(getActivity(), audioService));
+        availableRecognizers.add(new NuanceRecognizer(getActivity(), audioService));
         availableRecognizers
-                .add(new GoogleWebServiceRecognitionService(getString(R.string.googleApiKey), audioService));
-        availableRecognizers.add(new ATTWebServiceRecognitionService(getString(R.string.attApiOauthKey), audioService));
-        availableRecognizers.add(new ISpeechWebServiceRecognitionService(getString(R.string.ispeechApiKey), audioService));
+                .add(new GoogleWebServiceRecognizer(getString(R.string.googleApiKey), audioService));
+        availableRecognizers.add(new ATTWebServiceRecognizer(getString(R.string.attApiOauthKey), audioService));
+        availableRecognizers.add(new IspeechWebServiceRecognizer(getString(R.string.ispeechApiKey), audioService));
         
         serviceSpinner = (Spinner) parent.findViewById(R.id.serviceSpinner);
         List<String> list = new ArrayList<String>();
-        for (AbstractRecognitionService ars : availableRecognizers) {
+        for (AbstractRecognizer ars : availableRecognizers) {
             list.add(ars.getName());
         }
         ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(getActivity(),
@@ -146,7 +146,7 @@ public class RecognizerFragment extends Fragment {
 
     }
 
-    private void switchService(AbstractRecognitionService newRecognizer) {
+    private void switchService(AbstractRecognizer newRecognizer) {
         if (currentRecognizer != null) {
             currentRecognizer.shutdown();
         }
@@ -154,15 +154,15 @@ public class RecognizerFragment extends Fragment {
         initializeRecognizer(currentRecognizer);
     }
 
-    private void initializeRecognizer(AbstractRecognitionService recognizer) {
+    private void initializeRecognizer(AbstractRecognizer recognizer) {
         recognizer.initialize();
-        recognizer.addTranscriptionListener(new TranscriptionResultListener() {
+        recognizer.addTranscriptionListener(new ITranscriptionResultListener() {
             @Override
             public void onTranscriptResult(String transcriptResult) {
                 addTextToView(transcriptResult);
             }
         });
-        recognizer.addStatusListener(new StatusListener() {
+        recognizer.addStatusListener(new IStatusListener() {
             @Override
             public void onStatusUpdate(String newStatus) {
                 setStatus(newStatus);

@@ -8,13 +8,13 @@ import java.util.concurrent.TimeUnit;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.util.Log;
-import de.uniHamburg.informatik.continuousvoice.services.recognition.AbstractRecognitionService;
-import de.uniHamburg.informatik.continuousvoice.services.sound.AmplitudeListener;
+import de.uniHamburg.informatik.continuousvoice.services.recognition.AbstractRecognizer;
+import de.uniHamburg.informatik.continuousvoice.services.sound.IAmplitudeListener;
 import de.uniHamburg.informatik.continuousvoice.services.sound.AudioService;
 import de.uniHamburg.informatik.continuousvoice.services.sound.IRecorder;
 
-public abstract class AbstractWebServiceRecognitionService extends AbstractRecognitionService implements
-        AmplitudeListener {
+public abstract class AbstractWebServiceRecognizer extends AbstractRecognizer implements
+        IAmplitudeListener {
 
     public final String TAG = "AbstractWebServiceRecognitionService";
     private ScheduledExecutorService maxRecordingTimeScheduler;
@@ -24,7 +24,7 @@ public abstract class AbstractWebServiceRecognitionService extends AbstractRecog
     private Runnable splitRunnable;
     private Handler handler = new Handler();
 
-    public AbstractWebServiceRecognitionService(AudioService audioService) {
+    public AbstractWebServiceRecognizer(AudioService audioService) {
         this.audioService = audioService;
         this.recorder = audioService;
         this.splitRunnable = new Runnable() {

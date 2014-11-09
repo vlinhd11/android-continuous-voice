@@ -1,8 +1,8 @@
 package de.uniHamburg.informatik.continuousvoice.services.recognition.dummy;
 
-import de.uniHamburg.informatik.continuousvoice.services.recognition.AbstractRecognitionService;
+import de.uniHamburg.informatik.continuousvoice.services.recognition.AbstractRecognizer;
 
-public class DummyRecognitionService extends AbstractRecognitionService {
+public class DummyRecognizer extends AbstractRecognizer {
 
     @Override
     public void start() {

@@ -20,12 +20,12 @@ import org.json.JSONObject;
 import android.util.Log;
 import de.uniHamburg.informatik.continuousvoice.services.sound.AudioService;
 
-public class GoogleWebServiceRecognitionService extends AbstractWebServiceRecognitionService {
+public class GoogleWebServiceRecognizer extends AbstractWebServiceRecognizer {
 
-    public static final String TAG = GoogleWebServiceRecognitionService.class.getName();
+    public static final String TAG = GoogleWebServiceRecognizer.class.getName();
     private String key;
 
-    public GoogleWebServiceRecognitionService(String apiKey, AudioService audioService) {
+    public GoogleWebServiceRecognizer(String apiKey, AudioService audioService) {
         super(audioService);
         this.key = apiKey;
     }

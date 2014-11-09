@@ -48,7 +48,7 @@ public class AudioService implements IRecorder {
     //soundfile recording
     private int recorderIteration = 0;
     private boolean recording = false;
-    private List<AmplitudeListener> listeners = new ArrayList<AmplitudeListener>();
+    private List<IAmplitudeListener> listeners = new ArrayList<IAmplitudeListener>();
     private List<IAudioServiceStartStopListener> startStopListeners = new ArrayList<IAudioServiceStartStopListener>();
     public static final String SUFFIX = "amr";
 
@@ -230,7 +230,7 @@ public class AudioService implements IRecorder {
             if (newAplitude != 0.0) {
                 currentAmplitude = newAplitude;
                 //notify listeners
-                for (AmplitudeListener al : listeners) {
+                for (IAmplitudeListener al : listeners) {
                     al.onAmplitudeUpdate(newAplitude / MAXIMUM_AMPLITUDE);
                 }
             }
@@ -265,11 +265,11 @@ public class AudioService implements IRecorder {
     private void notifySilenceListeners(State state) {
         if (state != lastNotificationState) {
             if (state == State.SPEECH) {
-                for (AmplitudeListener sl : listeners) {
+                for (IAmplitudeListener sl : listeners) {
                     sl.onSpeech();
                 }
             } else {
-                for (AmplitudeListener sl : listeners) {
+                for (IAmplitudeListener sl : listeners) {
                     sl.onSilence();
                 }
             }
@@ -277,11 +277,11 @@ public class AudioService implements IRecorder {
         lastNotificationState = state;
     }
 
-    public void addAmplitudeListener(AmplitudeListener sl) {
+    public void addAmplitudeListener(IAmplitudeListener sl) {
         listeners.add(sl);
     }
 
-    public void removeAmplitudeListener(AmplitudeListener sl) {
+    public void removeAmplitudeListener(IAmplitudeListener sl) {
         listeners.remove(sl);
     }
 

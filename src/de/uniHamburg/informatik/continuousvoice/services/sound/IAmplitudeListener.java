@@ -1,6 +1,6 @@
 package de.uniHamburg.informatik.continuousvoice.services.sound;
 
-public interface AmplitudeListener {
+public interface IAmplitudeListener {
 
     public void onSilence();
     

@@ -10,10 +10,10 @@ import com.nuance.nmdp.speechkit.Recognizer.Listener;
 import com.nuance.nmdp.speechkit.SpeechError;
 import com.nuance.nmdp.speechkit.SpeechKit;
 
-import de.uniHamburg.informatik.continuousvoice.services.recognition.AbstractRecognitionService;
+import de.uniHamburg.informatik.continuousvoice.services.recognition.AbstractRecognizer;
 import de.uniHamburg.informatik.continuousvoice.services.sound.AudioService;
 
-public class NuanceRecognitionService extends AbstractRecognitionService implements Listener {
+public class NuanceRecognizer extends AbstractRecognizer implements Listener {
 
     public final String TAG = "NuanceRecognitionService";
     private final static int MAX_UNSUCCESSFUL_ATTEMPTS = 3;
@@ -26,7 +26,7 @@ public class NuanceRecognitionService extends AbstractRecognitionService impleme
     private Handler handler = new Handler();
     private boolean audioServiceBeforeState = false;
 
-    public NuanceRecognitionService(Context context, AudioService audioService) {
+    public NuanceRecognizer(Context context, AudioService audioService) {
         this.context = context;
         this.audioService = audioService;
     }

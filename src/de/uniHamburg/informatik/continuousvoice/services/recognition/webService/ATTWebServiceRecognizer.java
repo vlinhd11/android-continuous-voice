@@ -21,17 +21,17 @@ import android.util.Log;
 import de.uniHamburg.informatik.continuousvoice.services.sound.AudioService;
 import de.uniHamburg.informatik.continuousvoice.settings.Language;
 
-public class ISpeechWebServiceRecognitionService extends AbstractWebServiceRecognitionService {
+public class ATTWebServiceRecognizer extends AbstractWebServiceRecognizer {
 
     public static final String TAG = "AttWebServiceRecognitionService";
     private String key;
     protected long RECORDING_MAX_DURATION = 5 * 1000;
 
-    public ISpeechWebServiceRecognitionService(String apiKey, AudioService audioService) {
+    public ATTWebServiceRecognizer(String apiKey, AudioService audioService) {
         super(audioService);
         this.key = apiKey;
     }
-
+    
     @Override
     public void start() {
         //reset language to en-us if not en-us!
@@ -39,41 +39,37 @@ public class ISpeechWebServiceRecognitionService extends AbstractWebServiceRecog
             settings.setLanguage(Language.EnUs);
             setStatus("ONLY EN-US!");
         }
-
+        
         super.start();
     }
 
     private String getUrl() {
-        return "http://api.ispeech.org/api/rest";
+        return "https://api.att.com/speech/v3/speechToText";
     }
 
     @Override
     public String request(File f) {
         /*
-         * POST /api/rest HTTP/1.1
-         *  Host: api.ispeech.org
-         *  Connection: Keep-Alive
+         * POST /speech/v3/speechToText HTTP/1.1
          *  Host: api.att.com
-         *  Apikey "ex. abcdef1234567890abcdef1234567890"
-         *  Locale "en-US"
-         *  Action "recognize"
-         *  Content-Type "audio/amr"
-         *  Audio as String (base64, remove \r\n)
-         *  Output "json"
-         *  Freeform 3 (for dictation)
+         *  Authorization: Bearer [oauth-key]
+         *  Accept: application/xml
+         *  Content-length: 5655
+         *  Connection: keep-alive
+         *  Content-Type: audio/amr
+         *  X-SpeechContext: BusinessSearch
+         *  X-Arg: ClientApp=NoteTaker,ClientVersion=1.0.1,DeviceType=Android
          */
         HttpClient httpclient = new DefaultHttpClient();
         HttpPost httppost = new HttpPost(getUrl());
 
         String transcript = "";
         try {
-            httppost.addHeader("Apikey", key);
-            httppost.addHeader("Locale", "en-US");
-            httppost.addHeader("Action", "recognize");
-            httppost.addHeader("Output", "json");
-            httppost.addHeader("Freeform", "3");
+            httppost.addHeader("Authorization", "Bearer " + key);
+            httppost.addHeader("Accept", "application/json");
+            //only with fixed grammars httppost.addHeader("Content-Language", "de-DE");
+            httppost.addHeader("X-SpeechContect", "Generic");
             httppost.setEntity(new FileEntity(f, "audio/amr"));
-            
             HttpResponse response;
             response = httpclient.execute(httppost);
 
@@ -112,34 +108,35 @@ public class ISpeechWebServiceRecognitionService extends AbstractWebServiceRecog
     private String parseResponse(String response) throws IllegalStateException, IOException, JSONException {
         String result = response;
 
-//        if (result != null) {
-//            result = result.trim();
-//            if (result.length() != 0) { //empty result
-//                JSONObject json = new JSONObject(result);
-//
-//                try {
-//                    if (json.has("Recognition")) {
-//                        JSONObject info = json.getJSONObject("Recognition");
-//                        if (info.has("NBest")) {
-//                            result = info.getJSONArray("NBest").getJSONObject(0).getString("ResultText");
-//                        } else {
-//                            result = "(?)";
-//                        }
-//                    } else if (json.has("RequestError")) {
-//                        result = json.getJSONObject("RequestError").toString(2);
-//                    } else {
-//                        result = "(?)";
-//                    }
-//                } catch (NullPointerException npe) {
-//                    result = "(?)";
-//                }
-//            }
-//        }
+        if (result != null) {
+            result = result.trim();
+            if (result.length() != 0) { //empty result
+                JSONObject json = new JSONObject(result);
+
+                try {
+                    if (json.has("Recognition")) {
+                        JSONObject info = json.getJSONObject("Recognition");
+                        if (info.has("NBest")) {
+                            result = info.getJSONArray("NBest")
+                            .getJSONObject(0).getString("ResultText");
+                        } else {
+                            result = "(?)";
+                        }
+                    } else if (json.has("RequestError")) {
+                       result = json.getJSONObject("RequestError").toString(2);
+                    } else {
+                        result = "(?)";
+                    }
+                } catch (NullPointerException npe) {
+                    result = "(?)";
+                }
+            }
+        }
         return result;
     }
 
     @Override
     public String getName() {
-        return "iSpeech Webservice Recognizer";
+        return "AT&T Webservice Recognizer";
     }
 }

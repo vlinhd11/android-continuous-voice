@@ -14,7 +14,7 @@ import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.TextView;
 import de.uniHamburg.informatik.continuousvoice.R;
-import de.uniHamburg.informatik.continuousvoice.services.sound.AmplitudeListener;
+import de.uniHamburg.informatik.continuousvoice.services.sound.IAmplitudeListener;
 import de.uniHamburg.informatik.continuousvoice.services.sound.AudioService;
 import de.uniHamburg.informatik.continuousvoice.services.sound.IAudioServiceStartStopListener;
 
@@ -67,7 +67,7 @@ public class VisualizerFragment extends Fragment {
             }
         });
 
-        audioService.addAmplitudeListener(new AmplitudeListener() {
+        audioService.addAmplitudeListener(new IAmplitudeListener() {
             @Override
             public void onSilence() {
                 switchRecordingIcon(AudioService.State.SILENCE);

@@ -12,8 +12,8 @@ public interface IRecognizerControl {
 
     public void shutdown();
     
-    public void addStatusListener(StatusListener sl);
+    public void addStatusListener(IStatusListener sl);
     
-    public void addTranscriptionListener(TranscriptionResultListener trl);
+    public void addTranscriptionListener(ITranscriptionResultListener trl);
 
 }

@@ -8,10 +8,10 @@ import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.util.Log;
-import de.uniHamburg.informatik.continuousvoice.services.recognition.AbstractRecognitionService;
+import de.uniHamburg.informatik.continuousvoice.services.recognition.AbstractRecognizer;
 import de.uniHamburg.informatik.continuousvoice.services.sound.AudioService;
 
-public class AndroidRecognitionService extends AbstractRecognitionService {
+public class AndroidRecognizer extends AbstractRecognizer {
 
     private static final String TAG = "AndroidRecognitionService";
     private SpeechRecognizer speech = null; // Speech recognizer instance
@@ -21,7 +21,7 @@ public class AndroidRecognitionService extends AbstractRecognitionService {
     private Context context;
     private AudioService audioService;
 
-    public AndroidRecognitionService(Context context, AudioService audioService) {
+    public AndroidRecognizer(Context context, AudioService audioService) {
         this.context = context;
         this.audioService = audioService;
     }
