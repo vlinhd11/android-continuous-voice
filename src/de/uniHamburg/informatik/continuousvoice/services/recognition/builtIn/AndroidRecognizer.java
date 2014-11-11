@@ -10,6 +10,7 @@ import android.speech.SpeechRecognizer;
 import android.util.Log;
 import de.uniHamburg.informatik.continuousvoice.services.recognition.AbstractRecognizer;
 import de.uniHamburg.informatik.continuousvoice.services.sound.AudioService;
+import de.uniHamburg.informatik.continuousvoice.services.sound.IAudioService;
 
 public class AndroidRecognizer extends AbstractRecognizer {
 
@@ -19,9 +20,9 @@ public class AndroidRecognizer extends AbstractRecognizer {
     private boolean beepOff = false;
     private RecognitionListener recognitionListener;
     private Context context;
-    private AudioService audioService;
+    private IAudioService audioService;
 
-    public AndroidRecognizer(Context context, AudioService audioService) {
+    public AndroidRecognizer(Context context, IAudioService audioService) {
         this.context = context;
         this.audioService = audioService;
     }

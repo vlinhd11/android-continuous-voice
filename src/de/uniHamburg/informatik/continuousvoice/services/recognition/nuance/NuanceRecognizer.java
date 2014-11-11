@@ -2,7 +2,6 @@ package de.uniHamburg.informatik.continuousvoice.services.recognition.nuance;
 
 import android.content.Context;
 import android.os.Handler;
-import android.util.Log;
 
 import com.nuance.nmdp.speechkit.Recognition;
 import com.nuance.nmdp.speechkit.Recognizer;
@@ -11,7 +10,7 @@ import com.nuance.nmdp.speechkit.SpeechError;
 import com.nuance.nmdp.speechkit.SpeechKit;
 
 import de.uniHamburg.informatik.continuousvoice.services.recognition.AbstractRecognizer;
-import de.uniHamburg.informatik.continuousvoice.services.sound.AudioService;
+import de.uniHamburg.informatik.continuousvoice.services.sound.IAudioService;
 
 public class NuanceRecognizer extends AbstractRecognizer implements Listener {
 
@@ -22,11 +21,11 @@ public class NuanceRecognizer extends AbstractRecognizer implements Listener {
     private final Context context;
     private Recognizer currentRecognizer;
     private int attempts = 0;
-    private AudioService audioService;
+    private IAudioService audioService;
     private Handler handler = new Handler();
     private boolean audioServiceBeforeState = false;
 
-    public NuanceRecognizer(Context context, AudioService audioService) {
+    public NuanceRecognizer(Context context, IAudioService audioService) {
         this.context = context;
         this.audioService = audioService;
     }

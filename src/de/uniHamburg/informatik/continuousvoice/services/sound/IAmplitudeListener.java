@@ -7,7 +7,7 @@ public interface IAmplitudeListener {
     public void onSpeech();
     
     /**
-     * @param percent 0..1
+     * @param soundLevel 0..1
      */
-    public void onAmplitudeUpdate(double percent);
+    public void onAmplitudeUpdate(double soundLevel);
 }

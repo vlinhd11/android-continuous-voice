@@ -3,6 +3,7 @@
 	<name>ContinuousVoice</name>
 	<comment></comment>
 	<projects>
+		<project>LibavExamples</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

@@ -30,6 +30,7 @@ import de.uniHamburg.informatik.continuousvoice.services.recognition.webService.
 import de.uniHamburg.informatik.continuousvoice.services.recognition.webService.GoogleWebServiceRecognizer;
 import de.uniHamburg.informatik.continuousvoice.services.recognition.webService.IspeechWebServiceRecognizer;
 import de.uniHamburg.informatik.continuousvoice.services.sound.AudioService;
+import de.uniHamburg.informatik.continuousvoice.services.sound.IAudioService;
 import de.uniHamburg.informatik.continuousvoice.settings.GeneralSettings;
 import de.uniHamburg.informatik.continuousvoice.settings.Language;
 import de.uniHamburg.informatik.continuousvoice.settings.SettingsChangedListener;
@@ -66,12 +67,12 @@ public class RecognizerFragment extends Fragment {
     private Handler handler;
     private boolean running = false;
     private Runnable timeUpdateRunner;
-    private AudioService audioService;
+    private IAudioService audioService;
     private List<AbstractRecognizer> availableRecognizers;
     private AbstractRecognizer currentRecognizer;
     private ArrayAdapter<CharSequence> availableLanguages;
 
-    public RecognizerFragment(AudioService audioService) {
+    public RecognizerFragment(IAudioService audioService) {
         this.audioService = audioService;
         this.settings = GeneralSettings.getInstance();
 

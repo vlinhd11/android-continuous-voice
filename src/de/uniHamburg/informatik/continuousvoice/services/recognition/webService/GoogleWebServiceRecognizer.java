@@ -19,13 +19,14 @@ import org.json.JSONObject;
 
 import android.util.Log;
 import de.uniHamburg.informatik.continuousvoice.services.sound.AudioService;
+import de.uniHamburg.informatik.continuousvoice.services.sound.IAudioService;
 
 public class GoogleWebServiceRecognizer extends AbstractWebServiceRecognizer {
 
     public static final String TAG = GoogleWebServiceRecognizer.class.getName();
     private String key;
 
-    public GoogleWebServiceRecognizer(String apiKey, AudioService audioService) {
+    public GoogleWebServiceRecognizer(String apiKey, IAudioService audioService) {
         super(audioService);
         this.key = apiKey;
     }

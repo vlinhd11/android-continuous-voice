@@ -11,7 +11,9 @@ import android.util.Log;
 import de.uniHamburg.informatik.continuousvoice.services.recognition.AbstractRecognizer;
 import de.uniHamburg.informatik.continuousvoice.services.sound.IAmplitudeListener;
 import de.uniHamburg.informatik.continuousvoice.services.sound.AudioService;
+import de.uniHamburg.informatik.continuousvoice.services.sound.IAudioService;
 import de.uniHamburg.informatik.continuousvoice.services.sound.IRecorder;
+import de.uniHamburg.informatik.continuousvoice.services.sound.Loudness;
 
 public abstract class AbstractWebServiceRecognizer extends AbstractRecognizer implements
         IAmplitudeListener {
@@ -20,11 +22,11 @@ public abstract class AbstractWebServiceRecognizer extends AbstractRecognizer im
     private ScheduledExecutorService maxRecordingTimeScheduler;
     protected long RECORDING_MAX_DURATION = 10 * 1000;
     private IRecorder recorder;
-    private AudioService audioService;
+    private IAudioService audioService;
     private Runnable splitRunnable;
     private Handler handler = new Handler();
 
-    public AbstractWebServiceRecognizer(AudioService audioService) {
+    public AbstractWebServiceRecognizer(IAudioService audioService) {
         this.audioService = audioService;
         this.recorder = audioService;
         this.splitRunnable = new Runnable() {
@@ -63,7 +65,7 @@ public abstract class AbstractWebServiceRecognizer extends AbstractRecognizer im
         super.start();
 
         audioService.addAmplitudeListener(this);
-        if (audioService.getCurrentSilenceState() == AudioService.State.SPEECH) {
+        if (audioService.getCurrentSilenceState() == Loudness.SPEECH) {
             startRecording();
         }
     }

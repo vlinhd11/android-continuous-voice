@@ -15,10 +15,9 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.FileEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import android.util.Log;
-import de.uniHamburg.informatik.continuousvoice.services.sound.AudioService;
+import de.uniHamburg.informatik.continuousvoice.services.sound.IAudioService;
 import de.uniHamburg.informatik.continuousvoice.settings.Language;
 
 public class IspeechWebServiceRecognizer extends AbstractWebServiceRecognizer {
@@ -27,7 +26,7 @@ public class IspeechWebServiceRecognizer extends AbstractWebServiceRecognizer {
     private String key;
     protected long RECORDING_MAX_DURATION = 5 * 1000;
 
-    public IspeechWebServiceRecognizer(String apiKey, AudioService audioService) {
+    public IspeechWebServiceRecognizer(String apiKey, IAudioService audioService) {
         super(audioService);
         this.key = apiKey;
     }

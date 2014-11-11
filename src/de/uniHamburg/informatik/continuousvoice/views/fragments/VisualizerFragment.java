@@ -3,7 +3,6 @@ package de.uniHamburg.informatik.continuousvoice.views.fragments;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,8 +14,9 @@ import android.widget.Switch;
 import android.widget.TextView;
 import de.uniHamburg.informatik.continuousvoice.R;
 import de.uniHamburg.informatik.continuousvoice.services.sound.IAmplitudeListener;
-import de.uniHamburg.informatik.continuousvoice.services.sound.AudioService;
+import de.uniHamburg.informatik.continuousvoice.services.sound.IAudioService;
 import de.uniHamburg.informatik.continuousvoice.services.sound.IAudioServiceStartStopListener;
+import de.uniHamburg.informatik.continuousvoice.services.sound.Loudness;
 
 public class VisualizerFragment extends Fragment {
 
@@ -27,9 +27,9 @@ public class VisualizerFragment extends Fragment {
     private TextView amplitudeText;
     private Switch audioServiceSwitch;
     private Handler handler = new Handler();
-    private AudioService audioService;
+    private IAudioService audioService;
     
-    public VisualizerFragment(AudioService audioService) {
+    public VisualizerFragment(IAudioService audioService) {
         this.audioService = audioService;
     }
 
@@ -70,12 +70,12 @@ public class VisualizerFragment extends Fragment {
         audioService.addAmplitudeListener(new IAmplitudeListener() {
             @Override
             public void onSilence() {
-                switchRecordingIcon(AudioService.State.SILENCE);
+                switchRecordingIcon(Loudness.SILENCE);
             }
 
             @Override
             public void onSpeech() {
-                switchRecordingIcon(AudioService.State.SPEECH);
+                switchRecordingIcon(Loudness.SPEECH);
             }
 
             @Override
@@ -96,9 +96,9 @@ public class VisualizerFragment extends Fragment {
         });
     }
 
-    private void switchRecordingIcon(AudioService.State state) {
+    private void switchRecordingIcon(Loudness state) {
         final int imageId;
-        if (state == AudioService.State.SPEECH) {
+        if (state == Loudness.SPEECH) {
             imageId = R.drawable.mic;
         } else {
             imageId = R.drawable.mic_muted;

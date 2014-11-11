@@ -18,7 +18,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.util.Log;
-import de.uniHamburg.informatik.continuousvoice.services.sound.AudioService;
+import de.uniHamburg.informatik.continuousvoice.services.sound.IAudioService;
 import de.uniHamburg.informatik.continuousvoice.settings.Language;
 
 public class ATTWebServiceRecognizer extends AbstractWebServiceRecognizer {
@@ -27,7 +27,7 @@ public class ATTWebServiceRecognizer extends AbstractWebServiceRecognizer {
     private String key;
     protected long RECORDING_MAX_DURATION = 5 * 1000;
 
-    public ATTWebServiceRecognizer(String apiKey, AudioService audioService) {
+    public ATTWebServiceRecognizer(String apiKey, IAudioService audioService) {
         super(audioService);
         this.key = apiKey;
     }

@@ -27,7 +27,7 @@ import android.util.Log;
  * @author marius
  * 
  */
-public class AudioService implements IRecorder {
+public abstract class AudioService implements IAudioService {
     //config
     private final String        TAG = "AudioService";
     private static final int    SOURCE = MediaRecorder.AudioSource.MIC;
@@ -58,13 +58,11 @@ public class AudioService implements IRecorder {
     private ScheduledExecutorService scheduleTaskExecutor;
     private double currentAmplitude = 0.0;
     private int silenceSince = 0;
-    private State lastNotificationState;
+    private Loudness lastNotificationState;
 
-    //SilenceStates
-    public enum State {
-        SPEECH, SILENCE;
-    }
-
+    /* (non-Javadoc)
+     * @see de.uniHamburg.informatik.continuousvoice.services.sound.IAudioService#initialize()
+     */
     @Override
     public void initialize() {
         persistentRecorder = createRecorder(true);
@@ -77,6 +75,9 @@ public class AudioService implements IRecorder {
         startAmplitudeMeasurement();
     }
 
+    /* (non-Javadoc)
+     * @see de.uniHamburg.informatik.continuousvoice.services.sound.IAudioService#shutdown()
+     */
     @Override
     public void shutdown() {
         running = false;
@@ -89,6 +90,9 @@ public class AudioService implements IRecorder {
         transientRecorder = null;
     }
 
+    /* (non-Javadoc)
+     * @see de.uniHamburg.informatik.continuousvoice.services.sound.IAudioService#startRecording()
+     */
     @Override
     public void startRecording() {
         if (recording) {
@@ -106,6 +110,9 @@ public class AudioService implements IRecorder {
         persistentRecorder = createRecorder(true);
     }
 
+    /* (non-Javadoc)
+     * @see de.uniHamburg.informatik.continuousvoice.services.sound.IAudioService#stopRecording()
+     */
     @Override
     public File stopRecording() {
         if (!recording) {
@@ -132,6 +139,9 @@ public class AudioService implements IRecorder {
         return currentFile;
     }
 
+    /* (non-Javadoc)
+     * @see de.uniHamburg.informatik.continuousvoice.services.sound.IAudioService#splitRecording()
+     */
     @Override
     public File splitRecording() {
         if (!recording) {
@@ -240,31 +250,35 @@ public class AudioService implements IRecorder {
     }
 
     private void updateSilenceState() {
-        State current = getCurrentSilenceState();
+        Loudness current = getCurrentSilenceState();
 
-        if (current == State.SILENCE) {
+        if (current == Loudness.SILENCE) {
             silenceSince += SILENCE_POLLING_TIME;
             if (silenceSince >= SILENCE_OFFSET_TIME) {
-                notifySilenceListeners(State.SILENCE);
+                notifySilenceListeners(Loudness.SILENCE);
                 silenceSince = 0;
             }
         } else {
             silenceSince = 0;
-            notifySilenceListeners(State.SPEECH);
+            notifySilenceListeners(Loudness.SPEECH);
         }
     }
 
-    public State getCurrentSilenceState() {
+    /* (non-Javadoc)
+     * @see de.uniHamburg.informatik.continuousvoice.services.sound.IAudioService#getCurrentSilenceState()
+     */
+    @Override
+    public Loudness getCurrentSilenceState() {
         if (currentAmplitude < SILENCE_AMPLITUDE_THRESHOLD) {
-            return State.SILENCE;
+            return Loudness.SILENCE;
         } else {
-            return State.SPEECH;
+            return Loudness.SPEECH;
         }
     }
 
-    private void notifySilenceListeners(State state) {
+    private void notifySilenceListeners(Loudness state) {
         if (state != lastNotificationState) {
-            if (state == State.SPEECH) {
+            if (state == Loudness.SPEECH) {
                 for (IAmplitudeListener sl : listeners) {
                     sl.onSpeech();
                 }
@@ -277,23 +291,42 @@ public class AudioService implements IRecorder {
         lastNotificationState = state;
     }
 
+    /* (non-Javadoc)
+     * @see de.uniHamburg.informatik.continuousvoice.services.sound.IAudioService#addAmplitudeListener(de.uniHamburg.informatik.continuousvoice.services.sound.IAmplitudeListener)
+     */
+    @Override
     public void addAmplitudeListener(IAmplitudeListener sl) {
         listeners.add(sl);
     }
 
+    /* (non-Javadoc)
+     * @see de.uniHamburg.informatik.continuousvoice.services.sound.IAudioService#removeAmplitudeListener(de.uniHamburg.informatik.continuousvoice.services.sound.IAmplitudeListener)
+     */
+    @Override
     public void removeAmplitudeListener(IAmplitudeListener sl) {
         listeners.remove(sl);
     }
 
+    /* (non-Javadoc)
+     * @see de.uniHamburg.informatik.continuousvoice.services.sound.IAudioService#isRunning()
+     */
+    @Override
     public boolean isRunning() {
         return running;
     }
 
+    /* (non-Javadoc)
+     * @see de.uniHamburg.informatik.continuousvoice.services.sound.IAudioService#isRecording()
+     */
     @Override
     public boolean isRecording() {
         return recording;
     }
     
+    /* (non-Javadoc)
+     * @see de.uniHamburg.informatik.continuousvoice.services.sound.IAudioService#addStartStopListener(de.uniHamburg.informatik.continuousvoice.services.sound.IAudioServiceStartStopListener)
+     */
+    @Override
     public void addStartStopListener(IAudioServiceStartStopListener l) {
         startStopListeners.add(l);
     }
