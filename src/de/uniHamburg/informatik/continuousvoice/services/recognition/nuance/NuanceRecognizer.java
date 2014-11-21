@@ -10,7 +10,7 @@ import com.nuance.nmdp.speechkit.SpeechError;
 import com.nuance.nmdp.speechkit.SpeechKit;
 
 import de.uniHamburg.informatik.continuousvoice.services.recognition.AbstractRecognizer;
-import de.uniHamburg.informatik.continuousvoice.services.sound.IAudioService;
+import de.uniHamburg.informatik.continuousvoice.services.sound.recorders.IAudioService;
 
 public class NuanceRecognizer extends AbstractRecognizer implements Listener {
 

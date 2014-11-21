@@ -18,7 +18,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.util.Log;
-import de.uniHamburg.informatik.continuousvoice.services.sound.IAudioService;
+import de.uniHamburg.informatik.continuousvoice.services.sound.recorders.IAudioService;
+import de.uniHamburg.informatik.continuousvoice.services.speaker.SpeakerManager;
 import de.uniHamburg.informatik.continuousvoice.settings.Language;
 
 public class ATTWebServiceRecognizer extends AbstractWebServiceRecognizer {
@@ -27,8 +28,8 @@ public class ATTWebServiceRecognizer extends AbstractWebServiceRecognizer {
     private String key;
     protected long RECORDING_MAX_DURATION = 5 * 1000;
 
-    public ATTWebServiceRecognizer(String apiKey, IAudioService audioService) {
-        super(audioService);
+    public ATTWebServiceRecognizer(String apiKey, IAudioService audioService, SpeakerManager speakerManager) {
+        super(audioService, speakerManager);
         this.key = apiKey;
     }
     
@@ -69,7 +70,7 @@ public class ATTWebServiceRecognizer extends AbstractWebServiceRecognizer {
             httppost.addHeader("Accept", "application/json");
             //only with fixed grammars httppost.addHeader("Content-Language", "de-DE");
             httppost.addHeader("X-SpeechContect", "Generic");
-            httppost.setEntity(new FileEntity(f, "audio/amr"));
+            httppost.setEntity(new FileEntity(f, audioService.getMimeType()));
             HttpResponse response;
             response = httpclient.execute(httppost);
 

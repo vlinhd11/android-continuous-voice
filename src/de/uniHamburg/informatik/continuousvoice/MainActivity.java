@@ -4,8 +4,9 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import de.uniHamburg.informatik.continuousvoice.services.sound.IAudioService;
-import de.uniHamburg.informatik.continuousvoice.services.sound.PcmAudioService;
+import de.uniHamburg.informatik.continuousvoice.services.sound.recorders.IAudioService;
+import de.uniHamburg.informatik.continuousvoice.services.sound.recorders.PcmAudioService;
+import de.uniHamburg.informatik.continuousvoice.settings.GeneralSettings;
 import de.uniHamburg.informatik.continuousvoice.views.fragments.RecognizerFragment;
 import de.uniHamburg.informatik.continuousvoice.views.fragments.VisualizerFragment;
 
@@ -16,7 +17,9 @@ public class MainActivity extends Activity {
     private VisualizerFragment visualizationFragment;
 
     public void createServices() {
-        IAudioService audioService = new PcmAudioService();
+        GeneralSettings.getInstance().setApplicationContext(this); //dirty java hack :-(
+
+        IAudioService audioService = new PcmAudioService(this);
         
         voiceRecognitionFragment = new RecognizerFragment(audioService);
         visualizationFragment = new VisualizerFragment(audioService);
@@ -41,7 +44,6 @@ public class MainActivity extends Activity {
                         .commit();
             }
         }
-
     }
     
     @Override

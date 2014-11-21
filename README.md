@@ -50,5 +50,10 @@ Part of my master thesis in winter term 2014/2015:
 - open with Android IDE (Eclipse)
 - You also need to have Eclipse Java development tools plugin installed, if you are using stock ADT from eclipse, go to Help→Install New Software. Select Eclipse Repository and install from Programming Languages section “Eclipse Java Development Tools”. (from: [PocketSphinx Tutorial for Android](http://cmusphinx.sourceforge.net/wiki/tutorialandroid))
 - move and rename the `/keys.template` to `/res/values/keys.xml` and set your API keys there
+- clone this repo: https://github.com/mohitchauhan/AndroidContribution
+- import it in your workspace
+- set as library (project -> properties -> Android -> [x] is library)
+- reference it from ContinuousVoice (project -> properties -> project references)
+- include library in build path (project -> properties -> Java build path -> projects -> add ...)
 - build/compile with Android v16
 - launch

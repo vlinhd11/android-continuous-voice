@@ -7,4 +7,6 @@
     <color name="main">#e74c3c</color>
     <color name="foreground">#333333</color>
 
+    <color name="speechBubbleBg">#e5e5e5</color>
+    
 </resources>

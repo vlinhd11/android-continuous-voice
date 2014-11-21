@@ -12,6 +12,7 @@ import android.media.MediaRecorder;
 public class FileMediaRecorder extends MediaRecorder {
 
     private String filename;
+    private File file;
     
     /**
      * @param filename null means transient recorder
@@ -32,7 +33,10 @@ public class FileMediaRecorder extends MediaRecorder {
     }
     
     public File getFile() {
-        return new File(filename);
+        if (file == null) {
+            file = new File(filename);
+        }
+        return file;
     }
     
     public void setOutputFile(String filename) {

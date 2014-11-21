@@ -8,5 +8,7 @@
     <string name="words">%1$s words</string>
     
     <string name="fragment_hint">1 Choose recognition service\n2 Press ▶ to transcribe</string>
+    
+    <string name="noResults">[nothing recognized]</string>
 
 </resources>

@@ -11,23 +11,25 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Switch;
-import android.widget.TextView;
 import de.uniHamburg.informatik.continuousvoice.R;
+import de.uniHamburg.informatik.continuousvoice.constants.AudioConstants;
+import de.uniHamburg.informatik.continuousvoice.constants.AudioConstants.Loudness;
+import de.uniHamburg.informatik.continuousvoice.constants.AudioConstants.SpeakerPosition;
 import de.uniHamburg.informatik.continuousvoice.services.sound.IAmplitudeListener;
-import de.uniHamburg.informatik.continuousvoice.services.sound.IAudioService;
 import de.uniHamburg.informatik.continuousvoice.services.sound.IAudioServiceStartStopListener;
-import de.uniHamburg.informatik.continuousvoice.services.sound.Loudness;
+import de.uniHamburg.informatik.continuousvoice.services.sound.recorders.IAudioService;
 
 public class VisualizerFragment extends Fragment {
 
     protected static final String TAG = VisualizerFragment.class.getName();
     private static final int PROGRESSBAR_GRANULARITY = 1000;
-    private ProgressBar progressBar;
-    private ImageView recordingIcon;
-    private TextView amplitudeText;
     private Switch audioServiceSwitch;
     private Handler handler = new Handler();
     private IAudioService audioService;
+	private ProgressBar progressBarLeft;
+	private ImageView recordingIconLeft;
+	private ProgressBar progressBarRight;
+	private ImageView recordingIconRight;
     
     public VisualizerFragment(IAudioService audioService) {
         this.audioService = audioService;
@@ -39,10 +41,14 @@ public class VisualizerFragment extends Fragment {
 
         audioServiceSwitch = (Switch) view.findViewById(R.id.audioServiceSwitch);
         audioServiceSwitch.setChecked(audioService.isRunning());
-        //amplitudeText = (TextView) view.findViewById(R.id.amplitudeText);
-        progressBar = (ProgressBar) view.findViewById(R.id.soundlevel);
-        recordingIcon = (ImageView) view.findViewById(R.id.silenceState);
-        progressBar.setMax(PROGRESSBAR_GRANULARITY); //percent
+        progressBarLeft = (ProgressBar) view.findViewById(R.id.soundlevelLeft);
+        recordingIconLeft = (ImageView) view.findViewById(R.id.silenceStateLeft);
+        
+        progressBarRight = (ProgressBar) view.findViewById(R.id.soundlevelRight);
+        recordingIconRight = (ImageView) view.findViewById(R.id.silenceStateRight);
+        
+        progressBarRight.setMax(PROGRESSBAR_GRANULARITY); //percent
+        progressBarLeft.setMax(PROGRESSBAR_GRANULARITY); //percent
 
         createListeners();
 
@@ -61,7 +67,8 @@ public class VisualizerFragment extends Fragment {
                 } else {
                     if (audioService.isRunning()) {
                         audioService.shutdown();
-                        progressBar.setProgress(0);
+                        progressBarRight.setProgress(0);
+                        progressBarLeft.setProgress(0);
                     }
                 }
             }
@@ -70,18 +77,33 @@ public class VisualizerFragment extends Fragment {
         audioService.addAmplitudeListener(new IAmplitudeListener() {
             @Override
             public void onSilence() {
-                switchRecordingIcon(Loudness.SILENCE);
             }
 
             @Override
             public void onSpeech() {
-                switchRecordingIcon(Loudness.SPEECH);
             }
 
             @Override
-            public void onAmplitudeUpdate(double percent) {
-                progressBar.setProgress((int) (percent * PROGRESSBAR_GRANULARITY));
+            public void onAmplitudeUpdate(double percentLeft, double percentRight) {
+                progressBarLeft.setProgress((int) (percentLeft * PROGRESSBAR_GRANULARITY));
+                progressBarRight.setProgress((int) (percentRight * PROGRESSBAR_GRANULARITY));
+                
+                if (percentLeft <= AudioConstants.SILENCE_AMPLITUDE_THRESHOLD) {
+                	switchRecordingIcon(true, Loudness.SILENCE);
+                } else {
+                	switchRecordingIcon(true, Loudness.SPEECH);
+                }
+
+                if (percentRight <= AudioConstants.SILENCE_AMPLITUDE_THRESHOLD) {
+                	switchRecordingIcon(false, Loudness.SILENCE);
+                } else {
+                	switchRecordingIcon(false, Loudness.SPEECH);
+                }
             }
+
+			@Override
+			public void onSpeakerChange(SpeakerPosition position) {
+			}
         });
         
         audioService.addStartStopListener(new IAudioServiceStartStopListener() {
@@ -96,7 +118,7 @@ public class VisualizerFragment extends Fragment {
         });
     }
 
-    private void switchRecordingIcon(Loudness state) {
+    private void switchRecordingIcon(final boolean left, Loudness state) {
         final int imageId;
         if (state == Loudness.SPEECH) {
             imageId = R.drawable.mic;
@@ -105,6 +127,12 @@ public class VisualizerFragment extends Fragment {
         }
         handler.post(new Runnable() {
             public void run() {
+            	ImageView recordingIcon;
+            	if (left) {
+            		recordingIcon = recordingIconLeft;
+            	} else {
+            		recordingIcon = recordingIconRight;
+            	}
                 recordingIcon.setImageDrawable(getResources().getDrawable(imageId));
             }
         });

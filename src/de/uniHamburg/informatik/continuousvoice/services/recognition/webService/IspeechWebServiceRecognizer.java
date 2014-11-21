@@ -17,7 +17,8 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONException;
 
 import android.util.Log;
-import de.uniHamburg.informatik.continuousvoice.services.sound.IAudioService;
+import de.uniHamburg.informatik.continuousvoice.services.sound.recorders.IAudioService;
+import de.uniHamburg.informatik.continuousvoice.services.speaker.SpeakerManager;
 import de.uniHamburg.informatik.continuousvoice.settings.Language;
 
 public class IspeechWebServiceRecognizer extends AbstractWebServiceRecognizer {
@@ -26,8 +27,8 @@ public class IspeechWebServiceRecognizer extends AbstractWebServiceRecognizer {
     private String key;
     protected long RECORDING_MAX_DURATION = 5 * 1000;
 
-    public IspeechWebServiceRecognizer(String apiKey, IAudioService audioService) {
-        super(audioService);
+    public IspeechWebServiceRecognizer(String apiKey, IAudioService audioService, SpeakerManager speakerManager) {
+        super(audioService, speakerManager);
         this.key = apiKey;
     }
 
@@ -56,7 +57,7 @@ public class IspeechWebServiceRecognizer extends AbstractWebServiceRecognizer {
          *  Apikey "ex. abcdef1234567890abcdef1234567890"
          *  Locale "en-US"
          *  Action "recognize"
-         *  Content-Type "audio/amr"
+         *  Content-Type eg "audio/amr"
          *  Audio as String (base64, remove \r\n)
          *  Output "json"
          *  Freeform 3 (for dictation)
@@ -71,7 +72,7 @@ public class IspeechWebServiceRecognizer extends AbstractWebServiceRecognizer {
             httppost.addHeader("Action", "recognize");
             httppost.addHeader("Output", "json");
             httppost.addHeader("Freeform", "3");
-            httppost.setEntity(new FileEntity(f, "audio/amr"));
+            httppost.setEntity(new FileEntity(f, audioService.getMimeType()));
             
             HttpResponse response;
             response = httpclient.execute(httppost);

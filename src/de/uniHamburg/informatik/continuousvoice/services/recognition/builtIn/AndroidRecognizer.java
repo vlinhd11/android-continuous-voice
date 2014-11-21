@@ -9,8 +9,7 @@ import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.util.Log;
 import de.uniHamburg.informatik.continuousvoice.services.recognition.AbstractRecognizer;
-import de.uniHamburg.informatik.continuousvoice.services.sound.AudioService;
-import de.uniHamburg.informatik.continuousvoice.services.sound.IAudioService;
+import de.uniHamburg.informatik.continuousvoice.services.sound.recorders.IAudioService;
 
 public class AndroidRecognizer extends AbstractRecognizer {
 

@@ -3,11 +3,15 @@
 
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="small_vertical_margin">6dp</dimen>
+    
     
     <dimen name="header_button_width">60dp</dimen>
 
     <dimen name="header_meta_text_size">12sp</dimen>
     <dimen name="header_state_text_size">12sp</dimen>
+    
+    <dimen name="speech_bubble_margin">80dp</dimen>
     
     
 </resources>

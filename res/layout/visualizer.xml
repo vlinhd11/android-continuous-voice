@@ -4,7 +4,8 @@
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:background="@color/main"
-    android:orientation="vertical" >
+    android:orientation="vertical"
+    android:paddingBottom="10dp" >
 
     <LinearLayout
         android:layout_width="fill_parent"
@@ -17,35 +18,73 @@
             android:layout_height="wrap_content"
             android:checked="false"
             android:text="Audio Service"
-            android:padding="10dp" />
+            android:padding="10dp"
+            android:paddingBottom="3dp" />
         
-        <!-- <TextView
-            android:id="@+id/amplitudeText"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="dB: "/> -->
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal" >
+        android:orientation="horizontal"
+        android:paddingLeft="10dp" >
 
+        <TextView 
+            android:text="L"
+            android:textSize="13sp"
+            android:layout_width="10dp"
+            android:layout_height="18dp"
+            android:textColor="#000000"/>
+        
         <ImageView
-            android:id="@+id/silenceState"
-            android:layout_width="28dp"
-            android:layout_height="28dp"
+            android:id="@+id/silenceStateLeft"
+            android:layout_width="14dp"
+            android:layout_height="18dp"
             android:adjustViewBounds="true"
             android:scaleType="fitCenter"
             android:src="@drawable/mic_muted" />
 
         <ProgressBar
-            android:id="@+id/soundlevel"
+            android:id="@+id/soundlevelLeft"
             style="@android:style/Widget.ProgressBar.Horizontal"
             android:layout_width="fill_parent"
-            android:layout_height="28dp"
+            android:layout_height="18dp"
             android:background="@color/main"
-            android:padding="10dp" />
+            android:paddingBottom="4dp"
+            android:paddingTop="4dp"
+            android:paddingRight="10dp" />
+    </LinearLayout>
+    
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingLeft="10dp" >
+        
+        <TextView 
+            android:text="R"
+            android:textSize="13sp"
+            android:layout_width="10dp"
+            android:layout_height="18dp"
+            android:textColor="#000000"/>
+
+        <ImageView
+            android:id="@+id/silenceStateRight"
+            android:layout_width="14dp"
+            android:layout_height="18dp"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
+            android:src="@drawable/mic_muted" />
+
+        <ProgressBar
+            android:id="@+id/soundlevelRight"
+            style="@android:style/Widget.ProgressBar.Horizontal"
+            android:layout_width="fill_parent"
+            android:layout_height="18dp"
+            android:background="@color/main"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp"
+            android:paddingRight="10dp" />
     </LinearLayout>
 
 </LinearLayout>

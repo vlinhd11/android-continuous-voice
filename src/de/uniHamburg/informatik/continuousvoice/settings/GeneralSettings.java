@@ -3,11 +3,14 @@ package de.uniHamburg.informatik.continuousvoice.settings;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.content.Context;
+
 public class GeneralSettings {
     
     //defaults
     private Language language = Language.EnUs;
     private List<SettingsChangedListener> listeners = new ArrayList<SettingsChangedListener>();
+    private Context context;
     private static GeneralSettings instance;
     
     public static GeneralSettings getInstance() {
@@ -42,6 +45,14 @@ public class GeneralSettings {
         for (SettingsChangedListener scl: listeners) {
             scl.settingChanged();
         }
+    }
+
+    public Context getApplicationContext() {
+        return context;
+    }
+    
+    public void setApplicationContext(Context context) {
+        this.context = context;
     }
     
 }

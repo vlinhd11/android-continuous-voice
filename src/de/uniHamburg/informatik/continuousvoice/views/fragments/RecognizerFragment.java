@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -29,8 +29,11 @@ import de.uniHamburg.informatik.continuousvoice.services.recognition.nuance.Nuan
 import de.uniHamburg.informatik.continuousvoice.services.recognition.webService.ATTWebServiceRecognizer;
 import de.uniHamburg.informatik.continuousvoice.services.recognition.webService.GoogleWebServiceRecognizer;
 import de.uniHamburg.informatik.continuousvoice.services.recognition.webService.IspeechWebServiceRecognizer;
-import de.uniHamburg.informatik.continuousvoice.services.sound.AudioService;
-import de.uniHamburg.informatik.continuousvoice.services.sound.IAudioService;
+import de.uniHamburg.informatik.continuousvoice.services.sound.recorders.IAudioService;
+import de.uniHamburg.informatik.continuousvoice.services.speaker.SoundPositionSpeakerRecognizer;
+import de.uniHamburg.informatik.continuousvoice.services.speaker.Speaker;
+import de.uniHamburg.informatik.continuousvoice.services.speaker.SpeakerAssignResult;
+import de.uniHamburg.informatik.continuousvoice.services.speaker.SpeakerManager;
 import de.uniHamburg.informatik.continuousvoice.settings.GeneralSettings;
 import de.uniHamburg.informatik.continuousvoice.settings.Language;
 import de.uniHamburg.informatik.continuousvoice.settings.SettingsChangedListener;
@@ -56,7 +59,6 @@ public class RecognizerFragment extends Fragment {
     private TextView statusTextLine1;
     private TextView statusTextLine2;
     private TextView wordCountText;
-    private TextView contentText;
     private ScrollView scrollWrapper;
 
     private short currentState = STATE_1_READY;
@@ -71,10 +73,15 @@ public class RecognizerFragment extends Fragment {
     private List<AbstractRecognizer> availableRecognizers;
     private AbstractRecognizer currentRecognizer;
     private ArrayAdapter<CharSequence> availableLanguages;
+    private Speaker lastSpeaker;
+    private SpeakerManager speakerManager;
+	private List<SpeechBubble> bubbles = new ArrayList<SpeechBubble>();
 
     public RecognizerFragment(IAudioService audioService) {
         this.audioService = audioService;
         this.settings = GeneralSettings.getInstance();
+        
+        this.speakerManager = new SpeakerManager(new SoundPositionSpeakerRecognizer());
 
         timeUpdateRunner = new Runnable() {
             @Override
@@ -102,7 +109,6 @@ public class RecognizerFragment extends Fragment {
 
         timeText = (TextView) view.findViewById(R.id.voiceRecognizerTime);
         wordCountText = (TextView) view.findViewById(R.id.voiceRecognizerWordCount);
-        contentText = (TextView) view.findViewById(R.id.voiceRecognizerContent);
         scrollWrapper = (ScrollView) view.findViewById(R.id.voiceRecognizerScrollWrapper);
         statusTextLine1 = (TextView) view.findViewById(R.id.voiceRecognizerState1);
         statusTextLine2 = (TextView) view.findViewById(R.id.voiceRecognizerState2);
@@ -125,9 +131,9 @@ public class RecognizerFragment extends Fragment {
         availableRecognizers.add(new AndroidRecognizer(getActivity(), audioService));
         availableRecognizers.add(new NuanceRecognizer(getActivity(), audioService));
         availableRecognizers
-                .add(new GoogleWebServiceRecognizer(getString(R.string.googleApiKey), audioService));
-        availableRecognizers.add(new ATTWebServiceRecognizer(getString(R.string.attApiOauthKey), audioService));
-        availableRecognizers.add(new IspeechWebServiceRecognizer(getString(R.string.ispeechApiKey), audioService));
+                .add(new GoogleWebServiceRecognizer(getString(R.string.googleApiKey), audioService, speakerManager));
+        availableRecognizers.add(new ATTWebServiceRecognizer(getString(R.string.attApiOauthKey), audioService, speakerManager));
+        availableRecognizers.add(new IspeechWebServiceRecognizer(getString(R.string.ispeechApiKey), audioService, speakerManager));
         
         serviceSpinner = (Spinner) parent.findViewById(R.id.serviceSpinner);
         List<String> list = new ArrayList<String>();
@@ -159,8 +165,8 @@ public class RecognizerFragment extends Fragment {
         recognizer.initialize();
         recognizer.addTranscriptionListener(new ITranscriptionResultListener() {
             @Override
-            public void onTranscriptResult(String transcriptResult) {
-                addTextToView(transcriptResult);
+            public void onTranscriptResult(String transcriptResult, SpeakerAssignResult res) {
+                addTextToView(transcriptResult, res);
             }
         });
         recognizer.addStatusListener(new IStatusListener() {
@@ -244,7 +250,6 @@ public class RecognizerFragment extends Fragment {
     }
 
     private void resetTexts() {
-        contentText.setHint(R.string.fragment_hint);
         timeText.setText(String.format(minutesStringSchema, "00:00:00"));
         wordCountText.setText(String.format(wordsStringSchema, "0"));
     }
@@ -264,9 +269,6 @@ public class RecognizerFragment extends Fragment {
     private void setStatus(final String newStatus) {
         statusTextLine2.setText(statusTextLine1.getText());
         statusTextLine1.setText(newStatus);
-
-        //Animation inAnim = AnimationUtils.loadAnimation(getActivity(), android.R.anim.slide_in_left);
-        //statusTextLine1.setAnimation(inAnim);
     }
 
     private void switchState(short currentState) {
@@ -316,10 +318,21 @@ public class RecognizerFragment extends Fragment {
         });
     }
 
-    private void addTextToView(String toAdd) {
-        contentText.append(" " + toAdd);
+    private void addTextToView(String toAdd, SpeakerAssignResult res) {
+        if (!res.getSpeaker().equals(lastSpeaker)) {
+            FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
+            SpeechBubble bubble = new SpeechBubble(res, toAdd);
+            fragmentTransaction.add(R.id.voiceRecognizerBubbleContainer, bubble);
+            fragmentTransaction.commit();
+
+            bubbles.add(bubble);
+            lastSpeaker = res.getSpeaker();
+        } else {
+        	bubbles.get(bubbles.size() - 1).addText(toAdd);
+        }        
+        
         completeText.replaceAll("\\s+", " ");
-        words = completeText.trim().split("\\s+").length;
+        words += toAdd.trim().split("\\s+").length;
         updateWordCount();
         scrollDown();
     }
@@ -347,7 +360,12 @@ public class RecognizerFragment extends Fragment {
         completeText = "";
         words = 0;
         updateWordCount();
-        contentText.setText("");
+        
+        FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
+        for (SpeechBubble sb: bubbles) {
+        	fragmentTransaction.remove(sb);
+        }
+        fragmentTransaction.commit();
     }
 
     public void share() {

@@ -18,16 +18,16 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.util.Log;
-import de.uniHamburg.informatik.continuousvoice.services.sound.AudioService;
-import de.uniHamburg.informatik.continuousvoice.services.sound.IAudioService;
+import de.uniHamburg.informatik.continuousvoice.services.sound.recorders.IAudioService;
+import de.uniHamburg.informatik.continuousvoice.services.speaker.SpeakerManager;
 
 public class GoogleWebServiceRecognizer extends AbstractWebServiceRecognizer {
 
     public static final String TAG = GoogleWebServiceRecognizer.class.getName();
     private String key;
 
-    public GoogleWebServiceRecognizer(String apiKey, IAudioService audioService) {
-        super(audioService);
+    public GoogleWebServiceRecognizer(String apiKey, IAudioService audioService, SpeakerManager speakerManager) {
+        super(audioService, speakerManager);
         this.key = apiKey;
     }
 
@@ -47,9 +47,13 @@ public class GoogleWebServiceRecognizer extends AbstractWebServiceRecognizer {
         HttpClient httpclient = new DefaultHttpClient();
         HttpPost httppost = new HttpPost(getUrl());
 
+        
+        Log.e(TAG, "Auf geht's, Leute!");
+        
         String transcript = "";
         try {
-            httppost.setEntity(new FileEntity(f, AudioService.MIME_TYPE));
+        	String mimeType = "audio/l16; rate=16000;";
+            httppost.setEntity(new FileEntity(f, mimeType));
             HttpResponse response;
             response = httpclient.execute(httppost);
 
@@ -92,9 +96,8 @@ public class GoogleWebServiceRecognizer extends AbstractWebServiceRecognizer {
         // "Hola a OpenDomo"},{"transcript":"hola a OpenDomo"}],"final":true}],"result_inde
         // x":0}
 
-        Log.i(TAG, response);
-        
         String result = "(?)";
+        Log.e(TAG, "Google: " + response);
         
         if (response != null) {
             String cleansedResult = response.replace("{\"result\":[]}", "");
