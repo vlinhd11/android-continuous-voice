@@ -14,6 +14,13 @@ Part of my master thesis in winter term 2014/2015:
 
 ##Changelog
 
+###Nov 23.
+- chat-like transcription UI
+- stereo audio service
+- continuous speaker detection: icon shows speaker changes
+- using native libraries for converting raw PCM audio samples into .mp3 and .wav
+- time shift (buffer that will be prepended on loudness detection not to lose the initialization time when recording starts)
+
 ###Okt 20.
 - new UI with only one but choosable recognizer
 - silence notification in visualizer (perfect for automatic audio file splitting) 
@@ -50,10 +57,10 @@ Part of my master thesis in winter term 2014/2015:
 - open with Android IDE (Eclipse)
 - You also need to have Eclipse Java development tools plugin installed, if you are using stock ADT from eclipse, go to Help→Install New Software. Select Eclipse Repository and install from Programming Languages section “Eclipse Java Development Tools”. (from: [PocketSphinx Tutorial for Android](http://cmusphinx.sourceforge.net/wiki/tutorialandroid))
 - move and rename the `/keys.template` to `/res/values/keys.xml` and set your API keys there
-- clone this repo: https://github.com/mohitchauhan/AndroidContribution
-- import it in your workspace
-- set as library (project -> properties -> Android -> [x] is library)
-- reference it from ContinuousVoice (project -> properties -> project references)
-- include library in build path (project -> properties -> Java build path -> projects -> add ...)
+- clone the following repos: https://github.com/mohitchauhan/AndroidContribution and https://github.com/guardianproject/android-ffmpeg-java
+- import them into your workspace (import as android project, not existing eclipse project)
+- set them as library (project -> properties -> Android -> [x] is library)
+- reference them from ContinuousVoice (project -> properties -> project references)
+- include libraries in build path (project -> properties -> Java build path -> projects -> add ...)
 - build/compile with Android v16
 - launch
