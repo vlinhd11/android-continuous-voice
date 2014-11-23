@@ -28,8 +28,8 @@ public class ATTWebServiceRecognizer extends AbstractWebServiceRecognizer {
     private String key;
     protected long RECORDING_MAX_DURATION = 5 * 1000;
 
-    public ATTWebServiceRecognizer(String apiKey, IAudioService audioService, SpeakerManager speakerManager) {
-        super(audioService, speakerManager);
+    public ATTWebServiceRecognizer(String apiKey, IAudioService audioService) {
+        super(audioService);
         this.key = apiKey;
     }
     

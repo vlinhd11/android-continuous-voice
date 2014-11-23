@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import de.uniHamburg.informatik.continuousvoice.R;
-import de.uniHamburg.informatik.continuousvoice.services.speaker.SpeakerAssignResult;
+import de.uniHamburg.informatik.continuousvoice.services.speaker.Speaker;
 
 public class SpeechBubble extends Fragment {
 	
@@ -17,15 +17,15 @@ public class SpeechBubble extends Fragment {
 	public static final short ORIENTATION_RIGHT = 1;
 	private short orientation;
 	private String text;
-	private SpeakerAssignResult speaker;
+	private Speaker speaker;
 	private TextView textView;
 	private ImageView imageView;
 	
 	
-	public SpeechBubble(SpeakerAssignResult speaker, String text) {
+	public SpeechBubble(Speaker speaker, String text) {
 		this.speaker = speaker;
 		this.text = text;
-		this.orientation = (short) ((short) speaker.getSpeaker().getIndex() % 2);
+		this.orientation = (short) ((short) speaker.getIndex() % 2);
 	}
 	
 	@Override
@@ -44,7 +44,7 @@ public class SpeechBubble extends Fragment {
         imageView = (ImageView) view.findViewById(R.id.speakerIcon);
         textView = (TextView) view.findViewById(R.id.text);
         textView.setText(text);
-        imageView.getDrawable().setColorFilter( speaker.getSpeaker().getColor(), Mode.MULTIPLY);
+        imageView.getDrawable().setColorFilter( speaker.getColor(), Mode.MULTIPLY);
 
         return view;
     }

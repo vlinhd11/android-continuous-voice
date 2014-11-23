@@ -74,8 +74,7 @@ public class AudioHelper {
         short[] leftChannelAudioData = new short[length];
         short[] rightChannelAudioData = new short[length];
                 
-        for(int i = 0; i < length/2; i = i + 2)
-        {
+        for(int i = 0; i < length/2; i = i + 2) {
             //split stereo: http://stackoverflow.com/a/20624845/1686216
             //leftChannelAudioData[i] = audioData[2*i];
             //leftChannelAudioData[i+1] = audioData[2*i+1];
@@ -91,6 +90,25 @@ public class AudioHelper {
         }
         
        return new short[][] {leftChannelAudioData, rightChannelAudioData};
+    }
+    
+    /**
+     * Converts alternating audio sample array values by adding left and right channel
+     * [l1,r1,l2,r2,...] => [l1+r1, l2+r2]
+     * @param stereo alternating audio samples [l,r,l,r,l,r,...]
+     * @return
+     */
+    public static short[] convertStereoToMono(short[] stereo) {
+    	int length = stereo.length / 2;
+    	short[] mono = new short[length];
+    	
+    	for(int i = 0; i < length; i++) {
+    		int sum = stereo[2*i] + stereo[2*i+1];
+    		
+    		mono[i] = (short) stereo[2*i];//(sum / 2);
+        }
+    	
+    	return mono;
     }
     
     /**

@@ -30,10 +30,7 @@ import de.uniHamburg.informatik.continuousvoice.services.recognition.webService.
 import de.uniHamburg.informatik.continuousvoice.services.recognition.webService.GoogleWebServiceRecognizer;
 import de.uniHamburg.informatik.continuousvoice.services.recognition.webService.IspeechWebServiceRecognizer;
 import de.uniHamburg.informatik.continuousvoice.services.sound.recorders.IAudioService;
-import de.uniHamburg.informatik.continuousvoice.services.speaker.SoundPositionSpeakerRecognizer;
 import de.uniHamburg.informatik.continuousvoice.services.speaker.Speaker;
-import de.uniHamburg.informatik.continuousvoice.services.speaker.SpeakerAssignResult;
-import de.uniHamburg.informatik.continuousvoice.services.speaker.SpeakerManager;
 import de.uniHamburg.informatik.continuousvoice.settings.GeneralSettings;
 import de.uniHamburg.informatik.continuousvoice.settings.Language;
 import de.uniHamburg.informatik.continuousvoice.settings.SettingsChangedListener;
@@ -74,14 +71,11 @@ public class RecognizerFragment extends Fragment {
     private AbstractRecognizer currentRecognizer;
     private ArrayAdapter<CharSequence> availableLanguages;
     private Speaker lastSpeaker;
-    private SpeakerManager speakerManager;
 	private List<SpeechBubble> bubbles = new ArrayList<SpeechBubble>();
 
     public RecognizerFragment(IAudioService audioService) {
         this.audioService = audioService;
         this.settings = GeneralSettings.getInstance();
-        
-        this.speakerManager = new SpeakerManager(new SoundPositionSpeakerRecognizer());
 
         timeUpdateRunner = new Runnable() {
             @Override
@@ -130,10 +124,9 @@ public class RecognizerFragment extends Fragment {
         availableRecognizers = new ArrayList<AbstractRecognizer>();
         availableRecognizers.add(new AndroidRecognizer(getActivity(), audioService));
         availableRecognizers.add(new NuanceRecognizer(getActivity(), audioService));
-        availableRecognizers
-                .add(new GoogleWebServiceRecognizer(getString(R.string.googleApiKey), audioService, speakerManager));
-        availableRecognizers.add(new ATTWebServiceRecognizer(getString(R.string.attApiOauthKey), audioService, speakerManager));
-        availableRecognizers.add(new IspeechWebServiceRecognizer(getString(R.string.ispeechApiKey), audioService, speakerManager));
+        availableRecognizers.add(new GoogleWebServiceRecognizer(getString(R.string.googleApiKey), audioService));
+        availableRecognizers.add(new ATTWebServiceRecognizer(getString(R.string.attApiOauthKey), audioService));
+        availableRecognizers.add(new IspeechWebServiceRecognizer(getString(R.string.ispeechApiKey), audioService));
         
         serviceSpinner = (Spinner) parent.findViewById(R.id.serviceSpinner);
         List<String> list = new ArrayList<String>();
@@ -165,8 +158,8 @@ public class RecognizerFragment extends Fragment {
         recognizer.initialize();
         recognizer.addTranscriptionListener(new ITranscriptionResultListener() {
             @Override
-            public void onTranscriptResult(String transcriptResult, SpeakerAssignResult res) {
-                addTextToView(transcriptResult, res);
+            public void onTranscriptResult(String transcriptResult, Speaker s) {
+                addTextToView(transcriptResult, s);
             }
         });
         recognizer.addStatusListener(new IStatusListener() {
@@ -318,15 +311,15 @@ public class RecognizerFragment extends Fragment {
         });
     }
 
-    private void addTextToView(String toAdd, SpeakerAssignResult res) {
-        if (!res.getSpeaker().equals(lastSpeaker)) {
+    private void addTextToView(String toAdd, Speaker s) {
+        if (!s.equals(lastSpeaker)) {
             FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
-            SpeechBubble bubble = new SpeechBubble(res, toAdd);
+            SpeechBubble bubble = new SpeechBubble(s, toAdd);
             fragmentTransaction.add(R.id.voiceRecognizerBubbleContainer, bubble);
             fragmentTransaction.commit();
 
             bubbles.add(bubble);
-            lastSpeaker = res.getSpeaker();
+            lastSpeaker = s;
         } else {
         	bubbles.get(bubbles.size() - 1).addText(toAdd);
         }        

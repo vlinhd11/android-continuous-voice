@@ -6,6 +6,7 @@ import de.uniHamburg.informatik.continuousvoice.constants.AudioConstants.Loudnes
 import de.uniHamburg.informatik.continuousvoice.services.sound.IAmplitudeListener;
 import de.uniHamburg.informatik.continuousvoice.services.sound.IAudioServiceStartStopListener;
 import de.uniHamburg.informatik.continuousvoice.services.sound.IRecorder;
+import de.uniHamburg.informatik.continuousvoice.services.speaker.ISpeakerChangeListener;
 
 public interface IAudioService extends IRecorder {
     
@@ -32,5 +33,8 @@ public interface IAudioService extends IRecorder {
     public void addStartStopListener(IAudioServiceStartStopListener l);
     
     public String getMimeType();
+
+	public void addSpeakerChangeListener(
+			ISpeakerChangeListener iSpeakerChangeListener);
 
 }

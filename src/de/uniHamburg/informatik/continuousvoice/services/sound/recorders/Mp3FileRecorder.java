@@ -2,6 +2,8 @@ package de.uniHamburg.informatik.continuousvoice.services.sound.recorders;
 
 import com.example.libavndkdemo.Mp3Encoder;
 
+import de.uniHamburg.informatik.continuousvoice.services.sound.AudioHelper;
+
 /**
  * This is a wrapper and the reference to the libavndkdemo project
  * 

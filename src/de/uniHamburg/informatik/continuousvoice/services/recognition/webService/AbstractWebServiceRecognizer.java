@@ -8,7 +8,6 @@ import java.util.concurrent.TimeUnit;
 import android.os.Handler;
 import android.util.Log;
 import de.uniHamburg.informatik.continuousvoice.constants.AudioConstants.Loudness;
-import de.uniHamburg.informatik.continuousvoice.constants.AudioConstants.SpeakerPosition;
 import de.uniHamburg.informatik.continuousvoice.services.recognition.AbstractRecognizer;
 import de.uniHamburg.informatik.continuousvoice.services.sound.AudioHelper;
 import de.uniHamburg.informatik.continuousvoice.services.sound.AudioHelper.ConversionDoneCallback;
@@ -16,7 +15,7 @@ import de.uniHamburg.informatik.continuousvoice.services.sound.IAmplitudeListene
 import de.uniHamburg.informatik.continuousvoice.services.sound.IRecorder;
 import de.uniHamburg.informatik.continuousvoice.services.sound.recorders.IAudioService;
 import de.uniHamburg.informatik.continuousvoice.services.sound.recorders.PcmFile;
-import de.uniHamburg.informatik.continuousvoice.services.speaker.SpeakerAssignResult;
+import de.uniHamburg.informatik.continuousvoice.services.speaker.Speaker;
 import de.uniHamburg.informatik.continuousvoice.services.speaker.SpeakerManager;
 
 public abstract class AbstractWebServiceRecognizer extends AbstractRecognizer implements IAmplitudeListener {
@@ -28,11 +27,9 @@ public abstract class AbstractWebServiceRecognizer extends AbstractRecognizer im
     protected IAudioService audioService;
     private Runnable splitRunnable;
     private Handler handler = new Handler();
-    private SpeakerManager speakerManager;
 
-    public AbstractWebServiceRecognizer(IAudioService audioService, SpeakerManager speakerManager) {
+    public AbstractWebServiceRecognizer(IAudioService audioService) {
         this.audioService = audioService;
-        this.speakerManager = speakerManager;
         this.recorder = audioService;
         this.splitRunnable = new Runnable() {
             @Override
@@ -102,7 +99,7 @@ public abstract class AbstractWebServiceRecognizer extends AbstractRecognizer im
         Thread transcriptionThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                final SpeakerAssignResult sar = speakerManager.assign(f);
+                //final Speaker speaker = speakerManager.assign(f);
                 
                 final long start = System.currentTimeMillis();
                 try {
@@ -115,7 +112,7 @@ public abstract class AbstractWebServiceRecognizer extends AbstractRecognizer im
                                     + (wav.length() / 1024.0) + "kB, " 
                                     + "(" + (1.0 - ((double)wav.length() / (double)mp3.length()))*100 + "%))");
                             //2: when done: request
-                            new TranscriptionAsyncTask(wav, sar).start();
+                            new TranscriptionAsyncTask(wav).start();
                         }
                     });
                 } catch (Exception e) {
@@ -139,11 +136,6 @@ public abstract class AbstractWebServiceRecognizer extends AbstractRecognizer im
 
     @Override
     public void onAmplitudeUpdate(double percentLeft, double percentRight) {
-        //nothing
-    }
-
-    @Override
-    public void onSpeakerChange(SpeakerPosition pos) {
         //nothing
     }
 
@@ -191,7 +183,7 @@ public abstract class AbstractWebServiceRecognizer extends AbstractRecognizer im
     }
     
     private class TranscriptionAsyncTask extends Thread {
-    	public TranscriptionAsyncTask(final File file, final SpeakerAssignResult sar) {
+    	public TranscriptionAsyncTask(final File file) {
 			super(new Runnable() {
 				public void run() {
 					final String result = request(file);
@@ -199,7 +191,7 @@ public abstract class AbstractWebServiceRecognizer extends AbstractRecognizer im
 					handler.post(new Runnable() {
                         @Override
                         public void run() {
-                        	me.addWordsForSpeaker(result, sar);
+                        	me.addWords(result);
                         }
                     });
 				}

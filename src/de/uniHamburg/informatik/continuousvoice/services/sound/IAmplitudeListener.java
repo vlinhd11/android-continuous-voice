@@ -8,8 +8,6 @@ public interface IAmplitudeListener {
     
     public void onSpeech();
     
-    public void onSpeakerChange(AudioConstants.SpeakerPosition position);
-    
     /**
      * @param soundLevel 0..1
      */

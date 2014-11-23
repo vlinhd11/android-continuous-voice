@@ -18,7 +18,6 @@ import org.json.JSONException;
 
 import android.util.Log;
 import de.uniHamburg.informatik.continuousvoice.services.sound.recorders.IAudioService;
-import de.uniHamburg.informatik.continuousvoice.services.speaker.SpeakerManager;
 import de.uniHamburg.informatik.continuousvoice.settings.Language;
 
 public class IspeechWebServiceRecognizer extends AbstractWebServiceRecognizer {
@@ -27,8 +26,8 @@ public class IspeechWebServiceRecognizer extends AbstractWebServiceRecognizer {
     private String key;
     protected long RECORDING_MAX_DURATION = 5 * 1000;
 
-    public IspeechWebServiceRecognizer(String apiKey, IAudioService audioService, SpeakerManager speakerManager) {
-        super(audioService, speakerManager);
+    public IspeechWebServiceRecognizer(String apiKey, IAudioService audioService) {
+        super(audioService);
         this.key = apiKey;
     }
 

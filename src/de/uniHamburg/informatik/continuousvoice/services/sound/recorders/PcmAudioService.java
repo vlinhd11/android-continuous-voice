@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.Context;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
@@ -19,6 +19,10 @@ import de.uniHamburg.informatik.continuousvoice.constants.AudioConstants.Loudnes
 import de.uniHamburg.informatik.continuousvoice.services.sound.AudioHelper;
 import de.uniHamburg.informatik.continuousvoice.services.sound.IAmplitudeListener;
 import de.uniHamburg.informatik.continuousvoice.services.sound.IAudioServiceStartStopListener;
+import de.uniHamburg.informatik.continuousvoice.services.speaker.ISpeakerChangeListener;
+import de.uniHamburg.informatik.continuousvoice.services.speaker.Speaker;
+import de.uniHamburg.informatik.continuousvoice.services.speaker.SpeakerRecognizer;
+import de.uniHamburg.informatik.continuousvoice.settings.GeneralSettings;
 
 public class PcmAudioService extends Activity implements IAudioService {
 
@@ -27,9 +31,9 @@ public class PcmAudioService extends Activity implements IAudioService {
     public static final String MIME_TYPE = "audio/wav"; //http://en.wikipedia.org/wiki/MP3
     private static final String SUFFIX = "mp3";
     private static final int CONFIG_AUDIO_RATE = 48000; //44100;
-    public int CONFIG_AUDIO_ENCODING = AudioFormat.ENCODING_PCM_16BIT;
-    public int CONFIG_AUDIO_CHANNEL = AudioFormat.CHANNEL_IN_STEREO;
-    public int CONFIG_AUDIO_SOURCE = MediaRecorder.AudioSource.CAMCORDER; //MediaRecorder.AudioSource.MIC;
+    public static final int CONFIG_AUDIO_ENCODING = AudioFormat.ENCODING_PCM_16BIT;
+    public static final int CONFIG_AUDIO_CHANNEL = AudioFormat.CHANNEL_IN_STEREO; //AudioFormat.CHANNEL_IN_STEREO;
+    public static final int CONFIG_AUDIO_SOURCE = MediaRecorder.AudioSource.CAMCORDER; //for stereo, for mono: MediaRecorder.AudioSource.MIC;
 
     private boolean running = false; //amplitude
     private boolean recording = false; //recording, needs running
@@ -40,7 +44,12 @@ public class PcmAudioService extends Activity implements IAudioService {
     private volatile Mp3FileRecorder alternateRecorder;
     private AudioRecord audioRecord;
     private AudioRecordRunnable audioRecordRunnable;
+    private TimeShiftBuffer timeShift;
+    private boolean includeTimeShift;
     private Thread audioThread;
+    private SpeakerRecognizer speakerRecognizer;
+    
+    //listeners
     private List<IAmplitudeListener> listeners = new ArrayList<IAmplitudeListener>();
     private List<IAudioServiceStartStopListener> startStopListeners = new ArrayList<IAudioServiceStartStopListener>();
 
@@ -48,10 +57,13 @@ public class PcmAudioService extends Activity implements IAudioService {
     private double currentSoundLevel = 0.0; //percent 0-1
     private long silenceStartedAt = -1l;
     private Loudness lastNotificationState;
-    private Context context;
+	private GeneralSettings settings;
     
-    public PcmAudioService(Context context) {
-        this.context = context;
+    public PcmAudioService(SpeakerRecognizer speakerRecognizer) {
+        this.settings = GeneralSettings.getInstance();
+    	this.timeShift = new TimeShiftBuffer();
+        this.speakerRecognizer = speakerRecognizer;
+        addAmplitudeListener(speakerRecognizer);
     }
 
     @Override
@@ -77,6 +89,8 @@ public class PcmAudioService extends Activity implements IAudioService {
         recording = false;
         running = false;
         notifyStartStopListeners();
+        timeShift.clear();
+        speakerRecognizer.clear();
         
         currentSoundLevel = 0;
         notifySilenceListeners(Loudness.SILENCE);
@@ -90,6 +104,7 @@ public class PcmAudioService extends Activity implements IAudioService {
     @Override
     public void startRecording() {
         recording = true;
+        includeTimeShift = true;
         //init
         if (currentRecorder.initAudio() == 0) {
             frameSize = currentRecorder.getFrameSize();
@@ -113,7 +128,8 @@ public class PcmAudioService extends Activity implements IAudioService {
         PcmFile f = null;
         if (currentRecorder != null && recording) {
             recording = false;
-            Log.i(TAG, "Finishing recording, calling stop and release on recorder");
+            includeTimeShift = false;
+            
             f = currentRecorder.getPcmFile();
             try {
                 currentRecorder.close();
@@ -152,7 +168,8 @@ public class PcmAudioService extends Activity implements IAudioService {
         return file;
     }
 
-    private String getNextFileName() {
+    @SuppressLint("SimpleDateFormat")
+	private String getNextFileName() {
         recorderIteration++;
         File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
         String basePath = dir.getAbsolutePath();
@@ -161,7 +178,6 @@ public class PcmAudioService extends Activity implements IAudioService {
     }
 
     private Mp3FileRecorder createMp3Recorder() {
-        Log.i(TAG, "init recorder");
         Mp3FileRecorder recorder = new Mp3FileRecorder(getNextFileName());
 
         return recorder;
@@ -191,18 +207,20 @@ public class PcmAudioService extends Activity implements IAudioService {
             audioData = new short[bufferSize];
 
             /* ffmpeg_audio encoding loop */
-            long last = System.currentTimeMillis();
             while (running) {
                 bufferReadResult = audioRecord.read(audioData, 0, audioData.length);
-                long curr = System.currentTimeMillis();
-                long diff = curr - last;
-                last = curr;
-                
-                Log.w(TAG, diff + "");
-                //save buffer if recording
+
                 if (bufferReadResult > 0) {
+                	//save buffer if recording
                     if (recording) {
                         try {
+                        	//turn back the time ♫
+                        	if (includeTimeShift) {
+                        		for (short[] timeShiftData: timeShift.getPastAudioData()) {
+                        			//writeAudioSamples(timeShiftData, timeShiftData.length);
+                        		}
+                        		includeTimeShift = false; //done, set flag!
+                        	}
                             writeAudioSamples(audioData, bufferReadResult);
                         } catch (Exception e) {
                             Log.v(TAG, "m: " + e.getMessage());
@@ -233,17 +251,16 @@ public class PcmAudioService extends Activity implements IAudioService {
     }
 
     private void saveToTimeshiftBuffer(short[] clone) {
-    	// TODO create a LinkedList<short[]>(x) buffer with the last audio data
-    	
+    	timeShift.write(clone);
     }
 
     private void writeAudioSamples(short[] buffer, int bufferReadResult) {
 
         int pendingArrLength = pending.length;
-        short[] newArray = new short[bufferReadResult + pendingArrLength];
+        short[] newArray = new short[(bufferReadResult / 2) + pendingArrLength];
 
         System.arraycopy(pending, 0, newArray, 0, pendingArrLength);
-        System.arraycopy(buffer, 0, newArray, pendingArrLength, bufferReadResult);
+        System.arraycopy(AudioHelper.convertStereoToMono(buffer), 0, newArray, pendingArrLength, (bufferReadResult / 2));
 
         int len = newArray.length;
         int q = Math.abs(len / frameSize);
@@ -352,4 +369,14 @@ public class PcmAudioService extends Activity implements IAudioService {
     public String getMimeType() {
         return MIME_TYPE;
     }
+
+	@Override
+	public void addSpeakerChangeListener(
+			ISpeakerChangeListener iSpeakerChangeListener) {
+		speakerRecognizer.addSpeakerChangeListener(iSpeakerChangeListener);
+	}
+	
+	public Speaker getCurrentSpeaker() {
+		return speakerRecognizer.getCurrentSpeaker();
+	}
 }

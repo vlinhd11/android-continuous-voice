@@ -1,34 +1,30 @@
 package de.uniHamburg.informatik.continuousvoice.services.sound.recorders;
 
-import java.util.LinkedList;
+import java.util.List;
+
+import de.uniHamburg.informatik.continuousvoice.constants.AudioConstants;
+import de.uniHamburg.informatik.continuousvoice.services.sound.Buffer;
 
 public class TimeShiftBuffer {
 
-	private LinkedList<short[]> buffer = new LinkedList<short[]>();
-	private int size;
-	private int seconds;
-	
-	public TimeShiftBuffer(int seconds) {
-		//audio comes every 40-50ms 1sec has 20 data arrays
-		this.size = seconds * 20;
-		this.seconds = seconds;
+	private Buffer<short[]> buffer;
+
+	public TimeShiftBuffer() {
+		this.buffer = new Buffer<short[]>(AudioConstants.AUDIO_BUFFER_SIZE);
 	}
 	
-	public synchronized void write(short[] audioData) {
-		buffer.add(audioData);
-		while (buffer.size() > size) {
-			buffer.remove(0);
-		}
+	public void write(short[] audioData) {
+		buffer.write(audioData);
 	}
 	
 	public void clear() {
 		buffer.clear();
 	}
 	
-	public void getOldAudioData(int secondsToRetrieve) {
-		if (secondsToRetrieve > seconds) {
-			throw new IllegalArgumentException("TimeShift MAX = " + seconds + ". You can't have: " + secondsToRetrieve);
-		}
+	public short[][] getPastAudioData() {
+		List<short[]> completeBufferData = buffer.getCompleteBufferData();
+		
+		return completeBufferData.toArray(new short[completeBufferData.size()][completeBufferData.get(0).length]);
 	}
 	
 }

@@ -19,15 +19,14 @@ import org.json.JSONObject;
 
 import android.util.Log;
 import de.uniHamburg.informatik.continuousvoice.services.sound.recorders.IAudioService;
-import de.uniHamburg.informatik.continuousvoice.services.speaker.SpeakerManager;
 
 public class GoogleWebServiceRecognizer extends AbstractWebServiceRecognizer {
 
     public static final String TAG = GoogleWebServiceRecognizer.class.getName();
     private String key;
 
-    public GoogleWebServiceRecognizer(String apiKey, IAudioService audioService, SpeakerManager speakerManager) {
-        super(audioService, speakerManager);
+    public GoogleWebServiceRecognizer(String apiKey, IAudioService audioService) {
+        super(audioService);
         this.key = apiKey;
     }
 
@@ -52,7 +51,7 @@ public class GoogleWebServiceRecognizer extends AbstractWebServiceRecognizer {
         
         String transcript = "";
         try {
-        	String mimeType = "audio/l16; rate=16000;";
+        	String mimeType = "audio/l16; rate=8000;";
             httppost.setEntity(new FileEntity(f, mimeType));
             HttpResponse response;
             response = httpclient.execute(httppost);

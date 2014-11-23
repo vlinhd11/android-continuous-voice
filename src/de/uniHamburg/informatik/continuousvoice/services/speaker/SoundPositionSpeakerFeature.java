@@ -4,8 +4,8 @@ public class SoundPositionSpeakerFeature extends AbstractSpeakerFeature {
 
     private double soundPosition;
 
-    public SoundPositionSpeakerFeature(double soundPosition) {
-        this.soundPosition = soundPosition;
+    public SoundPositionSpeakerFeature(double levelLeft, double levelRight) {
+    	soundPosition = levelLeft / (levelLeft + levelRight);
     }
     
     @Override
