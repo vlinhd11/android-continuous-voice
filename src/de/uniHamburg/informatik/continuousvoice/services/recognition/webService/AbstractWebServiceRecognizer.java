@@ -16,7 +16,6 @@ import de.uniHamburg.informatik.continuousvoice.services.sound.IRecorder;
 import de.uniHamburg.informatik.continuousvoice.services.sound.recorders.IAudioService;
 import de.uniHamburg.informatik.continuousvoice.services.sound.recorders.PcmFile;
 import de.uniHamburg.informatik.continuousvoice.services.speaker.Speaker;
-import de.uniHamburg.informatik.continuousvoice.services.speaker.SpeakerManager;
 
 public abstract class AbstractWebServiceRecognizer extends AbstractRecognizer implements IAmplitudeListener {
 
@@ -27,6 +26,7 @@ public abstract class AbstractWebServiceRecognizer extends AbstractRecognizer im
     protected IAudioService audioService;
     private Runnable splitRunnable;
     private Handler handler = new Handler();
+	private Speaker currentSpeaker;
 
     public AbstractWebServiceRecognizer(IAudioService audioService) {
         this.audioService = audioService;
@@ -39,7 +39,7 @@ public abstract class AbstractWebServiceRecognizer extends AbstractRecognizer im
                 Log.e(TAG, "          │❰ split ❱│");
                 Log.e(TAG, "          └────┬────┘");
                 File f = recorder.splitRecording();
-                transcribeAsync((PcmFile) f);
+                transcribeAsync(currentTranscriptionId, currentSpeaker, (PcmFile) f);
                 startMaxTimeScheduler();
             }
         };
@@ -56,15 +56,12 @@ public abstract class AbstractWebServiceRecognizer extends AbstractRecognizer im
         }
     }
 
-    @Override
     public void start() {
         //1 ensure audioService is running
         if (!audioService.isRunning()) {
             audioService.initialize();
             setStatus("AudioService turn on");
         }
-
-        super.start();
 
         audioService.addAmplitudeListener(this);
         if (audioService.getCurrentSilenceState() == Loudness.SPEECH) {
@@ -74,16 +71,10 @@ public abstract class AbstractWebServiceRecognizer extends AbstractRecognizer im
 
     @Override
     public void stop() {
-        stopMaxTimeScheduler();
-        audioService.removeAmplitudeListener(this);
-        if (recorder.isRecording()) {
-            PcmFile toTranscribe = (PcmFile) recorder.stopRecording();
-            setStatus("stopped, transcribing");
-            transcribeAsync(toTranscribe);
-        } else {
-            setStatus("stopped");
-        }
+    	stopRecording();
 
+    	stopMaxTimeScheduler();
+        audioService.removeAmplitudeListener(this);
         super.stop();
     }
 
@@ -94,14 +85,14 @@ public abstract class AbstractWebServiceRecognizer extends AbstractRecognizer im
      * @param f
      *            the audio file (mp3) to transcribe
      */
-    protected void transcribeAsync(final PcmFile f) {
+    protected void transcribeAsync(final int id, final Speaker speaker, final PcmFile f) {
 
         Thread transcriptionThread = new Thread(new Runnable() {
             @Override
             public void run() {
                 //final Speaker speaker = speakerManager.assign(f);
                 
-                final long start = System.currentTimeMillis();
+            	final long start = System.currentTimeMillis();
                 try {
                     AudioHelper.convertMp3ToCompressedWav(settings.getApplicationContext(), f, new ConversionDoneCallback() {
                         @Override
@@ -112,7 +103,8 @@ public abstract class AbstractWebServiceRecognizer extends AbstractRecognizer im
                                     + (wav.length() / 1024.0) + "kB, " 
                                     + "(" + (1.0 - ((double)wav.length() / (double)mp3.length()))*100 + "%))");
                             //2: when done: request
-                            new TranscriptionAsyncTask(wav).start();
+                            //Speaker
+                            new TranscriptionAsyncTask(id, wav, speaker).getThread().start();
                         }
                     });
                 } catch (Exception e) {
@@ -141,6 +133,10 @@ public abstract class AbstractWebServiceRecognizer extends AbstractRecognizer im
 
     private void startRecording() {
         if (!recorder.isRecording()) {
+        	currentSpeaker = audioService.getCurrentSpeaker();
+        	Log.e(TAG, "curr speak: "  + currentSpeaker);
+        	super.startTranscription(currentSpeaker);
+            
             Log.e(TAG, "❰ record ❱─────┐");
             startMaxTimeScheduler();
             //start recorder
@@ -158,7 +154,8 @@ public abstract class AbstractWebServiceRecognizer extends AbstractRecognizer im
                     + "kb");
 
             //transcribe
-            transcribeAsync((PcmFile) toTranscribe);
+            transcribeAsync(currentTranscriptionId, currentSpeaker, (PcmFile) toTranscribe);
+            
             //stopTimer
             stopMaxTimeScheduler();
         }
@@ -182,16 +179,26 @@ public abstract class AbstractWebServiceRecognizer extends AbstractRecognizer im
         }
     }
     
-    private class TranscriptionAsyncTask extends Thread {
-    	public TranscriptionAsyncTask(final File file) {
-			super(new Runnable() {
+    protected class TranscriptionAsyncTask {
+    	private int id;
+    	private File file;
+    	final AbstractWebServiceRecognizer me = AbstractWebServiceRecognizer.this;
+		private Speaker speaker;
+		
+    	public TranscriptionAsyncTask(int id, final File file, final Speaker speaker) {
+    		this.id = id;
+    		this.file = file;
+    		this.speaker = speaker;
+    	}
+    	
+    	public Thread getThread() {
+    		return new Thread(new Runnable() {
 				public void run() {
 					final String result = request(file);
-					final AbstractWebServiceRecognizer me = AbstractWebServiceRecognizer.this;
 					handler.post(new Runnable() {
                         @Override
                         public void run() {
-                        	me.addWords(result);
+                        	me.finishTranscription(id, result, speaker);
                         }
                     });
 				}

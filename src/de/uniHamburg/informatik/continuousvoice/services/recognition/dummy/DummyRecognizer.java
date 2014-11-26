@@ -6,19 +6,9 @@ public class DummyRecognizer extends AbstractRecognizer {
 
     @Override
     public void start() {
-        super.start();
+        setStatus("START!");
         
-        addWords("start a timer: ");
-        long endTime = System.currentTimeMillis() + 5 * 1000;
-        while (System.currentTimeMillis() < endTime) {
-            synchronized (this) {
-                try {
-                    wait(endTime - System.currentTimeMillis());
-                    addWords(" 5sec passed");
-                } catch (Exception e) {
-                }
-            }
-        }
+        setStatus("END!");
     }
 
     @Override

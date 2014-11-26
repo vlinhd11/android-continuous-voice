@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -158,9 +159,16 @@ public class RecognizerFragment extends Fragment {
         recognizer.initialize();
         recognizer.addTranscriptionListener(new ITranscriptionResultListener() {
             @Override
-            public void onTranscriptResult(String transcriptResult, Speaker s) {
-                addTextToView(transcriptResult, s);
+            public void onTranscriptResult(int id, String transcriptResult, Speaker s) {
+                //search for bubble with id, set text 
+            	setTextForId(id, transcriptResult, s);
             }
+
+			@Override
+			public void onTranscriptionStart(int id, Speaker speaker) {
+				//create bubble view with progress animation, store in map with id as key
+				addPlaceholderForId(id, speaker);
+			}
         });
         recognizer.addStatusListener(new IStatusListener() {
             @Override
@@ -311,25 +319,41 @@ public class RecognizerFragment extends Fragment {
         });
     }
 
-    private void addTextToView(String toAdd, Speaker s) {
-        if (!s.equals(lastSpeaker)) {
+    
+    private void setTextForId(int id, String text, Speaker s) {
+    	for (SpeechBubble b: bubbles) {
+    		if (b.hasPlaceholder(id)) {
+    			b.setTextForId(id, text);
+    			break;
+    		}
+    	}
+    	
+        words += text.trim().split("\\s+").length;
+        updateWordCount();
+        scrollDown();
+    }
+    
+    private void addPlaceholderForId(final int id, Speaker s) {
+    	Log.e(TAG, "speaker: "  + s);
+    	if (lastSpeaker == null || !s.equals(lastSpeaker)) {
             FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
-            SpeechBubble bubble = new SpeechBubble(s, toAdd);
+            SpeechBubble bubble = new SpeechBubble(s, getActivity());
             fragmentTransaction.add(R.id.voiceRecognizerBubbleContainer, bubble);
             fragmentTransaction.commit();
 
             bubbles.add(bubble);
             lastSpeaker = s;
-        } else {
-        	bubbles.get(bubbles.size() - 1).addText(toAdd);
-        }        
+        }
+    	handler.post(new Runnable() {
+    		@Override
+    		public void run() {
+    			bubbles.get(bubbles.size() - 1).addPlaceholder(id);
+    		}
+    	});
         
-        completeText.replaceAll("\\s+", " ");
-        words += toAdd.trim().split("\\s+").length;
-        updateWordCount();
         scrollDown();
     }
-
+    
     public void play() {
         currentRecognizer.start();
         switchState(STATE_2_WORKING);

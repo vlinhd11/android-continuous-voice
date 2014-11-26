@@ -61,7 +61,7 @@ public class AndroidRecognizer extends AbstractRecognizer {
                 if (results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION) != null) {
                     String chunk = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION).get(0);
                     if (chunk != null) {
-                        addWords(chunk);
+                        finishTranscription(currentTranscriptionId, chunk);
                     }
                 }
             }
@@ -77,7 +77,7 @@ public class AndroidRecognizer extends AbstractRecognizer {
     // Service control ->
     @Override
     public void start() {
-        super.start();
+        super.startTranscription();
         
         if (audioService.isRunning()) {
             audioService.shutdown();

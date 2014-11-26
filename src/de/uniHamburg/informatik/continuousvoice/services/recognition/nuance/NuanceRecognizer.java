@@ -43,7 +43,7 @@ public class NuanceRecognizer extends AbstractRecognizer implements Listener {
 
     @Override
     public void start() {
-        super.start();
+        super.startTranscription();
         audioServiceBeforeState = audioService.isRunning();
 
         restartRecognitionCycle();
@@ -120,7 +120,7 @@ public class NuanceRecognizer extends AbstractRecognizer implements Listener {
         attempts = 0;
         if (running) {
             if (result.getResultCount() > 0) {
-                addWords(result.getResult(0).getText());
+                finishTranscription(currentTranscriptionId, result.getResult(0).getText());
                 setStatus(result.getResultCount() + " results, score: " + result.getResult(0).getScore());
                 restartRecognitionCycle();
             } else {

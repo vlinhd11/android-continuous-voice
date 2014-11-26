@@ -7,6 +7,7 @@ import de.uniHamburg.informatik.continuousvoice.services.sound.IAmplitudeListene
 import de.uniHamburg.informatik.continuousvoice.services.sound.IAudioServiceStartStopListener;
 import de.uniHamburg.informatik.continuousvoice.services.sound.IRecorder;
 import de.uniHamburg.informatik.continuousvoice.services.speaker.ISpeakerChangeListener;
+import de.uniHamburg.informatik.continuousvoice.services.speaker.Speaker;
 
 public interface IAudioService extends IRecorder {
     
@@ -36,5 +37,7 @@ public interface IAudioService extends IRecorder {
 
 	public void addSpeakerChangeListener(
 			ISpeakerChangeListener iSpeakerChangeListener);
+
+	public Speaker getCurrentSpeaker();
 
 }

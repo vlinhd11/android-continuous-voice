@@ -2,6 +2,7 @@
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:background="@color/speechBubbleBg"
+    android:id="@+id/speechBubble"
     android:layout_marginLeft="@dimen/speech_bubble_margin"
     android:layout_marginBottom="@dimen/small_vertical_margin"
     >
@@ -17,15 +18,24 @@
         android:layout_marginTop="0dp"
         android:src="@drawable/speaker" />
 
-    <TextView
-        android:id="@+id/text"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignTop="@id/speakerIcon"
-        android:layout_toLeftOf="@id/speakerIcon"
-        android:padding="5dp"
-        android:hint="@string/noResults"
-        android:gravity="right|top"
-        android:textColor="@color/black" />
+    <LinearLayout android:id="@+id/transcriptions"
+	    android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:layout_toLeftOf="@id/speakerIcon"
+	    android:layout_alignTop="@id/speakerIcon"
+	    android:orientation="vertical" >
+    
+        <!-- add texts here -->
+	    <!-- <TextView
+	        android:id="@+id/text"
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        android:paddingTop="5dp"
+	        android:hint="@string/noResults"
+	        android:gravity="right|top"
+	        android:textColor="@color/black" /> -->
+	
+	    
+	</LinearLayout>
 
 </RelativeLayout>

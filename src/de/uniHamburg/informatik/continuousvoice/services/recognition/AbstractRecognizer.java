@@ -15,6 +15,7 @@ public abstract class AbstractRecognizer implements IRecognizerControl {
     private List<ITranscriptionResultListener> transcriptionResultListeners;
     private List<IStatusListener> statusListeners;
     protected final GeneralSettings settings;
+    protected int currentTranscriptionId = 0;
 
     public AbstractRecognizer() {
         statusListeners = new ArrayList<IStatusListener>();
@@ -29,11 +30,35 @@ public abstract class AbstractRecognizer implements IRecognizerControl {
         running = false;
     }
 
+    @Deprecated
+    public void startTranscription() {
+    	startTranscription(SpeakerManager.STATIC_SPEAKER);
+    }
+    
     /**
      * override this method if needed but then remember to call super.start();
      */
-    public void start() {
+    public void startTranscription(Speaker s) {
         running = true;
+        
+        currentTranscriptionId++;
+    	
+    	for (ITranscriptionResultListener trl: transcriptionResultListeners) {
+            trl.onTranscriptionStart(currentTranscriptionId, s);
+        }
+    }
+
+    @Deprecated
+    protected void finishTranscription(int id, String words) {
+    	finishTranscription(id, words, SpeakerManager.STATIC_SPEAKER);
+    }
+    
+    protected void finishTranscription(int id, String words, Speaker s) {
+    	recognizedText += " " + words;
+    	
+    	for (ITranscriptionResultListener trl: transcriptionResultListeners) {
+    		trl.onTranscriptResult(id, words, s);
+    	}
     }
 
     /**
@@ -55,18 +80,6 @@ public abstract class AbstractRecognizer implements IRecognizerControl {
         setStatus("");
     }
     
-    protected void addWords(String words) {
-    	addWordsForSpeaker(words, SpeakerManager.STATIC_SPEAKER);
-    }
-
-    protected void addWordsForSpeaker(String words, Speaker s) {
-        recognizedText += " " + words;
-        
-        for (ITranscriptionResultListener trl: transcriptionResultListeners) {
-            trl.onTranscriptResult(words, s);
-        }
-    }
-
     protected void setStatus(String status) {
         for (IStatusListener sl: statusListeners) {
             sl.onStatusUpdate(status);

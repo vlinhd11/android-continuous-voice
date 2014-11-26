@@ -5,5 +5,7 @@ import de.uniHamburg.informatik.continuousvoice.services.speaker.Speaker;
 
 public interface ITranscriptionResultListener {
 
-    public void onTranscriptResult(String transcriptResult, Speaker s);
+	public void onTranscriptionStart(int id, Speaker speaker);
+	
+    public void onTranscriptResult(int id, String transcriptResult, Speaker s);
 }

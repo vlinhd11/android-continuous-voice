@@ -47,6 +47,7 @@ public class PocketSphinxRecognizer extends AbstractRecognizer implements Recogn
 
     @Override
     public void start() {
+    	
 //        super.start();
 //
 //        new AsyncTask<Void, Void, Exception>() {
@@ -126,8 +127,8 @@ public class PocketSphinxRecognizer extends AbstractRecognizer implements Recogn
     @Override
     public void onResult(Hypothesis hypothesis) {
         if (hypothesis != null) {
-            String text = hypothesis.getHypstr();
-            addWords(text);
+//            String text = hypothesis.getHypstr();
+//            addWords(text);
         }
     }
 

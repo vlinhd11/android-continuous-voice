@@ -42,6 +42,9 @@ public class SpeakerRecognizer implements IAmplitudeListener {
 			levelRightBuffer.write(soundLevelRight);
 
 			updateSpeakerState();
+		} else if (currentSpeaker == null) {
+			updateSpeaker(soundLevelLeft, soundLevelRight);
+			Log.e(TAG, "SPEAKER SET IN SPEAKERRECOGNIZER!");
 		}
 	}
 
@@ -54,18 +57,22 @@ public class SpeakerRecognizer implements IAmplitudeListener {
 		boolean rightAboveThreshold = right > AudioConstants.SILENCE_AMPLITUDE_THRESHOLD;
 		
 		if (leftAboveThreshold || rightAboveThreshold) {
-			AbstractSpeakerFeature feat = new SoundPositionSpeakerFeature(left, right);
-			
-			Speaker newSpeaker = speakerManager.assign(feat);
-			if (!newSpeaker.equals(currentSpeaker)) {
-				
-				Log.i(TAG, "Speaker change: " + currentSpeaker + " => " + newSpeaker);
-				
-				currentSpeaker = newSpeaker;
-				notifySpeakerListener();
-			}
+			updateSpeaker(left, right);
 		}
 		
+	}
+	
+	private void updateSpeaker(double left, double right) {
+		AbstractSpeakerFeature feat = new SoundPositionSpeakerFeature(left, right);
+		
+		Speaker newSpeaker = speakerManager.assign(feat);
+		if (!newSpeaker.equals(currentSpeaker)) {
+			
+			Log.i(TAG, "Speaker change: " + currentSpeaker + " => " + newSpeaker);
+			
+			currentSpeaker = newSpeaker;
+			notifySpeakerListener();
+		}
 	}
 
 	private double maxFromBuffer(Buffer<Double> buffer) {
