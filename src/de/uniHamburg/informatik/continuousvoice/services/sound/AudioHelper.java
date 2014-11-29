@@ -57,7 +57,7 @@ public class AudioHelper {
 
             @Override
             public void processComplete(int exitValue) {
-                Log.w(TAG, "  >  Conversion finished with exit-value:" + exitValue);
+                Log.i(TAG, "  >  Conversion finished with exit-value:" + exitValue);
                 callback.conversionDone(mp3File, new File(outPath));
             }
         };
@@ -111,26 +111,13 @@ public class AudioHelper {
     	return mono;
     }
     
-    /**
-     * 
-     * @param audioFile
-     * @return 0 = 100% left, 1 = 100% right, 0.5 = center
-     */
-    public static double soundPosition(PcmFile audioFile) {
+    public static double[] stereoLevelsFromFile(PcmFile audioFile) {
         short[][] stereo = AudioHelper.splitStereo(audioFile.getConcatenatedPcmData());
         
         double left = pcmToSoundLevel(stereo[0]);
         double right = pcmToSoundLevel(stereo[1]);
-        String maxInfo = "";
-        double position = (left / (left + right));
-        if (left >= right) {
-            maxInfo = "L: " + position; 
-        } else {
-            maxInfo = "R: " + right / (left + right);
-        }
+        Log.e(TAG, "l: " + left + " | r: " + right);
         
-        Log.e(TAG, "POS: " + maxInfo);
-        
-        return position;
-    }
+        return new double[] {left, right};
+    } 
 }
