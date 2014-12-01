@@ -3,12 +3,12 @@ package de.uniHamburg.informatik.continuousvoice.services.sound;
 import java.util.LinkedList;
 import java.util.List;
 
-public class Buffer<T> {
+public class PcmBuffer<T> {
 
 	private List<T> buffer;
 	private int size;
 	
-	public Buffer (int size) {
+	public PcmBuffer (int size) {
 		this.size = size;
 		buffer = new LinkedList<T>();
 	}

@@ -33,7 +33,8 @@ public class PcmAudioService extends Activity implements IAudioService {
     public static final int CONFIG_AUDIO_CHANNEL = AudioFormat.CHANNEL_IN_STEREO; // AudioFormat.CHANNEL_IN_STEREO;
     // for stereo, for mono: MediaRecorder.AudioSource.MIC; vs CAMCORDER
     public static final int CONFIG_AUDIO_SOURCE = MediaRecorder.AudioSource.CAMCORDER;
-    public static final int CONFIG_MIN_BUFFER_SIZE = AudioRecord.getMinBufferSize(CONFIG_AUDIO_RATE, CONFIG_AUDIO_CHANNEL, CONFIG_AUDIO_ENCODING);
+    public static final int CONFIG_MIN_BUFFER_SIZE = AudioRecord.getMinBufferSize(CONFIG_AUDIO_RATE,
+            CONFIG_AUDIO_CHANNEL, CONFIG_AUDIO_ENCODING);
 
     private boolean running = false; // amplitude
     private boolean recording = false; // recording, needs running
@@ -67,8 +68,6 @@ public class PcmAudioService extends Activity implements IAudioService {
         currentRecorder = createRecorder();
         alternateRecorder = createRecorder();
 
-        Log.e(TAG, "BUFFER SIZE: " + CONFIG_MIN_BUFFER_SIZE);
-        
         notifyStartStopListeners();
 
         // start the thread which runs continuously!!
@@ -117,7 +116,7 @@ public class PcmAudioService extends Activity implements IAudioService {
             recording = false;
             includeTimeShift = false;
             f = currentRecorder.writeFile();
-            
+
             // new recorder
             currentRecorder = null;
             currentRecorder = alternateRecorder;
@@ -153,7 +152,7 @@ public class PcmAudioService extends Activity implements IAudioService {
 
         @Override
         public void run() {
-            //android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_AUDIO);
+            // android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_AUDIO);
 
             int bufferReadResult;
 
@@ -165,7 +164,7 @@ public class PcmAudioService extends Activity implements IAudioService {
             short[] audioData = new short[CONFIG_MIN_BUFFER_SIZE / 2];
 
             /* ffmpeg_audio encoding loop */
-            while (running) { //running
+            while (running) { // running
                 bufferReadResult = audioRecord.read(audioData, 0, audioData.length);
 
                 if (bufferReadResult != AudioRecord.ERROR_INVALID_OPERATION) {
@@ -174,11 +173,9 @@ public class PcmAudioService extends Activity implements IAudioService {
                         try {
                             // turn back the time ♫
                             if (includeTimeShift) {
-                                // for (short[] timeShiftData:
-                                // timeShift.getPastAudioData()) {
-                                // writeAudioSamples(timeShiftData,
-                                // timeShiftData.length);
-                                // }
+                                for (short[] timeShiftData : timeShift.getPastAudioData()) {
+                                    currentRecorder.writeAudioFrame(timeShiftData);
+                                }
                                 includeTimeShift = false; // done, set flag!
                             }
                             currentRecorder.writeAudioFrame(audioData);
@@ -189,9 +186,9 @@ public class PcmAudioService extends Activity implements IAudioService {
                     }
 
                     // analyse buffer for amplitude
-                    // saveToTimeshiftBuffer(audioData.clone());
-                    //updateAmplitude(audioData);
-                    //updateSilenceState();
+                    saveToTimeshiftBuffer(audioData.clone());
+                    updateAmplitude(audioData);
+                    updateSilenceState();
                 } else {
                     Log.e(TAG, "audio record error: " + bufferReadResult);
                 }
@@ -277,7 +274,6 @@ public class PcmAudioService extends Activity implements IAudioService {
                     sl.onSpeech();
                 }
             } else {
-                Log.i(TAG, "│SILENCE|");
                 for (IAmplitudeListener sl : listeners) {
                     sl.onSilence();
                 }

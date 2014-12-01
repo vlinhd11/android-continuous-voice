@@ -1,6 +1,5 @@
 package de.uniHamburg.informatik.continuousvoice.services.sound;
 
-import de.uniHamburg.informatik.continuousvoice.constants.AudioConstants;
 
 public interface IAmplitudeListener {
 

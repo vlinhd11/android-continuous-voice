@@ -5,9 +5,8 @@ import java.util.List;
 
 import android.util.Log;
 import de.uniHamburg.informatik.continuousvoice.constants.AudioConstants;
-import de.uniHamburg.informatik.continuousvoice.services.sound.AudioHelper;
-import de.uniHamburg.informatik.continuousvoice.services.sound.Buffer;
 import de.uniHamburg.informatik.continuousvoice.services.sound.IAmplitudeListener;
+import de.uniHamburg.informatik.continuousvoice.services.sound.PcmBuffer;
 import de.uniHamburg.informatik.continuousvoice.services.sound.recorders.PcmFile;
 
 public class SpeakerRecognizer implements IAmplitudeListener {
@@ -17,10 +16,10 @@ public class SpeakerRecognizer implements IAmplitudeListener {
 	private Speaker currentSpeaker;
 	private List<ISpeakerChangeListener> listeners = new LinkedList<ISpeakerChangeListener>();
 
-	private Buffer<Double> levelLeftBuffer = new Buffer<Double>(
-			AudioConstants.AUDIO_BUFFER_SIZE);
-	private Buffer<Double> levelRightBuffer = new Buffer<Double>(
-			AudioConstants.AUDIO_BUFFER_SIZE);
+	private PcmBuffer<Double> levelLeftBuffer = new PcmBuffer<Double>(
+			AudioConstants.TIMESHIFT_BUFFER_SIZE);
+	private PcmBuffer<Double> levelRightBuffer = new PcmBuffer<Double>(
+			AudioConstants.TIMESHIFT_BUFFER_SIZE);
 	private SpeakerManager speakerManager;
 
 	public SpeakerRecognizer(SpeakerManager speakerManager) {
@@ -76,7 +75,7 @@ public class SpeakerRecognizer implements IAmplitudeListener {
 		}
 	}
 
-	private double maxFromBuffer(Buffer<Double> buffer) {
+	private double maxFromBuffer(PcmBuffer<Double> buffer) {
 		double max = 0.0;
 		for (double d: buffer.getCompleteBufferData()) {
 			max = Math.max(d, max);

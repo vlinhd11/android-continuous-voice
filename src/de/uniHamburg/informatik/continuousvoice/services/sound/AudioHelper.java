@@ -35,18 +35,19 @@ public class AudioHelper {
     }
 
     /**
-     * uses ffmpeg to convert a mp3 into a amr ffmpeg -i testwav.wav -ar 8000
-     * -ab 12.2k audio.amr
+     * uses ffmpeg to compress a wav file
      * 
-     * @param mp3File
+     * @param toCompress
      * @return
      * @throws Exception
      */
-    public static void convertMp3ToCompressedWav(Context context, final File mp3File,
-            final ConversionDoneCallback callback) throws Exception {
+    public static void compress(Context context, final File toCompress,
+            final IConversionDoneCallback callback) throws Exception {
 
+        final long start = System.currentTimeMillis();
+        
         FfmpegController c = new FfmpegController(context, new File("ffMpegTempFile"));
-        String inPath = mp3File.getAbsolutePath();
+        String inPath = toCompress.getAbsolutePath();
         final String outPath = inPath.substring(0, inPath.lastIndexOf('.')) + ".wav";
         // “ffmpeg -i Ahmad_Amr.wav -ar 8000 -ac 1 -acodec pcm_u8 output.wav’
 
@@ -59,15 +60,11 @@ public class AudioHelper {
             @Override
             public void processComplete(int exitValue) {
                 Log.i(TAG, "  >  Conversion finished with exit-value:" + exitValue);
-                callback.conversionDone(mp3File, new File(outPath));
+                callback.conversionDone(toCompress, new File(outPath), System.currentTimeMillis() - start);
             }
         };
 
         c.convertToSmallWav(new Clip(inPath), outPath, shellCallback);
-    }
-
-    public interface ConversionDoneCallback {
-        public void conversionDone(File origin, File converted);
     }
 
     public static short[][] splitStereo(short[] audioData) {
@@ -76,14 +73,7 @@ public class AudioHelper {
         short[] rightChannelAudioData = new short[length];
 
         for (int i = 0; i < length / 2; i = i + 2) {
-            // split stereo: http://stackoverflow.com/a/20624845/1686216
-            // leftChannelAudioData[i] = audioData[2*i];
-            // leftChannelAudioData[i+1] = audioData[2*i+1];
-            // rightChannelAudioData[i] = audioData[2*i+2];
-            // rightChannelAudioData[i+1] = audioData[2*i+3];
-
-            // split stereo right?: http://stackoverflow.com/a/15418720/1686216
-            // comment 2
+            // split stereo right?: http://stackoverflow.com/a/15418720/1686216 (comment #2)
             leftChannelAudioData[i] = audioData[2 * i];
             leftChannelAudioData[i + 1] = audioData[2 * i + 2];
 
@@ -92,42 +82,6 @@ public class AudioHelper {
         }
 
         return new short[][] { leftChannelAudioData, rightChannelAudioData };
-    }
-
-    /**
-     * Converts alternating audio sample array values by adding left and right
-     * channel [l1,r1,l2,r2,...] => [l1+r1, l2+r2]
-     * 
-     * @param stereo
-     *            alternating audio samples [l,r,l,r,l,r,...]
-     * @return
-     */
-    public static short[] convertStereoToMono(short[] stereo) {
-        int length = stereo.length / 2;
-        short[] mono = new short[length];
-
-        for (int i = 0; i < length; i++) {
-            mono[i] = (short) stereo[2 * i];
-        }
-
-        return mono;
-
-//        int length = stereo.length / 2;
-//        short[] mono = new short[length];
-//
-//        for (int i = 0; i < length; i++) {
-//            int sum = Math.abs((int) stereo[i] - (int) stereo[i + 1]);
-//            int avg = sum / 2;
-//            mono[i] = (short) avg;
-//        }
-//        short[] result = new short[stereo.length];
-//        for (int i = 0; i < mono.length; i++) {
-//            result[i] = mono[i];
-//            result[i + 1] = mono[i];
-//        }
-//
-//        return result;
-
     }
 
     public static double[] stereoLevelsFromFile(PcmFile audioFile) {

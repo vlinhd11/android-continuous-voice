@@ -27,7 +27,6 @@ public class WavFileRecorder {
         this.finalFile = new PcmFile(filename);
         this.tempFilename = filename + "_temp";
         this.bufferSize = bufferSize;
-        Log.e(TAG, "condtrucotr" + filename);
         
         createTempFile();
         createFile();
@@ -83,8 +82,6 @@ public class WavFileRecorder {
             out = new FileOutputStream(outFilename);
             totalAudioLen = in.getChannel().size();
             totalDataLen = totalAudioLen + 36;
-
-            Log.i(TAG, "File size: " + totalDataLen);
 
             WriteWaveFileHeader(out, totalAudioLen, totalDataLen,
                     longSampleRate, channels, byteRate);

@@ -10,7 +10,9 @@ import android.util.Log;
 import de.uniHamburg.informatik.continuousvoice.constants.AudioConstants.Loudness;
 import de.uniHamburg.informatik.continuousvoice.constants.RecognitionConstants;
 import de.uniHamburg.informatik.continuousvoice.services.recognition.AbstractRecognizer;
+import de.uniHamburg.informatik.continuousvoice.services.sound.AudioHelper;
 import de.uniHamburg.informatik.continuousvoice.services.sound.IAmplitudeListener;
+import de.uniHamburg.informatik.continuousvoice.services.sound.IConversionDoneCallback;
 import de.uniHamburg.informatik.continuousvoice.services.sound.IRecorder;
 import de.uniHamburg.informatik.continuousvoice.services.sound.recorders.IAudioService;
 import de.uniHamburg.informatik.continuousvoice.services.sound.recorders.PcmFile;
@@ -66,8 +68,6 @@ public abstract class AbstractWebServiceRecognizer extends AbstractRecognizer im
         if (audioService.getCurrentSilenceState() == Loudness.SPEECH) {
             startRecording();
         }
-        
-        startRecording();
     }
 
     @Override
@@ -83,26 +83,32 @@ public abstract class AbstractWebServiceRecognizer extends AbstractRecognizer im
         new Thread(new Runnable() {
             @Override
             public void run() {
-                final long start = System.currentTimeMillis();
                 try {
-//                    AudioHelper.convertMp3ToCompressedWav(settings.getApplicationContext(), f,
-//                            new ConversionDoneCallback() {
-//                                @Override
-//                                public void conversionDone(File mp3, final File wav) {
-//                                    Log.i(TAG, "conversion done:" + (System.currentTimeMillis() - start) + "ms, "
-//                                            + (mp3.length() / 1024.0) + "kB -> " + (wav.length() / 1024.0) + "kB, "
-//                                            + "(" + (1.0 - ((double) wav.length() / (double) mp3.length())) * 100
-//                                            + "%))");
-//                                    // when done: request
-//                                    worker.enqueueJob(id, wav, audioService.identifySpeaker(f));
-//                                }
-//                            });
+                    AudioHelper.compress(settings.getApplicationContext(), f, new ConversionDoneCallback(id, f));
                 } catch (Exception e) {
                     Log.e(TAG, e.toString());
                 }
 
             }
         }).run();
+    }
+    
+    private class ConversionDoneCallback implements IConversionDoneCallback {
+        private int id;
+        private PcmFile pcmFile;
+        public ConversionDoneCallback(int id, PcmFile pcm) {
+            this.id = id;
+            this.pcmFile = pcm;
+        }
+        @Override
+        public void conversionDone(File origin, File converted, long took) {
+            Log.w(TAG, "conversion done: " + took + "ms, "
+                    + (origin.length() / 1024.0) + "kB -> " + (converted.length() / 1024.0) + "kB, "
+                    + "(" + (1.0 - ((double) converted.length() / (double) origin.length())) * 100
+                    + "%))");
+            // when done: request
+            worker.enqueueJob(id, converted, audioService.identifySpeaker(pcmFile));
+        }
     }
 
     @Override
