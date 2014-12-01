@@ -26,14 +26,14 @@
 	    android:orientation="vertical" >
     
         <!-- add texts here -->
-		<!-- <TextView
+		<TextView
 	        android:id="@+id/text"
 	        android:layout_width="match_parent"
 	        android:layout_height="wrap_content"
 	        android:paddingTop="5dp"
 	        android:hint="@string/noResults"
 	        android:gravity="left|top"
-	        android:textColor="@color/black" /> -->
+	        android:textColor="@color/black" />
 
 	
 	    

@@ -34,7 +34,7 @@ public class Speaker {
 
 	@Override
 	public String toString() {
-		return getId();
+		return getId() + feature.toString();
 	}
 
 	@Override

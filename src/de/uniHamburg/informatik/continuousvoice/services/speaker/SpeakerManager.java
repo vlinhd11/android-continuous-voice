@@ -27,7 +27,7 @@ public class SpeakerManager {
         speakers = new HashSet<Speaker>();
     }
     
-    public Speaker assign(AbstractSpeakerFeature feature) {
+    public Speaker assign(AbstractSpeakerFeature feature, boolean merge) {
         
         if (speakers.isEmpty()) {
             return addNewSpeaker(feature);
@@ -49,8 +49,9 @@ public class SpeakerManager {
         if (bestMatch == null) {
             speaker = addNewSpeaker(feature);
         } else {
-        	//TODO degressive!!! test without merging, too!
-            bestMatch.mergeReferenceFeature(feature);
+        	if (merge) {
+        		bestMatch.mergeReferenceFeature(feature);
+        	}
             speaker = bestMatch;
         }
         

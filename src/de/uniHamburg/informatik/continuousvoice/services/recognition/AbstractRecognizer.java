@@ -12,7 +12,7 @@ public abstract class AbstractRecognizer implements IRecognizerControl {
     private final String TAG = this.getClass().getSimpleName();
     protected boolean running = false;
     private String recognizedText = "";
-    private List<ITranscriptionResultListener> transcriptionResultListeners;
+    protected List<ITranscriptionResultListener> transcriptionResultListeners;
     private List<IStatusListener> statusListeners;
     protected final GeneralSettings settings;
     protected int currentTranscriptionId = 0;
@@ -30,22 +30,15 @@ public abstract class AbstractRecognizer implements IRecognizerControl {
         running = false;
     }
 
-    @Deprecated
-    public void startTranscription() {
-    	startTranscription(SpeakerManager.STATIC_SPEAKER);
-    }
-    
-    /**
-     * override this method if needed but then remember to call super.start();
-     */
-    public void startTranscription(Speaker s) {
+    public int startTranscription() {
         running = true;
         
         currentTranscriptionId++;
     	
     	for (ITranscriptionResultListener trl: transcriptionResultListeners) {
-            trl.onTranscriptionStart(currentTranscriptionId, s);
+            trl.onTranscriptionStart(currentTranscriptionId);
         }
+    	return currentTranscriptionId;
     }
 
     @Deprecated

@@ -14,13 +14,17 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.FileEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.util.Log;
+import de.uniHamburg.informatik.continuousvoice.constants.RecognitionConstants;
 import de.uniHamburg.informatik.continuousvoice.services.sound.recorders.IAudioService;
 
-public class GoogleWebServiceRecognizer extends AbstractWebServiceRecognizer {
+public class GoogleWebServiceRecognizer extends AbstractWebServiceRecognizer implements IWebServiceRecognizer {
 
     public static final String TAG = GoogleWebServiceRecognizer.class.getName();
     private String key;
@@ -36,18 +40,21 @@ public class GoogleWebServiceRecognizer extends AbstractWebServiceRecognizer {
                 + "&client=chromium&maxresults=1&pfilter=2";
     }
 
-    @Override
     public String request(File f) {
         /*
          * curl -X POST --data-binary @soundfile_1413203798952_1.amr --header
          * 'Content-Type: audio/amr; rate=8000;'
          * 'https://www.google.com/speech-api/v2/recognize?output=json&lang=en-us&key=[KEY]'
          */
-        HttpClient httpclient = new DefaultHttpClient();
+    	final HttpParams httpParams = new BasicHttpParams();
+    	HttpConnectionParams.setConnectionTimeout(httpParams, RecognitionConstants.HTTP_TIMEOUT);
+        HttpClient httpclient = new DefaultHttpClient(httpParams);
+        
+        
         HttpPost httppost = new HttpPost(getUrl());
 
         
-        Log.e(TAG, "Auf geht's, Leute!");
+        Log.i(TAG, "START REQUEST!");
         
         String transcript = "";
         try {
@@ -117,4 +124,13 @@ public class GoogleWebServiceRecognizer extends AbstractWebServiceRecognizer {
     public String getName() {
         return "Google Webservice Recognizer";
     }
+
+	@Override
+	public void transcribe(File file,
+			IWebServiceTranscriptionDoneCallback callback) {
+		String result = request(file);
+		
+		callback.transcriptionDone(result);
+		
+	}
 }

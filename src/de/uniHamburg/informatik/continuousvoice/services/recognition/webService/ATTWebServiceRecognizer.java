@@ -48,7 +48,6 @@ public class ATTWebServiceRecognizer extends AbstractWebServiceRecognizer {
         return "https://api.att.com/speech/v3/speechToText";
     }
 
-    @Override
     public String request(File f) {
         /*
          * POST /speech/v3/speechToText HTTP/1.1
@@ -140,4 +139,11 @@ public class ATTWebServiceRecognizer extends AbstractWebServiceRecognizer {
     public String getName() {
         return "AT&T Webservice Recognizer";
     }
+
+	@Override
+	public void transcribe(File file,
+			IWebServiceTranscriptionDoneCallback callback) {
+		// TODO Auto-generated method stub
+		
+	}
 }

@@ -46,7 +46,6 @@ public class IspeechWebServiceRecognizer extends AbstractWebServiceRecognizer {
         return "http://api.ispeech.org/api/rest";
     }
 
-    @Override
     public String request(File f) {
         /*
          * POST /api/rest HTTP/1.1
@@ -141,4 +140,11 @@ public class IspeechWebServiceRecognizer extends AbstractWebServiceRecognizer {
     public String getName() {
         return "iSpeech Webservice Recognizer";
     }
+
+	@Override
+	public void transcribe(File file,
+			IWebServiceTranscriptionDoneCallback callback) {
+		// TODO Auto-generated method stub
+		
+	}
 }

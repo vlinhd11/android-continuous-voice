@@ -29,5 +29,9 @@ public class SoundPositionSpeakerFeature extends AbstractSpeakerFeature {
         }
     }
 
+	@Override
+	public String toString() {
+		return "[soundPosition=" + soundPosition + "]";
+	}
     
 }

@@ -5,8 +5,10 @@ import java.util.List;
 
 import android.util.Log;
 import de.uniHamburg.informatik.continuousvoice.constants.AudioConstants;
+import de.uniHamburg.informatik.continuousvoice.services.sound.AudioHelper;
 import de.uniHamburg.informatik.continuousvoice.services.sound.Buffer;
 import de.uniHamburg.informatik.continuousvoice.services.sound.IAmplitudeListener;
+import de.uniHamburg.informatik.continuousvoice.services.sound.recorders.PcmFile;
 
 public class SpeakerRecognizer implements IAmplitudeListener {
 
@@ -44,7 +46,6 @@ public class SpeakerRecognizer implements IAmplitudeListener {
 			updateSpeakerState();
 		} else if (currentSpeaker == null) {
 			updateSpeaker(soundLevelLeft, soundLevelRight);
-			Log.e(TAG, "SPEAKER SET IN SPEAKERRECOGNIZER!");
 		}
 	}
 
@@ -65,7 +66,7 @@ public class SpeakerRecognizer implements IAmplitudeListener {
 	private void updateSpeaker(double left, double right) {
 		AbstractSpeakerFeature feat = new SoundPositionSpeakerFeature(left, right);
 		
-		Speaker newSpeaker = speakerManager.assign(feat);
+		Speaker newSpeaker = speakerManager.assign(feat, false);
 		if (!newSpeaker.equals(currentSpeaker)) {
 			
 			Log.i(TAG, "Speaker change: " + currentSpeaker + " => " + newSpeaker);
@@ -99,7 +100,12 @@ public class SpeakerRecognizer implements IAmplitudeListener {
 		levelRightBuffer.clear();
 	}
 
-	public Speaker getCurrentSpeaker() {
+	public Speaker getSpeakerFromFile(PcmFile f) {
+//		double[] levels = AudioHelper.stereoLevelsFromFile(f);
+//		SoundPositionSpeakerFeature feature = new SoundPositionSpeakerFeature(levels[0], levels[1]);
+//		Speaker speaker = speakerManager.assign(feature, false);
+//		Log.e(TAG, feature.toString());
+//		return speaker;
 		return currentSpeaker;
 	}
 

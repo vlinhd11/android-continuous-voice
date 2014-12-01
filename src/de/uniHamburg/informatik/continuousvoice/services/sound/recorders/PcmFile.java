@@ -8,7 +8,7 @@ public class PcmFile extends File {
     
     private static final long serialVersionUID = 1L;
     private List<short[]> pcmData = new ArrayList<short[]>();
-    
+
     public PcmFile(String path) {
         super(path);
     }
@@ -16,7 +16,7 @@ public class PcmFile extends File {
     public void addSample(short[] sample) {
         pcmData.add(sample);
     }
-
+    
     public List<short[]> getPcmData() {
         return pcmData;
     }
@@ -38,4 +38,18 @@ public class PcmFile extends File {
         return result;
     }
     
+    public long byteSize() {
+        long size = 0;
+        
+        for (short[] frame: pcmData) {
+            size += frame.length;
+        }
+        
+        //1 short = 2 bytes
+        return size * 2;
+    }
+    
+    public Iterable<short[]> getAudioFrames() {
+        return pcmData;
+    }
 }

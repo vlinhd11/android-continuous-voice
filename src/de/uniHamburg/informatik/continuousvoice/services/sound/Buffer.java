@@ -27,6 +27,10 @@ public class Buffer<T> {
 	public synchronized List<T> getCompleteBufferData() {
 		return new LinkedList<T>(buffer);
 	}
+
+	public boolean isEmpty() {
+		return buffer.isEmpty();
+	}
 	
 //	public short[][] getPastAudioData(int secondsToRetrieve) {
 //	if (secondsToRetrieve > seconds) {

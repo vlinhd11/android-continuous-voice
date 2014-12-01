@@ -22,6 +22,9 @@ public class TimeShiftBuffer {
 	}
 	
 	public short[][] getPastAudioData() {
+		if (buffer.isEmpty()) {
+			return null;
+		}
 		List<short[]> completeBufferData = buffer.getCompleteBufferData();
 		
 		return completeBufferData.toArray(new short[completeBufferData.size()][completeBufferData.get(0).length]);

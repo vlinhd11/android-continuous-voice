@@ -2,14 +2,12 @@ package de.uniHamburg.informatik.continuousvoice.services.sound.recorders;
 
 import com.example.libavndkdemo.Mp3Encoder;
 
-import de.uniHamburg.informatik.continuousvoice.services.sound.AudioHelper;
-
 /**
  * This is a wrapper and the reference to the libavndkdemo project
  * 
  * @author marius
  */
-public final class Mp3FileRecorder {
+public final class Mp3FileRecorder implements IFileRecorder {
 
     private String filename;
     public Mp3Encoder encoder;
@@ -21,28 +19,33 @@ public final class Mp3FileRecorder {
         file = new PcmFile(filename);
     }
 
-    public int initAudio(){
+    @Override
+	public int initAudio(){
         return encoder.initAudio(filename);
     }
 
-    public void writeAudioFrame(short[] samples, int length) {
-        encoder.writeAudioFrame(samples, length);
-        file.addSample(samples);
+	public void writeAudioFrame(final short[] samples, final int length) {
+		encoder.writeAudioFrame(samples, length);	
+        //file.addSample(samples);
     }
 
-    public int getFrameSize() {
+    @Override
+	public int getFrameSize() {
         return encoder.getFrameSize();
     }
 
-    public int close() {
+    @Override
+	public int close() {
         return encoder.close();
     }
 
-    public String getFilename() {
+    @Override
+	public String getFilename() {
         return filename;
     }
     
-    public PcmFile getPcmFile() {
+    @Override
+	public PcmFile getPcmFile() {
         return file;
     }
 }
