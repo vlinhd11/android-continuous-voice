@@ -6,6 +6,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import de.uniHamburg.informatik.continuousvoice.services.sound.recorders.IAudioService;
 import de.uniHamburg.informatik.continuousvoice.services.sound.recorders.PcmAudioService;
+import de.uniHamburg.informatik.continuousvoice.services.speaker.SoundPositionSpeakerFeature;
+import de.uniHamburg.informatik.continuousvoice.services.speaker.Speaker;
 import de.uniHamburg.informatik.continuousvoice.services.speaker.SpeakerManager;
 import de.uniHamburg.informatik.continuousvoice.services.speaker.SpeakerRecognizer;
 import de.uniHamburg.informatik.continuousvoice.settings.GeneralSettings;
@@ -21,8 +23,14 @@ public class MainActivity extends Activity {
     public void createServices() {
         GeneralSettings.getInstance().setApplicationContext(this); //dirty java hack :-(
 
-        SpeakerManager speakerManager = new SpeakerManager();
+        //Set 3 fixed speakers
+        Speaker front = new Speaker(1, new SoundPositionSpeakerFeature(0-9, 0.1), 0xff00ff00);
+        Speaker rear = new Speaker(2, new SoundPositionSpeakerFeature(0.1, 0.9), 0xff0000ff);
+        Speaker middle = new Speaker(3, new SoundPositionSpeakerFeature(0.5, 0.5), 0xffff0000);
+        
+        SpeakerManager speakerManager = new SpeakerManager(front, rear, middle);
         SpeakerRecognizer speakerRecognizer = new SpeakerRecognizer(speakerManager);
+        
         IAudioService audioService = new PcmAudioService(speakerRecognizer);
         
         voiceRecognitionFragment = new RecognizerFragment(audioService);

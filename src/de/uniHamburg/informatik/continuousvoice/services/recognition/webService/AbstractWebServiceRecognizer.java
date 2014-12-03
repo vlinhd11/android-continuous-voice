@@ -102,7 +102,7 @@ public abstract class AbstractWebServiceRecognizer extends AbstractRecognizer im
         }
         @Override
         public void conversionDone(File origin, File converted, long took) {
-            Log.w(TAG, "conversion done: " + took + "ms, "
+            Log.i(TAG, "ffmpeg conversion successful: " + took + "ms, "
                     + (origin.length() / 1024.0) + "kB -> " + (converted.length() / 1024.0) + "kB, "
                     + "(" + (1.0 - ((double) converted.length() / (double) origin.length())) * 100
                     + "%))");
@@ -149,7 +149,6 @@ public abstract class AbstractWebServiceRecognizer extends AbstractRecognizer im
             @Override
             public void run() {
                 if (recorder.isRecording()) {
-                    Log.e(TAG, "abstract stop rec");
                     // Stop recorder
                     final File toTranscribe = recorder.stopRecording();
                     Log.e(TAG, "               └─────❰ stop " + currentTranscriptionId + " ❱");

@@ -18,6 +18,7 @@ import de.uniHamburg.informatik.continuousvoice.constants.AudioConstants.Loudnes
 import de.uniHamburg.informatik.continuousvoice.services.sound.AudioHelper;
 import de.uniHamburg.informatik.continuousvoice.services.sound.IAmplitudeListener;
 import de.uniHamburg.informatik.continuousvoice.services.sound.IAudioServiceStartStopListener;
+import de.uniHamburg.informatik.continuousvoice.services.sound.recorders.timeShift.TimeShiftBuffer;
 import de.uniHamburg.informatik.continuousvoice.services.speaker.ISpeakerChangeListener;
 import de.uniHamburg.informatik.continuousvoice.services.speaker.Speaker;
 import de.uniHamburg.informatik.continuousvoice.services.speaker.SpeakerRecognizer;
@@ -44,7 +45,6 @@ public class PcmAudioService extends Activity implements IAudioService {
     private AudioRecord audioRecord;
     private AudioRecordRunnable audioRecordRunnable;
     private TimeShiftBuffer timeShift;
-    private boolean includeTimeShift;
     private Thread audioThread;
     private SpeakerRecognizer speakerRecognizer;
 
@@ -101,7 +101,8 @@ public class PcmAudioService extends Activity implements IAudioService {
     @Override
     public void startRecording() {
         recording = true;
-        includeTimeShift = true;
+        // turn back the time ♫ (apply timeshift)
+        currentRecorder.prepend(timeShift.getPastAudioData());
     }
 
     @Override
@@ -114,7 +115,6 @@ public class PcmAudioService extends Activity implements IAudioService {
         PcmFile f = null;
         if (currentRecorder != null && recording) {
             recording = false;
-            includeTimeShift = false;
             f = currentRecorder.writeFile();
 
             // new recorder
@@ -171,13 +171,6 @@ public class PcmAudioService extends Activity implements IAudioService {
                     // save buffer if recording
                     if (recording) {
                         try {
-                            // turn back the time ♫
-                            if (includeTimeShift) {
-                                for (short[] timeShiftData : timeShift.getPastAudioData()) {
-                                    currentRecorder.writeAudioFrame(timeShiftData);
-                                }
-                                includeTimeShift = false; // done, set flag!
-                            }
                             currentRecorder.writeAudioFrame(audioData);
                         } catch (Exception e) {
                             Log.v(TAG, "m: " + e.getMessage());

@@ -48,18 +48,18 @@ public class AudioHelper {
         
         FfmpegController c = new FfmpegController(context, new File("ffMpegTempFile"));
         String inPath = toCompress.getAbsolutePath();
-        final String outPath = inPath.substring(0, inPath.lastIndexOf('.')) + ".wav";
+        final String outPath = inPath.substring(0, inPath.lastIndexOf('.')) + "_compressed.wav";
         // “ffmpeg -i Ahmad_Amr.wav -ar 8000 -ac 1 -acodec pcm_u8 output.wav’
 
         ShellCallback shellCallback = new ShellCallback() {
             @Override
             public void shellOut(String shellLine) {
-                Log.i(TAG, "  >  " + shellLine);
+                Log.v(TAG, "  >  " + shellLine);
             }
 
             @Override
             public void processComplete(int exitValue) {
-                Log.i(TAG, "  >  Conversion finished with exit-value:" + exitValue);
+                Log.v(TAG, ">>>  Conversion finished with exit-value:" + exitValue);
                 callback.conversionDone(toCompress, new File(outPath), System.currentTimeMillis() - start);
             }
         };

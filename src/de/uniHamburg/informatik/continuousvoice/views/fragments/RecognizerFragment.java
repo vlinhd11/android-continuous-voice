@@ -9,17 +9,16 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -60,7 +59,6 @@ public class RecognizerFragment extends Fragment {
 	private TextView statusTextLine2;
 	private TextView wordCountText;
 	private ScrollView scrollWrapper;
-	private ProgressBar lastSpinner;
 
 	private short currentState = STATE_1_READY;
 	public static final short STATE_1_READY = 1;
@@ -348,11 +346,9 @@ public class RecognizerFragment extends Fragment {
 	}
 
 	private void setTextForId(final int id, String text, Speaker s) {
-		// remove last spinner
-		if (lastSpinner != null) {
-			bubbleContainer.removeView(lastSpinner);
-		}
-
+	    
+	    Log.e(TAG, "settextforid " + text);
+	    
 		if (lastSpeaker == null || !s.equals(lastSpeaker)) {
 			FragmentTransaction fragmentTransaction = getFragmentManager()
 					.beginTransaction();
@@ -373,23 +369,7 @@ public class RecognizerFragment extends Fragment {
 	}
 
 	private void addPlaceholderForId(final int id) {
-		handler.post(new Runnable() {
-
-			public void run() {
-				// add indeterminate progressbar to layout
-				ProgressBar bar = new ProgressBar(getActivity(), null,
-						android.R.attr.progressBarStyleSmall);
-				bar.setIndeterminate(true);
-				bar.setVisibility(View.VISIBLE);
-				bar.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT,
-						LayoutParams.WRAP_CONTENT));
-				lastSpinner = bar;
-				
-				bubbleContainer.addView(lastSpinner);
-			}
-		});
-
-		scrollDown();
+		//no
 	}
 
 	public void play() {

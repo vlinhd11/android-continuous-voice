@@ -7,8 +7,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 
 import android.util.Log;
+import de.uniHamburg.informatik.continuousvoice.constants.AudioConstants;
+import de.uniHamburg.informatik.continuousvoice.services.sound.recorders.timeShift.TimeShiftAudioData;
 
 public class WavFileRecorder {
 
@@ -20,6 +23,7 @@ public class WavFileRecorder {
     private DataOutputStream tempDos;
     private int bufferSize;
     private String tempFilename;
+    private TimeShiftAudioData prepend;
     
     public WavFileRecorder(String filename, int sampleRate, int bufferSize) {
         this.filename = filename;
@@ -52,13 +56,13 @@ public class WavFileRecorder {
     }
 
     public PcmFile writeFile() {
-        Log.e(TAG, "write temp");
         try {
             tempDos.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
         copyWaveFile(tempFilename, filename);
+        //new File(tempFilename).delete();
         return finalFile;
     }
 
@@ -67,8 +71,6 @@ public class WavFileRecorder {
     }
 
     private void copyWaveFile(String inFilename, String outFilename) {
-        FileInputStream in = null;
-        FileOutputStream out = null;
         long totalAudioLen = 0;
         long totalDataLen = totalAudioLen + 36;
         long longSampleRate = sampleRate;
@@ -78,21 +80,66 @@ public class WavFileRecorder {
         byte[] data = new byte[bufferSize];
 
         try {
-            in = new FileInputStream(inFilename);
-            out = new FileOutputStream(outFilename);
-            totalAudioLen = in.getChannel().size();
+            /*
+             * PEPARE READER/WRITER
+             */
+            FileInputStream in = new FileInputStream(inFilename);
+            FileOutputStream fos = new FileOutputStream(outFilename);
+            BufferedOutputStream bos = new BufferedOutputStream(fos);
+            DataOutputStream out = new DataOutputStream(bos);
+            
+            /*
+             * CALCULATE BYTE LENGTH OF FINAL FILE
+             */
+            long audioByteSize = in.getChannel().size();
+            long numberOfFrames = audioByteSize / bufferSize;
+            long stopDueToEndCutOff = Math.max(10, numberOfFrames - AudioConstants.SOUNDFILE_END_CUTOFF_FRAMES);
+            //END CUT OFF
+            totalAudioLen = stopDueToEndCutOff * bufferSize;
+            //TIMESHIFT PREPEND
+            if (prepend != null) {
+                totalAudioLen += prepend.getByteSize();
+            }
+            Log.i(TAG, "Expected length of wav-file in bytes: " + totalAudioLen);
+             
             totalDataLen = totalAudioLen + 36;
 
+            /*
+             * WRITE WAV/RIFF HEADER TO FILE
+             */
             WriteWaveFileHeader(out, totalAudioLen, totalDataLen,
                     longSampleRate, channels, byteRate);
 
-            while (in.read(data) != -1) {
-                out.write(data);
+            /*
+             * WRITE FINAL FILE
+             */
+            //TIMESHIFT PREPEND WRITE
+            long actualLenght = 0;
+            if (prepend != null) {
+                for (short[] shortArray: prepend.getData()) {
+                    for (short s: shortArray) {
+                        writeShortLE(out, s);
+                        actualLenght +=2;
+                    }
+                }
             }
+            
+            //FILE WRITE WITH END-CUT-OFF
+            int currentFrame = 0;
+            int bytesRead = in.read(data);
+            while (bytesRead != -1) {
+                out.write(data);
+                bytesRead = in.read(data);
+                currentFrame += 1;
+                actualLenght += bufferSize;
+                if (currentFrame >= stopDueToEndCutOff) {
+                    break;
+                }
+            }
+            Log.i(TAG, "Actual length of wav-file in bytes: " + actualLenght);
 
             in.close();
             out.close();
-            Log.e(TAG, "final wirtten " + finalFile.exists() + " " + finalFile.getAbsolutePath());
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -100,7 +147,7 @@ public class WavFileRecorder {
         }
     }
 
-    private void WriteWaveFileHeader(FileOutputStream out, long totalAudioLen,
+    private void WriteWaveFileHeader(OutputStream out, long totalAudioLen,
             long totalDataLen, long longSampleRate, int channels, long byteRate)
             throws IOException {
 
@@ -160,9 +207,9 @@ public class WavFileRecorder {
      * 
      * @throws IOException
      */
-    public static void writeShortLE(DataOutputStream out, short value) throws IOException {
-        out.writeByte(value & 0xFF);
-        out.writeByte((value >> 8) & 0xFF);
+    public void writeShortLE(OutputStream out, short value) throws IOException {
+        out.write(value & 0xFF);
+        out.write((value >> 8) & 0xFF);
     }
     
     private void createFile() {
@@ -171,6 +218,10 @@ public class WavFileRecorder {
 
     private void createTempFile() {
         new File(tempFilename);
+    }
+
+    public void prepend(TimeShiftAudioData pastAudioData) {
+        prepend = pastAudioData;
     }
     
 }

@@ -25,7 +25,7 @@ public class TranscriptionWorker {
 	public void enqueueJob(int id, File file, Speaker speaker) {
 		queue.add(new Job(id, file, speaker));
 		
-		Log.w(TAG, queue.size() + " jobs waiting");
+		//Log.w(TAG, queue.size() + " jobs waiting");
 		workQueue();
 	}
 	
@@ -40,7 +40,7 @@ public class TranscriptionWorker {
 					public void transcriptionDone(String result) {
 						working = false;
 						callback.jobDone(job.id, result, job.speaker);
-						Log.w(TAG, "job #" + job.id + "done. " + queue.size() + " jobs waiting");
+						Log.i(TAG, "job #" + job.id + " done (" + result.split(" ").length + " words). " + queue.size() + " jobs waiting");
 						workQueue();
 					}
 				});
