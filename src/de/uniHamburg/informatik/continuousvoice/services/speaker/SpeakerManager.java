@@ -29,12 +29,8 @@ public class SpeakerManager {
     public SpeakerManager() {
         speakers = new HashSet<Speaker>();
     }
-    
-    /**
-     * fixed speaker manager with given speakers - no new speakers will be added
-     */
-    public SpeakerManager(Speaker... fixedSpeakers) {
-        speakers = new HashSet<Speaker>();
+   
+    public void setFixedSpeakers(Speaker[] fixedSpeakers) {
         for (Speaker s: fixedSpeakers) {
             speakers.add(s);
         }

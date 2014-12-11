@@ -5,6 +5,7 @@ import java.util.List;
 
 import android.util.Log;
 import de.uniHamburg.informatik.continuousvoice.constants.AudioConstants;
+import de.uniHamburg.informatik.continuousvoice.services.sound.AudioHelper;
 import de.uniHamburg.informatik.continuousvoice.services.sound.IAmplitudeListener;
 import de.uniHamburg.informatik.continuousvoice.services.sound.PcmBuffer;
 import de.uniHamburg.informatik.continuousvoice.services.sound.recorders.PcmFile;
@@ -100,12 +101,15 @@ public class SpeakerRecognizer implements IAmplitudeListener {
 	}
 
 	public Speaker getSpeakerFromFile(PcmFile f) {
-//		double[] levels = AudioHelper.stereoLevelsFromFile(f);
-//		SoundPositionSpeakerFeature feature = new SoundPositionSpeakerFeature(levels[0], levels[1]);
-//		Speaker speaker = speakerManager.assign(feature, false);
-//		Log.e(TAG, feature.toString());
-//		return speaker;
-		return currentSpeaker;
+		double[] levels = AudioHelper.stereoLevelsFromFile(f);
+		SoundPositionSpeakerFeature feature = new SoundPositionSpeakerFeature(levels[0], levels[1]);
+		Speaker speaker = speakerManager.assign(feature, false);
+		Log.i(TAG, "This files sound position feature: " + feature.toString());
+		return speaker;
 	}
+
+    public void remvoveSpeakerChangeListener(ISpeakerChangeListener iSpeakerChangeListener) {
+        listeners.remove(iSpeakerChangeListener);
+    }
 
 }

@@ -53,9 +53,6 @@ public class GoogleWebServiceRecognizer extends AbstractWebServiceRecognizer imp
         
         HttpPost httppost = new HttpPost(getUrl());
 
-        
-        Log.i(TAG, "START REQUEST!");
-        
         String transcript = "";
         try {
         	String mimeType = "audio/l16; rate=8000;";

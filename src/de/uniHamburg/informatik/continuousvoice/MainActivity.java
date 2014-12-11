@@ -24,11 +24,12 @@ public class MainActivity extends Activity {
         GeneralSettings.getInstance().setApplicationContext(this); //dirty java hack :-(
 
         //Set 3 fixed speakers
-        Speaker front = new Speaker(1, new SoundPositionSpeakerFeature(0-9, 0.1), 0xff00ff00);
+        Speaker front = new Speaker(1, new SoundPositionSpeakerFeature(0.9, 0.1), 0xff00ff00);
         Speaker rear = new Speaker(2, new SoundPositionSpeakerFeature(0.1, 0.9), 0xff0000ff);
         Speaker middle = new Speaker(3, new SoundPositionSpeakerFeature(0.5, 0.5), 0xffff0000);
         
-        SpeakerManager speakerManager = new SpeakerManager(front, rear, middle);
+        SpeakerManager speakerManager = new SpeakerManager();
+        speakerManager.setFixedSpeakers(new Speaker[] {front, rear, middle});
         SpeakerRecognizer speakerRecognizer = new SpeakerRecognizer(speakerManager);
         
         IAudioService audioService = new PcmAudioService(speakerRecognizer);

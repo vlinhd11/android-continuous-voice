@@ -5,6 +5,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import android.annotation.SuppressLint;
 import android.os.Handler;
 import android.util.Log;
 import de.uniHamburg.informatik.continuousvoice.constants.AudioConstants.Loudness;
@@ -16,10 +17,11 @@ import de.uniHamburg.informatik.continuousvoice.services.sound.IConversionDoneCa
 import de.uniHamburg.informatik.continuousvoice.services.sound.IRecorder;
 import de.uniHamburg.informatik.continuousvoice.services.sound.recorders.IAudioService;
 import de.uniHamburg.informatik.continuousvoice.services.sound.recorders.PcmFile;
+import de.uniHamburg.informatik.continuousvoice.services.speaker.ISpeakerChangeListener;
 import de.uniHamburg.informatik.continuousvoice.services.speaker.Speaker;
 
 public abstract class AbstractWebServiceRecognizer extends AbstractRecognizer implements IAmplitudeListener,
-        IWebServiceRecognizer {
+        IWebServiceRecognizer, ISpeakerChangeListener {
 
     public final String TAG = "AbstractWebServiceRecognitionService";
     private ScheduledExecutorService maxRecordingTimeScheduler;
@@ -48,6 +50,7 @@ public abstract class AbstractWebServiceRecognizer extends AbstractRecognizer im
             }
         });
 
+        audioService.addSpeakerChangeListener(this);
     }
 
     @Override
@@ -55,6 +58,7 @@ public abstract class AbstractWebServiceRecognizer extends AbstractRecognizer im
         if (running) {
             stop();
         }
+        audioService.removeSpeakerChangeListener(this);
     }
 
     public void start() {
@@ -93,6 +97,7 @@ public abstract class AbstractWebServiceRecognizer extends AbstractRecognizer im
         }).run();
     }
     
+    @SuppressLint("DefaultLocale")
     private class ConversionDoneCallback implements IConversionDoneCallback {
         private int id;
         private PcmFile pcmFile;
@@ -102,10 +107,14 @@ public abstract class AbstractWebServiceRecognizer extends AbstractRecognizer im
         }
         @Override
         public void conversionDone(File origin, File converted, long took) {
-            Log.i(TAG, "ffmpeg conversion successful: " + took + "ms, "
-                    + (origin.length() / 1024.0) + "kB -> " + (converted.length() / 1024.0) + "kB, "
-                    + "(" + (1.0 - ((double) converted.length() / (double) origin.length())) * 100
-                    + "%))");
+            String originLength = String.format("%.2f", (origin.length() / 1024.0));
+            String conpressedLength = String.format("%.2f", (converted.length() / 1024.0));
+            String percentDelta = "-" + String.format("%.2f", (1.0 - ((double) converted.length() / (double) origin.length())) * 100) + "%";
+            
+            Log.i(TAG, "Successfully compressed: took " + took + "ms, "
+                    + originLength + "kB -> " +  conpressedLength + "kB, "
+                    + "(" + percentDelta + ")" + " File: " + converted.getAbsolutePath());
+
             // when done: request
             worker.enqueueJob(id, converted, audioService.identifySpeaker(pcmFile));
         }
@@ -124,6 +133,18 @@ public abstract class AbstractWebServiceRecognizer extends AbstractRecognizer im
     @Override
     public void onAmplitudeUpdate(double percentLeft, double percentRight) {
         // nothing
+    }
+    
+    @Override
+    public void onSpeakerChange(Speaker newSpeaker) {
+        //only if recording
+        if (recorder.isRecording()) {
+            //split
+            Log.e(TAG, "SPLIT!");
+            setStatus("splitting");
+            stopRecording();
+            startRecording();
+        }
     }
 
     private void startRecording() {
@@ -152,6 +173,11 @@ public abstract class AbstractWebServiceRecognizer extends AbstractRecognizer im
                     // Stop recorder
                     final File toTranscribe = recorder.stopRecording();
                     Log.e(TAG, "               └─────❰ stop " + currentTranscriptionId + " ❱");
+                    //throw away small files
+                    //TODO
+                    //if file.size < Constants.Min_Size
+                    //abort(currenttranscriptionid);
+                    
                     new Thread(new Runnable() {
 
                         @Override

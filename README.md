@@ -57,7 +57,7 @@ Part of my master thesis in winter term 2014/2015:
 - open with Android IDE (Eclipse)
 - You also need to have Eclipse Java development tools plugin installed, if you are using stock ADT from eclipse, go to Help→Install New Software. Select Eclipse Repository and install from Programming Languages section “Eclipse Java Development Tools”. (from: [PocketSphinx Tutorial for Android](http://cmusphinx.sourceforge.net/wiki/tutorialandroid))
 - move and rename the `/keys.template` to `/res/values/keys.xml` and set your API keys there
-- clone the following repos: https://github.com/mohitchauhan/AndroidContribution and https://github.com/guardianproject/android-ffmpeg-java
+- clone the following repo: https://github.com/guardianproject/android-ffmpeg-java
 - import them into your workspace (import as android project, not existing eclipse project)
 - set them as library (project -> properties -> Android -> [x] is library)
 - reference them from ContinuousVoice (project -> properties -> project references)

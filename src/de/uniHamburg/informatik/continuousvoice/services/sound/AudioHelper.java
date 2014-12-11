@@ -85,8 +85,9 @@ public class AudioHelper {
     }
 
     public static double[] stereoLevelsFromFile(PcmFile audioFile) {
-        short[][] stereo = AudioHelper.splitStereo(audioFile.getConcatenatedPcmData());
+        short[] concatenatedPcmData = audioFile.getConcatenatedPcmData();
 
+        short[][] stereo = AudioHelper.splitStereo(concatenatedPcmData);
         double left = pcmToSoundLevel(stereo[0]);
         double right = pcmToSoundLevel(stereo[1]);
 

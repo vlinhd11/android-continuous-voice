@@ -307,4 +307,9 @@ public class PcmAudioService extends Activity implements IAudioService {
     public Speaker identifySpeaker(PcmFile f) {
         return speakerRecognizer.getSpeakerFromFile(f);
     }
+
+    @Override
+    public void removeSpeakerChangeListener(ISpeakerChangeListener iSpeakerChangeListener) {
+        speakerRecognizer.remvoveSpeakerChangeListener(iSpeakerChangeListener);        
+    }
 }

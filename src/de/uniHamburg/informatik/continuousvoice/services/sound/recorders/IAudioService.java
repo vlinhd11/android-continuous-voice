@@ -23,8 +23,11 @@ public interface IAudioService extends IRecorder {
     
     public String getMimeType();
 
-	public void addSpeakerChangeListener(
-			ISpeakerChangeListener iSpeakerChangeListener);
+    public void addSpeakerChangeListener(
+            ISpeakerChangeListener iSpeakerChangeListener);
+    
+    public void removeSpeakerChangeListener(
+            ISpeakerChangeListener iSpeakerChangeListener);
 
 	public Speaker identifySpeaker(PcmFile f);
 

@@ -180,7 +180,7 @@ public class RecognizerFragment extends Fragment {
 		recognizer.addTranscriptionListener(new ITranscriptionResultListener() {
 			@Override
 			public void onTranscriptResult(int id, String transcriptResult,
-					Speaker s) {
+					boolean transcriptSuccess, Speaker s) {
 				// search for bubble with id, set text
 				setTextForId(id, transcriptResult, s);
 			}

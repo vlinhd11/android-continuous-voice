@@ -61,7 +61,7 @@ public class WavFileRecorder {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        copyWaveFile(tempFilename, filename);
+        cutAndSaveWaveFile();
         //new File(tempFilename).delete();
         return finalFile;
     }
@@ -70,7 +70,7 @@ public class WavFileRecorder {
         return filename;
     }
 
-    private void copyWaveFile(String inFilename, String outFilename) {
+    private void cutAndSaveWaveFile() {
         long totalAudioLen = 0;
         long totalDataLen = totalAudioLen + 36;
         long longSampleRate = sampleRate;
@@ -81,15 +81,15 @@ public class WavFileRecorder {
 
         try {
             /*
-             * PEPARE READER/WRITER
+             * 1 PEPARE READER/WRITER
              */
-            FileInputStream in = new FileInputStream(inFilename);
-            FileOutputStream fos = new FileOutputStream(outFilename);
+            FileInputStream in = new FileInputStream(tempFilename);
+            FileOutputStream fos = new FileOutputStream(filename);
             BufferedOutputStream bos = new BufferedOutputStream(fos);
             DataOutputStream out = new DataOutputStream(bos);
             
             /*
-             * CALCULATE BYTE LENGTH OF FINAL FILE
+             * 2 CALCULATE BYTE LENGTH OF FINAL FILE
              */
             long audioByteSize = in.getChannel().size();
             long numberOfFrames = audioByteSize / bufferSize;
@@ -105,13 +105,13 @@ public class WavFileRecorder {
             totalDataLen = totalAudioLen + 36;
 
             /*
-             * WRITE WAV/RIFF HEADER TO FILE
+             * 3 WRITE WAVE/RIFF HEADER TO FILE
              */
             WriteWaveFileHeader(out, totalAudioLen, totalDataLen,
                     longSampleRate, channels, byteRate);
 
             /*
-             * WRITE FINAL FILE
+             * 4 WRITE FINAL FILE
              */
             //TIMESHIFT PREPEND WRITE
             long actualLenght = 0;
@@ -121,6 +121,7 @@ public class WavFileRecorder {
                         writeShortLE(out, s);
                         actualLenght +=2;
                     }
+                    finalFile.addSample(shortArray);
                 }
             }
             
@@ -136,6 +137,8 @@ public class WavFileRecorder {
                     break;
                 }
             }
+            finalFile.cutOffAtEnd(AudioConstants.SOUNDFILE_END_CUTOFF_FRAMES);
+            
             Log.i(TAG, "Actual length of wav-file in bytes: " + actualLenght);
 
             in.close();

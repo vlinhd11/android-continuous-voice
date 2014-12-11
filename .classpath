@@ -4,7 +4,6 @@
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
 	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
-	<classpathentry kind="lib" path="/home/marius/projects/masterthesis/libs/commons-io-2.4-bin.zip" sourcepath="/home/marius/projects/masterthesis/libs/commons-io-2.4-src.zip"/>
 	<classpathentry kind="lib" path="libs/nmdp_speech_kit.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/android-ffmpeg-library"/>
 	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>

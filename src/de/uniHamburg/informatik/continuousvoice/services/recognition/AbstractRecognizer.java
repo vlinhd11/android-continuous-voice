@@ -50,7 +50,7 @@ public abstract class AbstractRecognizer implements IRecognizerControl {
     	recognizedText += " " + words;
     	
     	for (ITranscriptionResultListener trl: transcriptionResultListeners) {
-    		trl.onTranscriptResult(id, words, s);
+    		trl.onTranscriptResult(id, words, (!words.trim().equals("(?)")), s);
     	}
     }
 

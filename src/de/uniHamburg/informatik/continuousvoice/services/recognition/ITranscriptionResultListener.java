@@ -7,5 +7,5 @@ public interface ITranscriptionResultListener {
 
 	public void onTranscriptionStart(int id);
 	
-    public void onTranscriptResult(int id, String transcriptResult, Speaker s);
+    public void onTranscriptResult(int id, String transcriptResult, boolean transcriptSuccess, Speaker s);
 }

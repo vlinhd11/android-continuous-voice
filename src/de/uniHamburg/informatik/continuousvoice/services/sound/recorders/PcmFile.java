@@ -52,4 +52,19 @@ public class PcmFile extends File {
     public Iterable<short[]> getAudioFrames() {
         return pcmData;
     }
+    
+    //TODO MOVE LOGIC FROM WavFileRecorder to this class!
+    //Use "ActiveRecord" pattern.
+//    public void prepend(short[] samples) {
+//        
+//    }
+
+    public void cutOffAtEnd(int sampleCount) {
+        //TODO pcmData = pcmData.subList(0, pcmData.size() - sampleCount);
+    }
+//    
+//    public void save() {
+//        //addHeader()
+//        //write
+//    }
 }
