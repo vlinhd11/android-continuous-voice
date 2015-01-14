@@ -20,7 +20,7 @@ public class TimeShiftAudioData {
         return data.size() * data.get(0).length * 2;
     }
     
-    public Iterable<short[]> getData() {
+    public List<short[]> getData() {
         return new ArrayList<short[]>(data);
     }
 

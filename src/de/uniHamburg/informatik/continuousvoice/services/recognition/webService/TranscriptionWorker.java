@@ -8,8 +8,6 @@ import android.util.Log;
 import de.uniHamburg.informatik.continuousvoice.services.speaker.Speaker;
 
 public class TranscriptionWorker {
-
-	
 	private static final String TAG = "TranscriptionWorker";
 	private Queue<Job> queue;
 	private IWebServiceRecognizer recognizer;

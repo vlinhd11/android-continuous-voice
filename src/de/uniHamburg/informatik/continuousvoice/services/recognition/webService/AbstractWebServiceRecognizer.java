@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 import android.annotation.SuppressLint;
 import android.os.Handler;
 import android.util.Log;
+import de.uniHamburg.informatik.continuousvoice.constants.AudioConstants;
 import de.uniHamburg.informatik.continuousvoice.constants.AudioConstants.Loudness;
 import de.uniHamburg.informatik.continuousvoice.constants.RecognitionConstants;
 import de.uniHamburg.informatik.continuousvoice.services.recognition.AbstractRecognizer;
@@ -76,7 +77,7 @@ public abstract class AbstractWebServiceRecognizer extends AbstractRecognizer im
 
     @Override
     public void stop() {
-        stopRecording();
+        stopRecording(true, true);
 
         stopMaxTimeScheduler();
         audioService.removeAmplitudeListener(this);
@@ -127,7 +128,7 @@ public abstract class AbstractWebServiceRecognizer extends AbstractRecognizer im
 
     @Override
     public void onSilence() {
-        stopRecording();
+        stopRecording(true, true);
     }
 
     @Override
@@ -142,7 +143,7 @@ public abstract class AbstractWebServiceRecognizer extends AbstractRecognizer im
             //split
             Log.e(TAG, "SPLIT!");
             setStatus("splitting");
-            stopRecording();
+            stopRecording(true, false);
             startRecording();
         }
     }
@@ -164,34 +165,39 @@ public abstract class AbstractWebServiceRecognizer extends AbstractRecognizer im
         });
     }
 
-    private void stopRecording() {
+    private void stopRecording(final boolean timeshift, final boolean cutoff) {
         handler.post(new Runnable() {
 
             @Override
             public void run() {
                 if (recorder.isRecording()) {
                     // Stop recorder
-                    final File toTranscribe = recorder.stopRecording();
+                    final PcmFile toTranscribe = recorder.stopRecording(timeshift, cutoff);
                     Log.e(TAG, "               └─────❰ stop " + currentTranscriptionId + " ❱");
-                    //throw away small files
-                    //TODO
-                    //if file.size < Constants.Min_Size
-                    //abort(currenttranscriptionid);
                     
-                    new Thread(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            transcribe(currentTranscriptionId, (PcmFile) toTranscribe);
-                        }
-                    }).start();
+                    Log.i(TAG, "LENTGH (ms): " + toTranscribe.getAudioLength());
+                    if (toTranscribe.getAudioLength() < AudioConstants.MIN_TRANSCRIPTION_AUDIO_LENGTH_MILLIS) {
+                        //throw away small files
+                        Log.w(TAG, "Job #" + currentTranscriptionId + " aborted. File is too small. (" + toTranscribe.getAudioLength() + " ms)");
+                        
+                        abortTranscription(currentTranscriptionId);
+                    } else {
+                        new Thread(new Runnable() {
+                            
+                            @Override
+                            public void run() {
+                                transcribe(currentTranscriptionId, (PcmFile) toTranscribe);
+                            }
+                        }).start();
+                    }
+                    
                     // stopTimer
                     stopMaxTimeScheduler();
                 }
             }
         });
     }
-
+    
     private void startMaxTimeScheduler() {
         stopMaxTimeScheduler();
 
@@ -204,7 +210,7 @@ public abstract class AbstractWebServiceRecognizer extends AbstractRecognizer im
                     public void run() {
                         if (recorder.isRecording()) {
                             setStatus("splitting");
-                            stopRecording();
+                            stopRecording(true, false);
                             startRecording();
                         }
                     }

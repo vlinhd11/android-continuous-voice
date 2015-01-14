@@ -18,9 +18,9 @@ public class SpeakerRecognizer implements IAmplitudeListener {
 	private List<ISpeakerChangeListener> listeners = new LinkedList<ISpeakerChangeListener>();
 
 	private PcmBuffer<Double> levelLeftBuffer = new PcmBuffer<Double>(
-			AudioConstants.TIMESHIFT_BUFFER_FRAMES);
+			AudioConstants.TIMESHIFT_BUFFER_CHUNKS);
 	private PcmBuffer<Double> levelRightBuffer = new PcmBuffer<Double>(
-			AudioConstants.TIMESHIFT_BUFFER_FRAMES);
+			AudioConstants.TIMESHIFT_BUFFER_CHUNKS);
 	private SpeakerManager speakerManager;
 
 	public SpeakerRecognizer(SpeakerManager speakerManager) {

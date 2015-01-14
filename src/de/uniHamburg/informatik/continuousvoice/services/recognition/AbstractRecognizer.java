@@ -3,6 +3,8 @@ package de.uniHamburg.informatik.continuousvoice.services.recognition;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.util.Log;
+
 import de.uniHamburg.informatik.continuousvoice.services.speaker.Speaker;
 import de.uniHamburg.informatik.continuousvoice.services.speaker.SpeakerManager;
 import de.uniHamburg.informatik.continuousvoice.settings.GeneralSettings;
@@ -52,6 +54,12 @@ public abstract class AbstractRecognizer implements IRecognizerControl {
     	for (ITranscriptionResultListener trl: transcriptionResultListeners) {
     		trl.onTranscriptResult(id, words, (!words.trim().equals("(?)")), s);
     	}
+    }
+    
+    protected void abortTranscription(int id) {
+        for (ITranscriptionResultListener trl: transcriptionResultListeners) {
+            trl.onTranscriptionAbort(id);
+        }
     }
 
     /**

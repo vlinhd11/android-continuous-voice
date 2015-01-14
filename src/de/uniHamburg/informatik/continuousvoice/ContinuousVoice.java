@@ -56,10 +56,12 @@ public class ContinuousVoice {
         currentRecognizer.stop();
         audioService.shutdown();
     }
-    
-    public void stop(Runnable afterLastTranscriptionReceived) {
-        //TODO
-    }
+
+    //TODO wait for last transcription result
+//    public void stop(Runnable afterLastTranscriptionReceived) {
+//        audioService.shutdown();
+//        currentRecognizer.stop();
+//    }
     
     public void shutdown() {
         currentRecognizer.shutdown();

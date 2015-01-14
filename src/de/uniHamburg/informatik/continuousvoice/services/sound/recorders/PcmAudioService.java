@@ -8,9 +8,7 @@ import java.util.List;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.media.AudioFormat;
 import android.media.AudioRecord;
-import android.media.MediaRecorder;
 import android.os.Environment;
 import android.util.Log;
 import de.uniHamburg.informatik.continuousvoice.constants.AudioConstants;
@@ -29,19 +27,12 @@ public class PcmAudioService extends Activity implements IAudioService {
     public static final String BASE_FILENAME = "pcm";
     public static final String MIME_TYPE = "audio/wav";
     private static final String SUFFIX = "wav";
-    private static final int CONFIG_AUDIO_RATE = 44100; // 44100 vs 48000;
-    public static final int CONFIG_AUDIO_ENCODING = AudioFormat.ENCODING_PCM_16BIT;
-    public static final int CONFIG_AUDIO_CHANNEL = AudioFormat.CHANNEL_IN_STEREO; // AudioFormat.CHANNEL_IN_STEREO;
-    // for stereo, for mono: MediaRecorder.AudioSource.MIC; vs CAMCORDER
-    public static final int CONFIG_AUDIO_SOURCE = MediaRecorder.AudioSource.CAMCORDER;
-    public static final int CONFIG_MIN_BUFFER_SIZE = AudioRecord.getMinBufferSize(CONFIG_AUDIO_RATE,
-            CONFIG_AUDIO_CHANNEL, CONFIG_AUDIO_ENCODING);
 
     private boolean running = false; // amplitude
     private boolean recording = false; // recording, needs running
     private int recorderIteration = 0;
-    private WavFileRecorder currentRecorder;
-    private WavFileRecorder alternateRecorder;
+    private WaveFileRecorder currentRecorder;
+    private WaveFileRecorder alternateRecorder;
     private AudioRecord audioRecord;
     private AudioRecordRunnable audioRecordRunnable;
     private TimeShiftBuffer timeShift;
@@ -61,6 +52,8 @@ public class PcmAudioService extends Activity implements IAudioService {
         this.timeShift = new TimeShiftBuffer();
         this.speakerRecognizer = speakerRecognizer;
         addAmplitudeListener(speakerRecognizer);
+        
+        AudioConstants.print();
     }
 
     @Override
@@ -111,11 +104,11 @@ public class PcmAudioService extends Activity implements IAudioService {
     }
 
     @Override
-    public PcmFile stopRecording() {
+    public PcmFile stopRecording(boolean timeshift, boolean cutoff) {
         PcmFile f = null;
         if (currentRecorder != null && recording) {
             recording = false;
-            f = currentRecorder.writeFile();
+            f = currentRecorder.writeFile(timeshift, cutoff);
 
             // new recorder
             currentRecorder = null;
@@ -141,8 +134,8 @@ public class PcmAudioService extends Activity implements IAudioService {
         return basePath + "/" + BASE_FILENAME + "_" + date + "_" + recorderIteration + "." + SUFFIX;
     }
 
-    private WavFileRecorder createRecorder() {
-        return new WavFileRecorder(getNextFileName(), CONFIG_AUDIO_RATE, CONFIG_MIN_BUFFER_SIZE);
+    private WaveFileRecorder createRecorder() {
+        return new WaveFileRecorder(getNextFileName());
     }
 
     // ---------------------------------------------
@@ -156,26 +149,20 @@ public class PcmAudioService extends Activity implements IAudioService {
 
             int bufferReadResult;
 
-            audioRecord = new AudioRecord(CONFIG_AUDIO_SOURCE, CONFIG_AUDIO_RATE, CONFIG_AUDIO_CHANNEL,
-                    CONFIG_AUDIO_ENCODING, CONFIG_MIN_BUFFER_SIZE);
+            audioRecord = new AudioRecord(AudioConstants.AUDIO_SOURCE, AudioConstants.AUDIO_RATE, AudioConstants.AUDIO_CHANNEL,
+                    AudioConstants.AUDIO_ENCODING, AudioConstants.AUDIO_MIN_BUFFER_SIZE_BYTES);
 
             // start the android recorder
             audioRecord.startRecording();
-            short[] audioData = new short[CONFIG_MIN_BUFFER_SIZE / 2];
-
-            /* ffmpeg_audio encoding loop */
+            short[] audioData = new short[AudioConstants.AUDIO_MIN_BUFFER_SIZE_SHORTS];
+            
             while (running) { // running
                 bufferReadResult = audioRecord.read(audioData, 0, audioData.length);
 
                 if (bufferReadResult != AudioRecord.ERROR_INVALID_OPERATION) {
                     // save buffer if recording
                     if (recording) {
-                        try {
-                            currentRecorder.writeAudioFrame(audioData);
-                        } catch (Exception e) {
-                            Log.v(TAG, "m: " + e.getMessage());
-                            e.printStackTrace();
-                        }
+                        currentRecorder.writeAudioFrame(audioData.clone());
                     }
 
                     // analyse buffer for amplitude
@@ -187,14 +174,12 @@ public class PcmAudioService extends Activity implements IAudioService {
                 }
 
             }
-            Log.v(TAG, "AudioThread Finished, release audioRecord");
 
             /* encoding finish, release recorder */
             if (audioRecord != null) {
                 audioRecord.stop();
                 audioRecord.release();
                 audioRecord = null;
-                Log.v(TAG, "audioRecord released");
             }
         }
 

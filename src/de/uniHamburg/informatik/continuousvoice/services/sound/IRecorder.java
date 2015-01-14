@@ -1,6 +1,6 @@
 package de.uniHamburg.informatik.continuousvoice.services.sound;
 
-import java.io.File;
+import de.uniHamburg.informatik.continuousvoice.services.sound.recorders.PcmFile;
 
 public interface IRecorder {
 
@@ -14,7 +14,7 @@ public interface IRecorder {
     
     public void startRecording();
     
-    public File stopRecording();
+    public PcmFile stopRecording(boolean timeshift, boolean cutoff);
     
     public boolean isRecording();
 }

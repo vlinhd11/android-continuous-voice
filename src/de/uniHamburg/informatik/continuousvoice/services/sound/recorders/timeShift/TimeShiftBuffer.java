@@ -8,7 +8,7 @@ public class TimeShiftBuffer {
 	private PcmBuffer<short[]> buffer;
 
 	public TimeShiftBuffer() {
-		this.buffer = new PcmBuffer<short[]>(AudioConstants.TIMESHIFT_BUFFER_FRAMES);
+		this.buffer = new PcmBuffer<short[]>(AudioConstants.TIMESHIFT_BUFFER_CHUNKS);
 	}
 	
 	public void write(short[] audioData) {
